@@ -1,9 +1,12 @@
 /* @flow */
 
 
-import Robboscratch3_DeviceControlAPI from './Robboscratch3_DeviceControlAPI';
+import DeviceControlAPI from './DeviceControlAPI';
 //import RobotSensorsData from './RobotSensorsData';
+import {InterfaceDevice,searchDevices,getConnectedDevices,DEVICES,DEVICE_STATES} from './chrome';
 
+
+const DEVICE_HANDLE_TIMEOUT:number = 1 * 60 * 1000;
 
 type RobotSensorsData = {
 
@@ -30,22 +33,102 @@ const SensorsDataRecievingStates = {
 
 type SensorsDataRecievingState = $Keys<typeof SensorsDataRecievingStates>;
 
-export default class RobotConrolAPI extends Robboscratch3_DeviceControlAPI {
+export default class RobotConrolAPI extends DeviceControlAPI {
 
   RobotSensorsDataRecievingState:SensorsDataRecievingState;
 
   SensorsData:RobotSensorsData;
 
+  ConnectedDevices: Array<InterfaceDevice>;
+
     constructor(){
+
+
 
       super();
 
       this.RobotSensorsDataRecievingState = SensorsDataRecievingStates.STOPED;
+      this.ConnectedDevices = [];
 
-      this.startDataRecievingLoop();
+     searchDevices();
+
+    var handleConnectedDevicesInterval  =  setInterval(
 
 
-    }
+        function (self){
+
+            self.ConnectedDevices = getConnectedDevices();
+            // let cd = this.ConnectedDevices;
+            // let s = this;
+          //  setInterval(handleConnectedDevices, 200, self.ConnectedDevices,self);
+
+          handleConnectedDevices(self.ConnectedDevices,self);
+
+        }
+
+
+        ,100,this);
+
+        setTimeout(function(){
+
+
+            console.log("Stop devices handle process.")
+            clearInterval(handleConnectedDevicesInterval)
+
+
+
+        }  ,DEVICE_HANDLE_TIMEOUT);
+
+
+        var handleConnectedDevices = function (Devices,self:RobotConrolAPI){
+
+
+          console.log("Handle connected devices.")
+
+        if ((typeof(Devices)!== 'undefined'))  {
+
+          if ((Devices.length != 0) ){
+
+              Devices.forEach(
+
+                  function (item:InterfaceDevice){
+
+                      self.startDataRecievingLoop(item);
+
+
+                  }
+
+
+
+              );
+
+
+         }
+      //    else{
+      //
+      //         setTimeout(handleConnectedDevices, 200,self.ConnectedDevices,self);
+      //
+      //   }
+      //
+      // }else{
+      //
+      //         console.log("devices: " + typeof(Devices));
+      //
+      //         setTimeout(handleConnectedDevices, 200,self.ConnectedDevices,self);
+      //
+      // }
+
+        }
+
+      }
+
+}
+
+    // searchRobotDevices(){
+    //
+    //      chrome.serial.getDevices(callback);
+    //
+    // }
 
 
   setRobotPower(leftMotorPower:number,rightMotorPower:number):void{
@@ -68,38 +151,55 @@ export default class RobotConrolAPI extends Robboscratch3_DeviceControlAPI {
   }
 
 
-  runDataRecieveCommand(device:RobotDevice){
+  runDataRecieveCommand(device:InterfaceDevice){
 
-if(device.getDeviceID() == 0 && device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+    console.log("runDataRecieveCommand");
 
-    device.command(DEVICES[0].commands.check, [], function(response){
+  device.command(DEVICES[0].commands.check, [], function(response){
 
 
           this.SensorsData = response;
 
+          console.log("response: " + this.SensorsData.a0);
+
 
        });
 
-    }
-  }
-
-  startDataRecievingLoop(device:RobotDevice):void{
-
-    if (this.RobotSensorsDataRecievingState == SensorsDataRecievingStates.STOPED ){
-
-          this.RobotSensorsDataRecievingState == SensorsDataRecievingStates.STARTED;
-
-
-          setInterval(this.runDataRecieveCommand.bind(this,device),100);
-
-
-
-    }
-
-
 
   }
 
+  startDataRecievingLoop(device:InterfaceDevice):void{
 
+
+      if(device.getDeviceID() == 0 && device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+
+        console.log(" Robot ID:  " + device.getDeviceID());
+
+
+              if (this.RobotSensorsDataRecievingState == SensorsDataRecievingStates.STOPED ){
+
+                  this.RobotSensorsDataRecievingState == SensorsDataRecievingStates.STARTED;
+
+                  setInterval(this.runDataRecieveCommand.bind(this,device),100);
+
+                }else{
+
+          console.log("ID: " + device.getDeviceID()  + " " + "State:  " + device.getState() );
+
+      }
+
+      //    setInterval(this.runDataRecieveCommand.bind(this,device),100);
+
+
+
+
+
+
+
+  }
+
+
+
+}
 
 }

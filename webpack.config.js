@@ -20,7 +20,7 @@ const base = {
             loader: 'babel-loader',
             include: path.resolve(__dirname, 'src'),
             query: {
-                presets: ['es2015']
+                presets: ['es2015','flow']
             }
         }]
     },

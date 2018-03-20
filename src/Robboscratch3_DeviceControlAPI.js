@@ -1,24 +1,10 @@
 /* @flow */
 
-export default  class Robboscratch3_DeviceControlAPI {
-
-    constructor(){
+import RobotConrolAPI from './RobotConrolAPI';
 
 
+export  {
 
+  RobotConrolAPI
 
-    }
-
-
-
-
-
-
-}
-
-
-// export default {
-//
-//   Robboscratch3_DeviceControlAPI
-//
-// };
+};
