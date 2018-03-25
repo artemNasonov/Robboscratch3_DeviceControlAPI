@@ -95,8 +95,9 @@ function InterfaceDevice(port){
    var response = {};
    var commandToRun = null;
    var callback = null;
+   var automaticStopCheckingSerialNumberTimeout
 
-   var isStopCheckingPort = false;
+   var isStopCheckingSerialNumber = false;
 
    var onReceiveCallback = function(info){
       if(info.connectionId == iConnectionId && info.data){
@@ -143,12 +144,23 @@ function InterfaceDevice(port){
 
             //console.log(response);
             commandToRun = null;
-            iWating = 0;
+            iWaiting = 0;
             callback(response);
          }
       }
    };
 
+   var onErrorCallback = function (info){
+
+     console.log("onErrorCallback");
+
+      if (info.connectionId == iConnectionId){
+
+          console.log(LOG + "error: " + info.error);
+
+      }
+
+   }
 
    var onSend = function(){
       console.log(LOG + "buffer sent.");
@@ -203,12 +215,12 @@ function InterfaceDevice(port){
          }
       }
       else{
-         if((sSerialNumber === undefined) && (!isStopCheckingPort)) {
+         if((sSerialNumber === undefined) && (!isStopCheckingSerialNumber)) {
             //Let's send the space
             getSerial();
 
             //Let's check the response
-             let checkSerialNumberTimeout =   setTimeout(checkSerialNumber, 300); //100
+             let checkSerialNumberTimeout =   setTimeout(checkSerialNumber, 5000); //100
 
          }
       }
@@ -222,18 +234,27 @@ function InterfaceDevice(port){
 
       chrome.serial.onReceive.addListener(onReceiveCallback);
 
+      chrome.serial.onReceiveError.addListener(onErrorCallback);
+
       checkSerialNumber();
 
-      setTimeout(function(){
+      automaticStopCheckingSerialNumberTimeout =  setTimeout(function(){
 
 
           console.log("Stop checking serial number.")
         //  clearTimeout(checkSerialNumberTimeout);
-          isStopCheckingPort = true;
+          isStopCheckingSerialNumber = true;
 
 
 
       }  ,DEVICE_HANDLE_TIMEOUT);
+   }
+
+   this.stopCheckingSerialNumber = function(){
+
+      isStopCheckingSerialNumber = true;
+      clearTimeout(automaticStopCheckingSerialNumberTimeout);
+
    }
 
 
@@ -252,9 +273,21 @@ function InterfaceDevice(port){
       return this.port.path;
    }
 
+   this.getSerialNumber = function(){
+
+        return sSerialNumber;
+
+   }
+
    this.command = function(command, params, fCallback){
-      if(commandToRun != null) return;                   
+      if(commandToRun != null) return;
       commandToRun = command;
+
+      setTimeout(function(){
+
+          commandToRun=null;
+
+      },500)
 
       bufIncomingData = new Uint8Array();
       var buf=new ArrayBuffer(command.code.length + params.length + 1);
@@ -328,6 +361,8 @@ function InterfaceDevice(port){
 
 
 const searchDevices = function(){
+
+  arrDevices = [];
 
   var onGetDevices = function(ports) {
     for (var i=0; i<ports.length; i++) {
