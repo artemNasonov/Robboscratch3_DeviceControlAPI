@@ -2,6 +2,14 @@ const DEVICE_SERIAL_NUMBER_PROBE_INTERVAL = 100;
 const DEVICE_SERIAL_NUMBER_LENGTH = 52;
 const DEVICE_HANDLE_TIMEOUT = 1 * 60 * 1000;
 
+const log = console.log;
+
+console.log = function(string){
+
+  log("Test_log: " + string);
+
+  }
+
 const DEVICE_STATES = Object.freeze({
    "INITED": 0,
    "OPENED": 1,
@@ -9,7 +17,8 @@ const DEVICE_STATES = Object.freeze({
    "RUBBISH": 3,
    "SERIAL_FOUND": 4,
    "PURGING": 5,
-   "DEVICE_IS_READY": 6
+   "DEVICE_IS_READY": 6,
+   "DEVICE_ERROR":7
 });
 
 const DEVICES = Object.freeze({
@@ -36,6 +45,70 @@ const DEVICES = Object.freeze({
          "power":{
             "code": "c",
             "params": ["ubyte", "ubyte"],
+            "response": {
+                         "encoder0" : "uint2",
+                         "encoder1" : "uint2",
+                         "path0"    : "uint2",
+                         "path1"    : "uint2",
+                         "a0"       : "ubyte[4]",
+                         "a1"       : "ubyte[4]",
+                         "a2"       : "ubyte[4]",
+                         "a3"       : "ubyte[4]",
+                         "a4"       : "ubyte[4]",
+                         "button"   : "ubyte"
+                        }
+         },
+         "rob_encoder":{
+            "code": "e",
+            "params": ["ubyte"],
+            "response": {
+                         "encoder0" : "uint2",
+                         "encoder1" : "uint2",
+                         "path0"    : "uint2",
+                         "path1"    : "uint2",
+                         "a0"       : "ubyte[4]",
+                         "a1"       : "ubyte[4]",
+                         "a2"       : "ubyte[4]",
+                         "a3"       : "ubyte[4]",
+                         "a4"       : "ubyte[4]",
+                         "button"   : "ubyte"
+                        }
+         },
+         "rob_lamps":{
+            "code": "h",
+            "params": ["ubyte"],
+            "response": {
+                         "encoder0" : "uint2",
+                         "encoder1" : "uint2",
+                         "path0"    : "uint2",
+                         "path1"    : "uint2",
+                         "a0"       : "ubyte[4]",
+                         "a1"       : "ubyte[4]",
+                         "a2"       : "ubyte[4]",
+                         "a3"       : "ubyte[4]",
+                         "a4"       : "ubyte[4]",
+                         "button"   : "ubyte"
+                        }
+         },
+         "rob_pow_encoder":{
+            "code": "g",
+            "params": ["ubyte", "ubyte","ubyte","ubyte"],
+            "response": {
+                         "encoder0" : "uint2",
+                         "encoder1" : "uint2",
+                         "path0"    : "uint2",
+                         "path1"    : "uint2",
+                         "a0"       : "ubyte[4]",
+                         "a1"       : "ubyte[4]",
+                         "a2"       : "ubyte[4]",
+                         "a3"       : "ubyte[4]",
+                         "a4"       : "ubyte[4]",
+                         "button"   : "ubyte"
+                        }
+         },
+         "rob_claw":{
+            "code": "j",
+            "params": ["ubyte"],
             "response": {
                          "encoder0" : "uint2",
                          "encoder1" : "uint2",
@@ -99,6 +172,12 @@ function InterfaceDevice(port){
 
    var isStopCheckingSerialNumber = false;
 
+   var commands_stack = [];
+
+   var    time1 = Date.now();
+   var    time_delta = 0;
+   var    time2 = Date.now();
+
    var onReceiveCallback = function(info){
       if(info.connectionId == iConnectionId && info.data){
          var buf = new Uint8Array(info.data);
@@ -131,7 +210,7 @@ function InterfaceDevice(port){
                      response[sField].push(bufIncomingData[iResponsePointer + 1]);
                      response[sField].push(bufIncomingData[iResponsePointer + 2]);
                      response[sField].push(bufIncomingData[iResponsePointer + 3]);
-                     iResponsePointer += 2;
+                     iResponsePointer += 4; //modified +=2
                      break;
                   }
                   case "ubyte":{
@@ -144,6 +223,24 @@ function InterfaceDevice(port){
 
             //console.log(response);
             commandToRun = null;
+
+            /******/
+
+                  if (commands_stack.length >= 1){
+
+                    let command_object =  commands_stack.shift();
+
+                  let  commandToRun_local  = command_object.command;
+                  let  params_local        = command_object.params;
+                  let  fCallback_local     = command_object.fCallback;
+                  let  self                = command_object.self;
+
+                  self.command(commandToRun_local,params_local,fCallback_local);
+
+                  }
+
+            /******/
+
             iWaiting = 0;
             callback(response);
          }
@@ -158,12 +255,24 @@ function InterfaceDevice(port){
 
           console.log(LOG + "error: " + info.error);
 
+          state = DEVICE_STATES["DEVICE_ERROR"];
+
+          chrome.serial.disconnect(iconnectionId, function(result){
+
+                 console.log("Connection closed: " + result);
+          });
+
       }
 
    }
 
    var onSend = function(){
       console.log(LOG + "buffer sent.");
+
+      time1 = Date.now();
+      time_delta = time1 - time2;
+      console.log("time delta: " + time_delta)
+      time2 = Date.now();
    };
    var onFlush = function(){
       console.log(LOG + "port flushed.");
@@ -220,7 +329,7 @@ function InterfaceDevice(port){
             getSerial();
 
             //Let's check the response
-             let checkSerialNumberTimeout =   setTimeout(checkSerialNumber, 5000); //100
+             let checkSerialNumberTimeout =   setTimeout(checkSerialNumber, 100); //100
 
          }
       }
@@ -280,14 +389,58 @@ function InterfaceDevice(port){
    }
 
    this.command = function(command, params, fCallback){
-      if(commandToRun != null) return;
-      commandToRun = command;
+    //  if(commandToRun != null) return;
+    //  commandToRun = command;
 
-      setTimeout(function(){
+    var params = params;
+    var fCallback = fCallback;
 
-          commandToRun=null;
+      if(commandToRun != null){
 
-      },500)
+        if (command != DEVICES[0].commands.check){
+
+             console.log(`buffering commands1... buffer length: ${commands_stack.length}`);
+
+            commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
+
+        }
+
+
+          return;
+
+      }
+
+      if (commands_stack.length > 0){
+
+
+        if (command != DEVICES[0].commands.check){
+
+          console.log(`buffering commands2... buffer length: ${commands_stack.length}`);
+
+          commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
+
+        }
+
+
+
+          let command_object =  commands_stack.shift();
+
+          commandToRun  = command_object.command;
+          params        = command_object.params;
+          fCallback     = command_object.fCallback;
+
+
+      }else{
+
+          commandToRun = command;
+
+      }
+
+      // setTimeout(function(){
+      //
+      //     commandToRun=null;
+      //
+      // },500)
 
       bufIncomingData = new Uint8Array();
       var buf=new ArrayBuffer(command.code.length + params.length + 1);
