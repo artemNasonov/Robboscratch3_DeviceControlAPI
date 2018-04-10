@@ -1,6 +1,8 @@
 const DEVICE_SERIAL_NUMBER_PROBE_INTERVAL = 100;
 const DEVICE_SERIAL_NUMBER_LENGTH = 52;
 const DEVICE_HANDLE_TIMEOUT = 1 * 60 * 1000;
+const NULL_COMMAND_TIMEOUT = 100;
+const CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT = 500;
 
 const log = console.log;
 
@@ -178,6 +180,14 @@ function InterfaceDevice(port){
    var    time_delta = 0;
    var    time2 = Date.now();
 
+   var command_try_send_time1 = null;
+   var command_try_send_time2 = null;
+
+   var check_serial_number_time1 = Date.now();
+   var check_serial_number_time2 = Date.now();
+
+   var can_check_serial_after_flush = true;
+
    var onReceiveCallback = function(info){
       if(info.connectionId == iConnectionId && info.data){
          var buf = new Uint8Array(info.data);
@@ -253,14 +263,14 @@ function InterfaceDevice(port){
 
       if (info.connectionId == iConnectionId){
 
-          console.log(LOG + "error: " + info.error);
+          console.error(LOG + "error: " + info.error);
 
           state = DEVICE_STATES["DEVICE_ERROR"];
 
-          chrome.serial.disconnect(iconnectionId, function(result){
-
-                 console.log("Connection closed: " + result);
-          });
+          // chrome.serial.disconnect(iConnectionId, function(result){
+          //
+          //        console.log("Connection closed: " + result);
+          // });
 
       }
 
@@ -276,6 +286,8 @@ function InterfaceDevice(port){
    };
    var onFlush = function(){
       console.log(LOG + "port flushed.");
+      commandToRun = null;
+      can_check_serial_after_flush = true;
    }
 
    var purgePort = function(){
@@ -324,9 +336,27 @@ function InterfaceDevice(port){
          }
       }
       else{
-         if((sSerialNumber === undefined) && (!isStopCheckingSerialNumber)) {
-            //Let's send the space
-            getSerial();
+         if((sSerialNumber === undefined) && (!isStopCheckingSerialNumber) && (can_check_serial_after_flush)) {
+
+
+            check_serial_number_time2 = Date.now();
+
+            if ((check_serial_number_time2 - check_serial_number_time1)>= CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT){
+
+                    console.log('CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT');
+
+                    chrome.serial.flush(iConnectionId, onFlush);
+
+                    can_check_serial_after_flush = false;
+
+                    check_serial_number_time1 = Date.now();
+
+
+            }else{
+
+                  //Let's send the space
+                  getSerial();
+            }
 
             //Let's check the response
              let checkSerialNumberTimeout =   setTimeout(checkSerialNumber, 100); //100
@@ -341,11 +371,13 @@ function InterfaceDevice(port){
 
       iConnectionId = connectionInfo.connectionId;
 
+      chrome.serial.flush(iConnectionId, onFlush);
+
       chrome.serial.onReceive.addListener(onReceiveCallback);
 
       chrome.serial.onReceiveError.addListener(onErrorCallback);
 
-      checkSerialNumber();
+    setTimeout(checkSerialNumber, 300);
 
       automaticStopCheckingSerialNumberTimeout =  setTimeout(function(){
 
@@ -395,6 +427,15 @@ function InterfaceDevice(port){
     var params = params;
     var fCallback = fCallback;
 
+    command_try_send_time2 = Date.now();
+
+    if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT ){
+
+
+          chrome.serial.flush(iConnectionId, onFlush);
+
+    }
+
       if(commandToRun != null){
 
         if (command != DEVICES[0].commands.check){
@@ -441,6 +482,9 @@ function InterfaceDevice(port){
       //     commandToRun=null;
       //
       // },500)
+
+
+       command_try_send_time1 = Date.now();
 
       bufIncomingData = new Uint8Array();
       var buf=new ArrayBuffer(command.code.length + params.length + 1);
