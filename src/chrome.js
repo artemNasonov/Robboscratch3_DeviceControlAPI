@@ -267,10 +267,10 @@ function InterfaceDevice(port){
 
           state = DEVICE_STATES["DEVICE_ERROR"];
 
-          // chrome.serial.disconnect(iConnectionId, function(result){
-          //
-          //        console.log("Connection closed: " + result);
-          // });
+          chrome.serial.disconnect(iConnectionId, function(result){
+
+                 console.log("Connection closed: " + result);
+          });
 
       }
 
@@ -382,9 +382,14 @@ function InterfaceDevice(port){
       automaticStopCheckingSerialNumberTimeout =  setTimeout(function(){
 
 
-          console.log("Stop checking serial number.")
+          console.log("Stop checking serial number.");
         //  clearTimeout(checkSerialNumberTimeout);
           isStopCheckingSerialNumber = true;
+
+          chrome.serial.disconnect(iConnectionId, function(result){
+
+                 console.log("Connection closed: " + result);
+          });
 
 
 
@@ -395,6 +400,11 @@ function InterfaceDevice(port){
 
       isStopCheckingSerialNumber = true;
       clearTimeout(automaticStopCheckingSerialNumberTimeout);
+
+      chrome.serial.disconnect(iConnectionId, function(result){
+
+             console.log("Connection closed: " + result);
+      });
 
    }
 
