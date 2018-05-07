@@ -1,10 +1,14 @@
 /* @flow */
 
-import RobotConrolAPI from './RobotConrolAPI';
+import RobotControlAPI from './RobotControlAPI';
+import LaboratoryControlAPI from './LaboratoryControlAPI';
+import DeviceControlAPI from './DeviceControlAPI';
 
 
 export  {
 
-  RobotConrolAPI
+  RobotControlAPI,
+  LaboratoryControlAPI,
+  DeviceControlAPI
 
 };

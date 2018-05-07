@@ -145,6 +145,51 @@ const DEVICES = Object.freeze({
 
    //Old lab
    1:{
+
+     "firmware":5,
+     "commands":{
+        "check":{
+           "code": "a",
+           "params": [],
+           "response": {
+                        "D8-13" : "ubyte",
+                        "a0"       : "ubyte[2]",
+                        "a1"       : "ubyte[2]",
+                        "a2"       : "ubyte[2]",
+                        "a3"       : "ubyte[2]",
+                        "a4"       : "ubyte[2]",
+                        "a5"       : "ubyte[2]",
+                        "a6"       : "ubyte[2]",
+                        "a7"       : "ubyte[2]",
+                       }
+        }
+
+    }
+   },
+
+   //New lab
+   2:{
+
+     "firmware":2,
+     "commands":{
+        "check":{
+           "code": "a",
+           "params": [],
+           "response": {
+                        "D8-13" : "ubyte",
+                        "a0"       : "ubyte[2]",
+                        "a1"       : "ubyte[2]",
+                        "a2"       : "ubyte[2]",
+                        "a3"       : "ubyte[2]",
+                        "a4"       : "ubyte[2]",
+                        "a5"       : "ubyte[2]",
+                        "a6"       : "ubyte[2]",
+                        "a7"       : "ubyte[2]",
+                       }
+        }
+
+    }
+
    }
 });
 
@@ -398,13 +443,18 @@ function InterfaceDevice(port){
 
    this.stopCheckingSerialNumber = function(){
 
-      isStopCheckingSerialNumber = true;
-      clearTimeout(automaticStopCheckingSerialNumberTimeout);
+     if (!isStopCheckingSerialNumber){
 
-      chrome.serial.disconnect(iConnectionId, function(result){
+       isStopCheckingSerialNumber = true;
+       clearTimeout(automaticStopCheckingSerialNumberTimeout);
 
-             console.log("Connection closed: " + result);
-      });
+       chrome.serial.disconnect(iConnectionId, function(result){
+
+              console.log("Connection closed: " + result);
+       });
+
+     }
+
 
    }
 

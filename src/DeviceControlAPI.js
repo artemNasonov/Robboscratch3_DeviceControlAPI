@@ -1,4 +1,7 @@
 
+
+import {InterfaceDevice,searchDevices,getConnectedDevices,DEVICES,DEVICE_STATES} from './chrome';
+
 export default  class DeviceControlAPI {
 
     constructor(){
@@ -9,7 +12,11 @@ export default  class DeviceControlAPI {
     }
 
 
+      searchAllDevices(){
 
+            searchDevices();
+
+      }
 
 
 

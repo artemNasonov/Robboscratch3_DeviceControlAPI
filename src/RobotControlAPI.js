@@ -35,7 +35,7 @@ type SensorsDataRecievingState = $Keys<typeof SensorsDataRecievingStates>;
 
 
 
-export default class RobotConrolAPI extends DeviceControlAPI {
+export default class RobotControlAPI extends DeviceControlAPI {
 
   RobotSensorsDataRecievingState:SensorsDataRecievingState;
 
@@ -87,7 +87,7 @@ export default class RobotConrolAPI extends DeviceControlAPI {
     this.ConnectedRobotsSerials = [];
 
 
-      searchDevices();
+  //    searchDevices();
 
      this.handleConnectedDevicesInterval  =  setInterval(
 
@@ -125,7 +125,7 @@ export default class RobotConrolAPI extends DeviceControlAPI {
 
 
 
-         var handleConnectedDevices = function (Devices,self:RobotConrolAPI){
+         var handleConnectedDevices = function (Devices,self:RobotControlAPI){
 
 
            console.log("Handle connected devices.")
