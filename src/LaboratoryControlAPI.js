@@ -130,7 +130,7 @@ this.ConnectedLaboratoriesSerials = [];
                  if(device.getDeviceID() == 2 && device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
 
-                   if (self.ConnectedRobotsSerials.indexOf(device.getSerialNumber()) == -1 ){
+                   if (self.ConnectedLaboratoriesSerials.indexOf(device.getSerialNumber()) == -1 ){
 
                      console.log("We have new ready laboratory!!!");
 
@@ -256,6 +256,12 @@ getStateNameByID(id:number):string{
 
 }
 
+islaboratoryButtonPressed(laboratory_number:number, button_number:number):string{
+
+      return   (this.SensorsData.d8_13[0] & (2 << (button_number-1)))?"true":"false";
+
+}
+
 runDataRecieveCommand(device:InterfaceDevice){
 
   console.log("runDataRecieveCommand laboratory");
@@ -265,7 +271,7 @@ device.command(DEVICES[2].commands.check, [], (response) => {
 
         this.SensorsData = response;
 
-        console.log("laboratory_response: " + this.SensorsData);
+      //  console.log("laboratory_response: " + this.SensorsData);
 
 
      });
@@ -284,9 +290,9 @@ startDataRecievingLoop(laboratory:InterfaceDevice):void{
 
 
 
-            if (this.LaboratorySensorsDataRecievingStateState == SensorsDataRecievingStates.STOPED ){
+            if (this.LaboratorySensorsDataRecievingState == SensorsDataRecievingStates.STOPED ){
 
-                this.LaboratorySensorsDataRecievingStateState == SensorsDataRecievingStates.STARTED;
+                this.LaboratorySensorsDataRecievingState == SensorsDataRecievingStates.STARTED;
 
               this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,laboratory),25);
 

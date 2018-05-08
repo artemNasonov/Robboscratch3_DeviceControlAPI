@@ -152,7 +152,7 @@ const DEVICES = Object.freeze({
            "code": "a",
            "params": [],
            "response": {
-                        "D8-13" : "ubyte",
+                        "d8_13" : "ubyte",
                         "a0"       : "ubyte[2]",
                         "a1"       : "ubyte[2]",
                         "a2"       : "ubyte[2]",
@@ -176,7 +176,7 @@ const DEVICES = Object.freeze({
            "code": "a",
            "params": [],
            "response": {
-                        "D8-13" : "ubyte",
+                        "d8_13" : "ubyte",
                         "a0"       : "ubyte[2]",
                         "a1"       : "ubyte[2]",
                         "a2"       : "ubyte[2]",
@@ -431,10 +431,10 @@ function InterfaceDevice(port){
         //  clearTimeout(checkSerialNumberTimeout);
           isStopCheckingSerialNumber = true;
 
-          chrome.serial.disconnect(iConnectionId, function(result){
-
-                 console.log("Connection closed: " + result);
-          });
+          // chrome.serial.disconnect(iConnectionId, function(result){
+          //
+          //        console.log("Connection closed: " + result);
+          // });
 
 
 
