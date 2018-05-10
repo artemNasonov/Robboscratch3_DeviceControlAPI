@@ -177,14 +177,110 @@ const DEVICES = Object.freeze({
            "params": [],
            "response": {
                         "d8_13" : "ubyte",
-                        "a0"       : "ubyte[2]",
-                        "a1"       : "ubyte[2]",
-                        "a2"       : "ubyte[2]",
-                        "a3"       : "ubyte[2]",
-                        "a4"       : "ubyte[2]",
-                        "a5"       : "ubyte[2]",
-                        "a6"       : "ubyte[2]",
-                        "a7"       : "ubyte[2]",
+                        "a0"       : "uint2",
+                        "a1"       : "uint2",
+                        "a2"       : "uint2",
+                        "a3"       : "uint2",
+                        "a4"       : "uint2",
+                        "a5"       : "uint2",
+                        "a6"       : "uint2",
+                        "a7"       : "uint2"
+                       }
+        },
+        "lab_lamps":{
+           "code": "b",
+           "params": ["ubyte"],
+           "response": {
+                         "d8_13" : "ubyte",
+                         "a0"       : "uint2",
+                         "a1"       : "uint2",
+                         "a2"       : "uint2",
+                         "a3"       : "uint2",
+                         "a4"       : "uint2",
+                         "a5"       : "uint2",
+                         "a6"       : "uint2",
+                         "a7"       : "uint2"
+                       }
+        },
+
+        "lab_color_lamps":{
+           "code": "c",
+           "params": ["ubyte"],
+           "response": {
+                       "d8_13" : "ubyte",
+                       "a0"       : "uint2",
+                       "a1"       : "uint2",
+                       "a2"       : "uint2",
+                       "a3"       : "uint2",
+                       "a4"       : "uint2",
+                       "a5"       : "uint2",
+                       "a6"       : "uint2",
+                       "a7"       : "uint2"
+                       }
+        },
+
+        "lab_dig_on":{
+           "code": "e",
+           "params": ["ubyte"],
+           "response": {
+                         "d8_13" : "ubyte",
+                         "a0"       : "uint2",
+                         "a1"       : "uint2",
+                         "a2"       : "uint2",
+                         "a3"       : "uint2",
+                         "a4"       : "uint2",
+                         "a5"       : "uint2",
+                         "a6"       : "uint2",
+                         "a7"       : "uint2"
+                       }
+        },
+
+
+        "lab_dig_off":{
+           "code": "f",
+           "params": ["ubyte"],
+           "response": {
+                       "d8_13" : "ubyte",
+                       "a0"       : "uint2",
+                       "a1"       : "uint2",
+                       "a2"       : "uint2",
+                       "a3"       : "uint2",
+                       "a4"       : "uint2",
+                       "a5"       : "uint2",
+                       "a6"       : "uint2",
+                       "a7"       : "uint2"
+                       }
+        },
+
+        "lab_dig_pwm":{
+           "code": "g",
+           "params": ["ubyte","ubyte"],
+           "response": {
+                       "d8_13" : "ubyte",
+                       "a0"       : "uint2",
+                       "a1"       : "uint2",
+                       "a2"       : "uint2",
+                       "a3"       : "uint2",
+                       "a4"       : "uint2",
+                       "a5"       : "uint2",
+                       "a6"       : "uint2",
+                       "a7"       : "uint2"
+                       }
+        },
+
+        "lab_sound":{
+           "code": "d",
+           "params": ["ubyte","ubyte"],
+           "response": {
+                     "d8_13" : "ubyte",
+                     "a0"       : "uint2",
+                     "a1"       : "uint2",
+                     "a2"       : "uint2",
+                     "a3"       : "uint2",
+                     "a4"       : "uint2",
+                     "a5"       : "uint2",
+                     "a6"       : "uint2",
+                     "a7"       : "uint2"
                        }
         }
 
@@ -381,27 +477,34 @@ function InterfaceDevice(port){
          }
       }
       else{
-         if((sSerialNumber === undefined) && (!isStopCheckingSerialNumber) && (can_check_serial_after_flush)) {
+         if((sSerialNumber === undefined) && (!isStopCheckingSerialNumber) && (state != DEVICE_STATES["DEVICE_ERROR"]) /*&& (can_check_serial_after_flush) */) {
 
 
-            check_serial_number_time2 = Date.now();
+            // check_serial_number_time2 = Date.now();
+            //
+            // if ((check_serial_number_time2 - check_serial_number_time1)>= CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT){
+            //
+            //         console.log('CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT');
+            //
+            //         chrome.serial.flush(iConnectionId, onFlush);
+            //
+            //         can_check_serial_after_flush = false;
+            //
+            //         check_serial_number_time1 = Date.now();
+            //
+            //
+            // }else{
+            //
+            //       //Let's send the space
+            //       getSerial();
+            // }
 
-            if ((check_serial_number_time2 - check_serial_number_time1)>= CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT){
+            if (iConnectionId != null) {
 
-                    console.log('CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT');
-
-                    chrome.serial.flush(iConnectionId, onFlush);
-
-                    can_check_serial_after_flush = false;
-
-                    check_serial_number_time1 = Date.now();
-
-
-            }else{
-
-                  //Let's send the space
                   getSerial();
+
             }
+
 
             //Let's check the response
              let checkSerialNumberTimeout =   setTimeout(checkSerialNumber, 100); //100
@@ -446,12 +549,24 @@ function InterfaceDevice(port){
      if (!isStopCheckingSerialNumber){
 
        isStopCheckingSerialNumber = true;
+
+
+
        clearTimeout(automaticStopCheckingSerialNumberTimeout);
 
-       chrome.serial.disconnect(iConnectionId, function(result){
+       if (state != DEVICE_STATES["DEVICE_ERROR"]){
 
-              console.log("Connection closed: " + result);
-       });
+
+         // chrome.serial.disconnect(iConnectionId, function(result){
+         //
+         //        console.log("Connection closed: " + result);
+         //
+         //        iConnectionId = null;
+         // });
+
+       }
+
+
 
      }
 
@@ -487,18 +602,18 @@ function InterfaceDevice(port){
     var params = params;
     var fCallback = fCallback;
 
-    command_try_send_time2 = Date.now();
-
-    if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT ){
-
-
-          chrome.serial.flush(iConnectionId, onFlush);
-
-    }
+    // command_try_send_time2 = Date.now();
+    //
+    // if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT ){
+    //
+    //
+    //       chrome.serial.flush(iConnectionId, onFlush);
+    //
+    // }
 
       if(commandToRun != null){
 
-        if (command != DEVICES[0].commands.check){
+        if ((command != DEVICES[0].commands.check) && (command != DEVICES[2].commands.check)){
 
              console.log(`buffering commands1... buffer length: ${commands_stack.length}`);
 
@@ -514,7 +629,7 @@ function InterfaceDevice(port){
       if (commands_stack.length > 0){
 
 
-        if (command != DEVICES[0].commands.check){
+        if ( (command != DEVICES[0].commands.check) && (command != DEVICES[2].commands.check) ){
 
           console.log(`buffering commands2... buffer length: ${commands_stack.length}`);
 
@@ -544,7 +659,7 @@ function InterfaceDevice(port){
       // },500)
 
 
-       command_try_send_time1 = Date.now();
+    //   command_try_send_time1 = Date.now();
 
       bufIncomingData = new Uint8Array();
       var buf=new ArrayBuffer(command.code.length + params.length + 1);

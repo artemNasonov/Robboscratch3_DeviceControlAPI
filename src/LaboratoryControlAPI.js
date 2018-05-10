@@ -12,14 +12,14 @@ const DEVICE_HANDLE_TIMEOUT:number = 1 * 60 * 1000;
 type LaboratorySensorsData = {
 
                        d8_13 :    [number],
-                       a0       : [number,number],
-                       a1       : [number,number],
-                       a2       : [number,number],
-                       a3       : [number,number],
-                       a4       : [number,number],
-                       a5       : [number,number],
-                       a6       : [number,number],
-                       a7       : [number,number]
+                       a0       : [number],
+                       a1       : [number],
+                       a2       : [number],
+                       a3       : [number],
+                       a4       : [number],
+                       a5       : [number],
+                       a6       : [number],
+                       a7       : [number]
 
 
 };
@@ -49,6 +49,15 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
   DataRecievingLoopInterval:IntervalID;
   automaticDeviceHandleProcessStopTimeout:any;
 
+  led_states:Array<string>;
+  led_bit_mask:number;
+
+  led_color_states:Array<string>;
+  led_color_bit_mask:number;
+
+  digital_pins_states:Array<string>;
+  digital_pins_bit_mask:number;
+
   constructor(){
 
 
@@ -59,6 +68,15 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
     this.ConnectedDevices = [];
     this.ConnectedLaboratories = [];
     this.ConnectedLaboratoriesSerials = [];
+
+    this.led_states = ['off','off','off','off','off','off','off','off'];
+    this.led_bit_mask = 0;
+
+    this.led_color_states = ['off','off','off'];
+    this.led_color_bit_mask = 0;
+
+    this.digital_pins_states = ['off','off','off','off','off','off'];
+    this.digital_pins_bit_mask = 0;
 
 
     this.stopSearchProcess();
@@ -256,9 +274,329 @@ getStateNameByID(id:number):string{
 
 }
 
-islaboratoryButtonPressed(laboratory_number:number, button_number:number):string{
+islaboratoryButtonPressed(laboratory_number:number, button_number:number):boolean{
 
-      return   (this.SensorsData.d8_13[0] & (2 << (button_number-1)))?"true":"false";
+  if ((this.ConnectedLaboratories.length - 1) >= laboratory_number ){
+
+
+    if(this.ConnectedLaboratories[0].getDeviceID() == 2 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+
+          console.log(`islaboratoryButtonPressed button_number: ${button_number}`);
+
+        return   (this.SensorsData.d8_13[0] & (1 << (button_number-1)))?true:false;
+
+    } else return false;
+
+
+  }else return false;
+
+
+
+
+}
+
+labDigitalPinState(laboratory_number:number, digital_pin:string):boolean{
+
+
+  if ((this.ConnectedLaboratories.length - 1) >= laboratory_number ){
+
+
+    if(this.ConnectedLaboratories[0].getDeviceID() == 2 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+
+          console.log(`labDigitalPinState digital_pin: ${digital_pin}`);
+
+          var pin  = Number(digital_pin.replace("D",""));
+
+          return   (this.SensorsData.d8_13[0] & (1 << (pin)))?true:false;
+
+    } else return false;
+
+
+  }else return false;
+
+
+
+
+
+}
+
+turnLedOn(led_position:number,laboratory_number:number){
+
+  if ((this.ConnectedLaboratories.length - 1) >= laboratory_number ){
+
+
+    if(this.ConnectedLaboratories[0].getDeviceID() == 2 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+
+      console.log(`Lab turnLedOn led_position: ${led_position}`);
+
+
+   if (this.led_states[led_position] == 'off') {
+
+
+
+         this.led_bit_mask = this.led_bit_mask | (1 << led_position);
+
+         console.log(`led_bit_mask: ${this.led_bit_mask}`);
+
+         this.led_states[led_position] = 'on';
+
+         this.ConnectedLaboratories[0].command(DEVICES[2].commands.lab_lamps, [this.led_bit_mask], function(response){
+
+
+
+                    });
+
+   }
+
+
+
+     }
+
+  }
+
+
+}
+
+
+turnLedOff(led_position:number,laboratory_number:number){
+
+ if ((this.ConnectedLaboratories.length - 1) >= laboratory_number ){
+
+
+   if(this.ConnectedLaboratories[0].getDeviceID() == 2 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+
+     console.log(`Lab turnLedOff led_position: ${led_position}`);
+
+   if (this.led_states[led_position] == 'on') {
+
+     this.led_bit_mask = this.led_bit_mask & ~(1 << led_position);
+
+     console.log(`led_bit_mask: ${this.led_bit_mask}`);
+
+     this.led_states[led_position] = 'off';
+
+     this.ConnectedDevices[0].command(DEVICES[2].commands.lab_lamps, [this.led_bit_mask], function(response){
+
+
+
+                });
+
+   }
+
+
+
+   }
+
+ }
+
+
+}
+
+turnColorLedOn(led_color:string,laboratory_number:number){
+
+
+if ((this.ConnectedLaboratories.length - 1) >= laboratory_number ){
+
+
+    if(this.ConnectedLaboratories[0].getDeviceID() == 2 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+
+      console.log(`Lab turnColorLedOn led_color: ${led_color}`);
+
+  if(led_color== 'red' && this.led_color_states[0] == "off"){
+   this.led_color_bit_mask = this.led_color_bit_mask | 4;
+
+   this.ConnectedDevices[0].command(DEVICES[2].commands.lab_color_lamps, [this.led_color_bit_mask], function(response){
+
+
+
+              });
+
+   this.led_color_states[0] = 'on';
+}
+
+if(led_color== 'yellow' && this.led_color_states[1] == "off"){
+ this.led_color_bit_mask = this.led_color_bit_mask | 2;
+
+ this.ConnectedDevices[0].command(DEVICES[2].commands.lab_color_lamps, [this.led_color_bit_mask], function(response){
+
+
+
+            });
+
+ this.led_color_states[1] = 'on';
+}
+
+if(led_color== 'green' && this.led_color_states[2] == "off"){
+ this.led_color_bit_mask = this.led_color_bit_mask | 1;
+
+ this.ConnectedDevices[0].command(DEVICES[2].commands.lab_color_lamps, [this.led_color_bit_mask], function(response){
+
+
+
+            });
+
+ this.led_color_states[2] = 'on';
+}
+
+}
+
+}
+
+}
+
+
+turnColorLedOff(led_color:string,laboratory_number:number){
+
+
+  if ((this.ConnectedLaboratories.length - 1) >= laboratory_number ){
+
+
+      if(this.ConnectedLaboratories[0].getDeviceID() == 2 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+
+        console.log(`Lab turnColorLedOff led_color: ${led_color}`);
+
+    if(led_color== 'red' && this.led_color_states[0] == "on"){
+     this.led_color_bit_mask = this.led_color_bit_mask & ~ 4;
+
+     this.ConnectedDevices[0].command(DEVICES[2].commands.lab_color_lamps, [this.led_color_bit_mask], function(response){
+
+
+
+                });
+
+     this.led_color_states[0] = 'off';
+  }
+
+  if(led_color== 'yellow' && this.led_color_states[1] == "on"){
+   this.led_color_bit_mask = this.led_color_bit_mask & ~ 2;
+
+   this.ConnectedDevices[0].command(DEVICES[2].commands.lab_color_lamps, [this.led_color_bit_mask], function(response){
+
+
+
+              });
+
+   this.led_color_states[1] = 'off';
+  }
+
+  if(led_color== 'green' && this.led_color_states[2] == "on"){
+   this.led_color_bit_mask = this.led_color_bit_mask & ~ 1;
+
+   this.ConnectedDevices[0].command(DEVICES[2].commands.lab_color_lamps, [this.led_color_bit_mask], function(response){
+
+
+
+              });
+
+   this.led_color_states[2] = 'off';
+  }
+
+  }
+
+  }
+
+}
+
+setDigitalOnOff(digital_pin:string,digital_pin_state:string,laboratory_number:number){
+
+  if ((this.ConnectedLaboratories.length - 1) >= laboratory_number ){
+
+
+      if(this.ConnectedLaboratories[0].getDeviceID() == 2 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+
+          console.log(`Lab setDigitalOnOff digital_pin: ${digital_pin} digital_pin_state: ${digital_pin_state} `);
+
+            var pin = Number(digital_pin.replace("D",""));
+
+            var digitalOutMask:number = 1 << (pin - 2);
+
+            if(digital_pin_state == "on"){
+               if(this.digital_pins_states[pin] == "off"){
+
+                 this.ConnectedDevices[0].command(DEVICES[2].commands.lab_dig_on, [digitalOutMask], function(response){
+
+
+
+                            });
+
+                  this.digital_pins_states[pin] = "on";
+               }
+            }
+            else{
+               if(this.digital_pins_states[pin] == "on"){
+
+                 this.ConnectedDevices[0].command(DEVICES[2].commands.lab_dig_off, [digitalOutMask], function(response){
+
+
+
+                            });
+
+                this.digital_pins_states[pin] = "off";
+               }
+            }
+
+      }
+
+
+    }
+
+}
+
+setDigitalPWM(digital_pin:string,pwm_value:number,laboratory_number:number){
+
+  if ((this.ConnectedLaboratories.length - 1) >= laboratory_number ){
+
+
+      if(this.ConnectedLaboratories[0].getDeviceID() == 2 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+
+          console.log(`Lab setDigitalPWM digital_pin: ${digital_pin} pwm_value: ${pwm_value} `);
+
+
+            var pin = Number(digital_pin.replace("D",""));
+
+            if(pin == 3){
+
+              this.ConnectedDevices[0].command(DEVICES[2].commands.lab_dig_pwm, [1,pwm_value], function(response){
+
+
+
+                         });
+
+              }
+              if(pin == 5){
+
+                this.ConnectedDevices[0].command(DEVICES[2].commands.lab_dig_pwm, [2,pwm_value], function(response){
+
+
+
+                           });
+
+              }
+              if(pin == 6){
+
+                this.ConnectedDevices[0].command(DEVICES[2].commands.lab_dig_pwm, [4,pwm_value], function(response){
+
+
+
+                           });
+              }
+
+                }
+
+      }
+
+
+}
+
+getSensorsData(): LaboratorySensorsData{
+
+    return this.SensorsData;
+
+}
+
+getSensorData(pin:number){
+
+    return this.SensorsData[`a${pin}`];
 
 }
 
