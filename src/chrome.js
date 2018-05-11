@@ -152,15 +152,24 @@ const DEVICES = Object.freeze({
            "code": "a",
            "params": [],
            "response": {
-                        "d8_13" : "ubyte",
-                        "a0"       : "ubyte[2]",
-                        "a1"       : "ubyte[2]",
-                        "a2"       : "ubyte[2]",
-                        "a3"       : "ubyte[2]",
-                        "a4"       : "ubyte[2]",
-                        "a5"       : "ubyte[2]",
-                        "a6"       : "ubyte[2]",
-                        "a7"       : "ubyte[2]",
+                         "d8_13" : "ubyte",
+                         "a0"       : "ubyte",
+                         "a1"       : "ubyte",
+                         "a2"       : "ubyte",
+                         "a3"       : "ubyte",
+                         "a4"       : "ubyte",
+                         "a5"       : "ubyte",
+                         "a6"       : "ubyte",
+                         "a7"       : "ubyte",
+                         "a8"       : "ubyte",
+                         "a9"       : "ubyte",
+                         "a10"       : "ubyte",
+                         "a11"       : "ubyte",
+                         "a12"       : "ubyte",
+                         "a13"       : "ubyte",
+                         "a14"       : "ubyte",
+                         "a15"       : "ubyte"
+
                        }
         }
 
@@ -176,15 +185,24 @@ const DEVICES = Object.freeze({
            "code": "a",
            "params": [],
            "response": {
-                        "d8_13" : "ubyte",
-                        "a0"       : "uint2",
-                        "a1"       : "uint2",
-                        "a2"       : "uint2",
-                        "a3"       : "uint2",
-                        "a4"       : "uint2",
-                        "a5"       : "uint2",
-                        "a6"       : "uint2",
-                        "a7"       : "uint2"
+                           "d8_13" : "ubyte",
+                           "a0"       : "ubyte",
+                           "a1"       : "ubyte",
+                           "a2"       : "ubyte",
+                           "a3"       : "ubyte",
+                           "a4"       : "ubyte",
+                           "a5"       : "ubyte",
+                           "a6"       : "ubyte",
+                           "a7"       : "ubyte",
+                           "a8"       : "ubyte",
+                           "a9"       : "ubyte",
+                           "a10"       : "ubyte",
+                           "a11"       : "ubyte",
+                           "a12"       : "ubyte",
+                           "a13"       : "ubyte",
+                           "a14"       : "ubyte",
+                           "a15"       : "ubyte"
+
                        }
         },
         "lab_lamps":{
@@ -192,14 +210,23 @@ const DEVICES = Object.freeze({
            "params": ["ubyte"],
            "response": {
                          "d8_13" : "ubyte",
-                         "a0"       : "uint2",
-                         "a1"       : "uint2",
-                         "a2"       : "uint2",
-                         "a3"       : "uint2",
-                         "a4"       : "uint2",
-                         "a5"       : "uint2",
-                         "a6"       : "uint2",
-                         "a7"       : "uint2"
+                         "a0"       : "ubyte",
+                         "a1"       : "ubyte",
+                         "a2"       : "ubyte",
+                         "a3"       : "ubyte",
+                         "a4"       : "ubyte",
+                         "a5"       : "ubyte",
+                         "a6"       : "ubyte",
+                         "a7"       : "ubyte",
+                         "a8"       : "ubyte",
+                         "a9"       : "ubyte",
+                         "a10"       : "ubyte",
+                         "a11"       : "ubyte",
+                         "a12"       : "ubyte",
+                         "a13"       : "ubyte",
+                         "a14"       : "ubyte",
+                         "a15"       : "ubyte"
+
                        }
         },
 
@@ -207,15 +234,24 @@ const DEVICES = Object.freeze({
            "code": "c",
            "params": ["ubyte"],
            "response": {
-                       "d8_13" : "ubyte",
-                       "a0"       : "uint2",
-                       "a1"       : "uint2",
-                       "a2"       : "uint2",
-                       "a3"       : "uint2",
-                       "a4"       : "uint2",
-                       "a5"       : "uint2",
-                       "a6"       : "uint2",
-                       "a7"       : "uint2"
+                         "d8_13" : "ubyte",
+                         "a0"       : "ubyte",
+                         "a1"       : "ubyte",
+                         "a2"       : "ubyte",
+                         "a3"       : "ubyte",
+                         "a4"       : "ubyte",
+                         "a5"       : "ubyte",
+                         "a6"       : "ubyte",
+                         "a7"       : "ubyte",
+                         "a8"       : "ubyte",
+                         "a9"       : "ubyte",
+                         "a10"       : "ubyte",
+                         "a11"       : "ubyte",
+                         "a12"       : "ubyte",
+                         "a13"       : "ubyte",
+                         "a14"       : "ubyte",
+                         "a15"       : "ubyte"
+
                        }
         },
 
@@ -224,14 +260,23 @@ const DEVICES = Object.freeze({
            "params": ["ubyte"],
            "response": {
                          "d8_13" : "ubyte",
-                         "a0"       : "uint2",
-                         "a1"       : "uint2",
-                         "a2"       : "uint2",
-                         "a3"       : "uint2",
-                         "a4"       : "uint2",
-                         "a5"       : "uint2",
-                         "a6"       : "uint2",
-                         "a7"       : "uint2"
+                         "a0"       : "ubyte",
+                         "a1"       : "ubyte",
+                         "a2"       : "ubyte",
+                         "a3"       : "ubyte",
+                         "a4"       : "ubyte",
+                         "a5"       : "ubyte",
+                         "a6"       : "ubyte",
+                         "a7"       : "ubyte",
+                         "a8"       : "ubyte",
+                         "a9"       : "ubyte",
+                         "a10"       : "ubyte",
+                         "a11"       : "ubyte",
+                         "a12"       : "ubyte",
+                         "a13"       : "ubyte",
+                         "a14"       : "ubyte",
+                         "a15"       : "ubyte"
+
                        }
         },
 
@@ -240,15 +285,24 @@ const DEVICES = Object.freeze({
            "code": "f",
            "params": ["ubyte"],
            "response": {
-                       "d8_13" : "ubyte",
-                       "a0"       : "uint2",
-                       "a1"       : "uint2",
-                       "a2"       : "uint2",
-                       "a3"       : "uint2",
-                       "a4"       : "uint2",
-                       "a5"       : "uint2",
-                       "a6"       : "uint2",
-                       "a7"       : "uint2"
+                         "d8_13" : "ubyte",
+                         "a0"       : "ubyte",
+                         "a1"       : "ubyte",
+                         "a2"       : "ubyte",
+                         "a3"       : "ubyte",
+                         "a4"       : "ubyte",
+                         "a5"       : "ubyte",
+                         "a6"       : "ubyte",
+                         "a7"       : "ubyte",
+                         "a8"       : "ubyte",
+                         "a9"       : "ubyte",
+                         "a10"       : "ubyte",
+                         "a11"       : "ubyte",
+                         "a12"       : "ubyte",
+                         "a13"       : "ubyte",
+                         "a14"       : "ubyte",
+                         "a15"       : "ubyte"
+
                        }
         },
 
@@ -256,15 +310,23 @@ const DEVICES = Object.freeze({
            "code": "g",
            "params": ["ubyte","ubyte"],
            "response": {
-                       "d8_13" : "ubyte",
-                       "a0"       : "uint2",
-                       "a1"       : "uint2",
-                       "a2"       : "uint2",
-                       "a3"       : "uint2",
-                       "a4"       : "uint2",
-                       "a5"       : "uint2",
-                       "a6"       : "uint2",
-                       "a7"       : "uint2"
+                         "d8_13" : "ubyte",
+                         "a0"       : "ubyte",
+                         "a1"       : "ubyte",
+                         "a2"       : "ubyte",
+                         "a3"       : "ubyte",
+                         "a4"       : "ubyte",
+                         "a5"       : "ubyte",
+                         "a6"       : "ubyte",
+                         "a7"       : "ubyte",
+                         "a8"       : "ubyte",
+                         "a9"       : "ubyte",
+                         "a10"       : "ubyte",
+                         "a11"       : "ubyte",
+                         "a12"       : "ubyte",
+                         "a13"       : "ubyte",
+                         "a14"       : "ubyte",
+                         "a15"       : "ubyte"
                        }
         },
 
@@ -273,14 +335,23 @@ const DEVICES = Object.freeze({
            "params": ["ubyte","ubyte"],
            "response": {
                      "d8_13" : "ubyte",
-                     "a0"       : "uint2",
-                     "a1"       : "uint2",
-                     "a2"       : "uint2",
-                     "a3"       : "uint2",
-                     "a4"       : "uint2",
-                     "a5"       : "uint2",
-                     "a6"       : "uint2",
-                     "a7"       : "uint2"
+                     "a0"       : "ubyte",
+                     "a1"       : "ubyte",
+                     "a2"       : "ubyte",
+                     "a3"       : "ubyte",
+                     "a4"       : "ubyte",
+                     "a5"       : "ubyte",
+                     "a6"       : "ubyte",
+                     "a7"       : "ubyte",
+                     "a8"       : "ubyte",
+                     "a9"       : "ubyte",
+                     "a10"       : "ubyte",
+                     "a11"       : "ubyte",
+                     "a12"       : "ubyte",
+                     "a13"       : "ubyte",
+                     "a14"       : "ubyte",
+                     "a15"       : "ubyte"
+
                        }
         }
 

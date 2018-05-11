@@ -11,15 +11,24 @@ const DEVICE_HANDLE_TIMEOUT:number = 1 * 60 * 1000;
 
 type LaboratorySensorsData = {
 
-                       d8_13 :    [number],
-                       a0       : [number],
-                       a1       : [number],
-                       a2       : [number],
-                       a3       : [number],
-                       a4       : [number],
-                       a5       : [number],
-                       a6       : [number],
-                       a7       : [number]
+                       d8_13 :    number,
+                       a0       : number,
+                       a1       : number,
+                       a2       : number,
+                       a3       : number,
+                       a4       : number,
+                       a5       : number,
+                       a6       : number,
+                       a7       : number,
+                       a8       : number,
+                       a9       : number,
+                       a10      : number,
+                       a11      : number,
+                       a12      : number,
+                       a13      : number,
+                       a14      : number,
+                       a15      : number
+
 
 
 };
@@ -287,7 +296,7 @@ islaboratoryButtonPressed(laboratory_number:number, button_number:number):boolea
 
           console.log(`islaboratoryButtonPressed button_number: ${button_number}`);
 
-        return   (this.SensorsData.d8_13[0] & (1 << (button_number-1)))?true:false;
+        return   (this.SensorsData.d8_13 & (1 << (button_number-1)))?true:false;
 
     } else return false;
 
@@ -311,7 +320,7 @@ labDigitalPinState(laboratory_number:number, digital_pin:string):boolean{
 
           var pin  = Number(digital_pin.replace("D","")) - 8;
 
-          return   (this.SensorsData.d8_13[0] & (1 << (pin)))?true:false;
+          return   (this.SensorsData.d8_13 & (1 << (pin)))?true:false;
 
     } else return false;
 
@@ -612,13 +621,24 @@ setSensorType(sensor_name:string, sensor_type:string){
 
 }
 
+      //Data bytes               PINs
+      //a0 -  a1              A0
+      //a2  - a3              A1
+      //a4  - a5              A2
+      //a6  - a7              A3
+      //a8  - a9              A4
+      //a10 - a11             A5
+      //a12 - a13             A6
+      //a14 - a15             A7
+
+
 getSensorData(sensor_name:string):number{
 
   if ( typeof(this.SensorsData) != 'undefined' ){
 
       if (sensor_name.startsWith("A")){
 
-            var pin = sensor_name.toLowerCase();
+            var pin = Number(sensor_name.replace("A", ""));
 
             if ( typeof(this.SensorsData) != 'undefined' ){
 
@@ -630,11 +650,11 @@ getSensorData(sensor_name:string):number{
 
                         if (this.ConnectedLaboratories[0].getDeviceID() == 2){
 
-                              return this.SensorsData[pin];
+                              return Math.round((this.SensorsData[`a${pin*2}`] * 256 + this.SensorsData[`a${pin*2 + 1}`]) *  0.244379276637341153);
 
                         }else{
 
-                                return this.SensorsData[pin];
+                                return this.SensorsData[`a${pin*2}`] * 256 + this.SensorsData[`a${pin*2 + 1}`];
 
                         }
 
@@ -642,7 +662,9 @@ getSensorData(sensor_name:string):number{
 
                       case "clamps":
 
-                        return this.SensorsData[pin];
+
+
+                        return   Math.round((this.SensorsData[`a${pin*2}`] * 256 + this.SensorsData[`a${pin*2 + 1}`]) / 1023 * 100);
 
                     //  break;
 
@@ -650,11 +672,11 @@ getSensorData(sensor_name:string):number{
 
                     }
 
-                    return this.SensorsData[pin];
+                    return this.SensorsData[`a${pin*2}`] * 256 + this.SensorsData[`a${pin*2 + 1}`];
 
               }else {
 
-                      return this.SensorsData[pin];
+                      return  this.SensorsData[`a${pin*2}`] * 256 + this.SensorsData[`a${pin*2 + 1}`];
 
               }
 
@@ -670,19 +692,51 @@ getSensorData(sensor_name:string):number{
 
               case "light":
 
-                  return   this.SensorsData.a5[0];
+                var light_value;
+
+                  if (this.ConnectedLaboratories[0].getDeviceID() == 4){
+
+
+                      light_value =    Math.abs(Math.round((this.SensorsData.a8*256 + this.SensorsData.a9 ) / 1023 * 100));
+
+                  }else{
+
+                      light_value =   1.34 * this.SensorsData.a9;
+
+                  }
+
+                  if(light_value> 100){
+
+                     light_value = 100;
+
+                   }
+
+                  return light_value;
 
 
 
               case "sound":
 
-                    return   this.SensorsData.a4[0];
+                    var sound_value;
+
+                    sound_value =   Math.round((this.SensorsData.a10 * 256 + this.SensorsData.a11) / 1023 * 100);
+
+                    return sound_value;
 
 
 
               case "slider":
 
-                    return   this.SensorsData.a7[0];
+              if (this.ConnectedLaboratories[0].getDeviceID() == 2){
+
+                      var slider_value = Math.abs(100 - Math.round((this.SensorsData.a14*256 + this.SensorsData.a15 ) / 1023 * 100));
+
+                      return  ( slider_value > 100) ? 100 : slider_value;
+
+              }
+
+
+
 
 
 
