@@ -58,6 +58,8 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
   digital_pins_states:Array<string>;
   digital_pins_bit_mask:number;
 
+  //lab_sensor_types:Array<string>;
+
   constructor(){
 
 
@@ -77,6 +79,8 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
 
     this.digital_pins_states = ['off','off','off','off','off','off'];
     this.digital_pins_bit_mask = 0;
+
+    this.lab_sensor_types = [];
 
 
     this.stopSearchProcess();
@@ -305,7 +309,7 @@ labDigitalPinState(laboratory_number:number, digital_pin:string):boolean{
 
           console.log(`labDigitalPinState digital_pin: ${digital_pin}`);
 
-          var pin  = Number(digital_pin.replace("D",""));
+          var pin  = Number(digital_pin.replace("D","")) - 8;
 
           return   (this.SensorsData.d8_13[0] & (1 << (pin)))?true:false;
 
@@ -590,13 +594,104 @@ setDigitalPWM(digital_pin:string,pwm_value:number,laboratory_number:number){
 
 getSensorsData(): LaboratorySensorsData{
 
+
     return this.SensorsData;
 
 }
 
-getSensorData(pin:number){
+// getSensorData(pin:number){
+//
+//     return this.SensorsData[`a${pin}`];
+//
+// }
 
-    return this.SensorsData[`a${pin}`];
+setSensorType(sensor_name:string, sensor_type:string){
+
+
+  this.lab_sensor_types[sensor_name] = sensor_type;
+
+}
+
+getSensorData(sensor_name:string):number{
+
+  if ( typeof(this.SensorsData) != 'undefined' ){
+
+      if (sensor_name.startsWith("A")){
+
+            var pin = sensor_name.toLowerCase();
+
+            if ( typeof(this.SensorsData) != 'undefined' ){
+
+              if ( (this.lab_sensor_types[sensor_name] != 'nosensor') || ( typeof(this.lab_sensor_types[sensor_name]) != 'undefined') ){
+
+                    switch (this.lab_sensor_types[sensor_name]) {
+
+                      case "temperature":
+
+                        if (this.ConnectedLaboratories[0].getDeviceID() == 2){
+
+                              return this.SensorsData[pin];
+
+                        }else{
+
+                                return this.SensorsData[pin];
+
+                        }
+
+                    //  break;
+
+                      case "clamps":
+
+                        return this.SensorsData[pin];
+
+                    //  break;
+
+                      default:
+
+                    }
+
+                    return this.SensorsData[pin];
+
+              }else {
+
+                      return this.SensorsData[pin];
+
+              }
+
+
+
+            } else return -1;
+
+
+
+      }else{
+
+            switch (sensor_name) {
+
+              case "light":
+
+                  return   this.SensorsData.a5[0];
+
+
+
+              case "sound":
+
+                    return   this.SensorsData.a4[0];
+
+
+
+              case "slider":
+
+                    return   this.SensorsData.a7[0];
+
+
+
+                    default: return -1;
+
+            }
+      }
+
+  }else return -1;
 
 }
 
