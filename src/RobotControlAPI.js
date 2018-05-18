@@ -470,6 +470,9 @@ export default class RobotControlAPI extends DeviceControlAPI {
           if (colors_arr.hasOwnProperty(color)) {
 
 
+                  let table_object = this.colorFilterTable[sensor_id];
+
+
                   if ( (red_channel_percent > getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"low") ) && (red_channel_percent < getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"high"))
 
                     && (green_channel_percent > getColorFilterTableValue(this.colorFilterTable[sensor_id][color].G,"low") ) && (green_channel_percent < getColorFilterTableValue(this.colorFilterTable[sensor_id][color].G,"high"))
