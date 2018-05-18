@@ -24,6 +24,16 @@ type RobotSensorsData = {
 };
 
 
+ type ColorFilterTableRaw = {
+
+     R:string,
+     G:string,
+     B:string,
+     Bright:string
+
+ }
+
+
 const SensorsDataRecievingStates = {
 
     STARTED:"STARTED",
@@ -73,6 +83,34 @@ export default class RobotControlAPI extends DeviceControlAPI {
       this.led_states = ['off','off','off','off','off'];
       this.led_bit_mask = 0;
 
+      this.colorFilterTable = [];
+
+      this.color_P_initial = 0;
+
+      this.path_left_buffer = 0;
+      this.path_right_buffer = 0;
+
+      this.colorKoefs = [];
+
+
+
+      let j = 0;
+
+
+      for (j=0;j<4;j++){
+
+          this.colorKoefs[j] = {
+
+                Kr:0,
+                Kg:0,
+                Kb:0
+
+          }
+
+      }
+
+
+
       this.stopSearchProcess();
       this.stopDataRecievingProcess();
 
@@ -94,7 +132,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
          function (self){
 
-           console.log("let's get devices from device finder");
+      //     console.log("let's get devices from device finder");
             let devices:Array<InterfaceDevice> = getConnectedDevices();
 
             // if (self.ConnectedDevices.length != devices.length ){
@@ -128,7 +166,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
          var handleConnectedDevices = function (Devices,self:RobotControlAPI){
 
 
-           console.log("Handle connected devices.")
+      //     console.log("Handle connected devices.")
 
          if ((typeof(Devices)!== 'undefined'))  {
 
@@ -158,8 +196,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
                      }else{
 
-                     console.log("Device ID: " + device.getDeviceID()  + " " + "State:  " + device.getState() + " " + "State name: " + self.getStateNameByID(device.getState())
-                                   + " " + "Device serial: " + device.getSerialNumber() );
+                  //   console.log("Device ID: " + device.getDeviceID()  + " " + "State:  " + device.getState() + " " + "State name: " + self.getStateNameByID(device.getState())
+                  //                 + " " + "Device serial: " + device.getSerialNumber() );
 
                      }
 
@@ -198,7 +236,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
         if ((this.ConnectedRobots.length-1)>=robot_number){
 
 
-            return (this.ConnectedRobots[robot_number].getState() == DEVICE_STATES["DEVICE_IS_READY"])
+            return  ( (this.ConnectedRobots[robot_number].getState() == DEVICE_STATES["DEVICE_IS_READY"]) && ( typeof(this.SensorsData) != 'undefined' ) )
 
         }else{
 
@@ -264,6 +302,171 @@ export default class RobotControlAPI extends DeviceControlAPI {
           clearInterval(this.DataRecievingLoopInterval);
 
       }
+
+
+    }
+
+    colorAutoCorection(sensor_id:number){
+
+    if ( typeof(this.SensorsData) != 'undefined' ){
+
+      let rgb_array = this.SensorsData[`a${sensor_id}`];
+
+      let red    = rgb_array[0];
+      let green  = rgb_array[1];
+      let blue   = rgb_array[2];
+
+      let rgb_sum =  red + green + blue;
+
+
+
+      let Kr = 0; //koef for red channel
+      let Kg = 0; //koef for green channel
+      let Kb = 0; //koef for blue channel
+
+
+      Kr = rgb_sum / (3 * red);
+      Kg = rgb_sum / (3 * green);
+      Kb = rgb_sum / (3 * blue);
+
+      console.log(`colorAutoCorection: sensor_id: ${sensor_id} Kr: ${Kr} Kg: ${Kg} Kb: ${Kb}`);
+
+      this.colorKoefs[sensor_id].Kr = Kr;
+      this.colorKoefs[sensor_id].Kg = Kg;
+      this.colorKoefs[sensor_id].Kb = Kb;
+
+      this.color_P_initial  = red * Kr + green * Kg + blue * Kb;
+
+
+    }
+
+
+
+    }
+
+    setColorKoefs(sensor_id:number,red_koef:number, green_koef:number, blue_koef:number){
+
+      console.log(`setColorKoefs: sensor_id: ${sensor_id} red_koef: ${red_koef} green_koef: ${green_koef} blue_koef: ${blue_koef}`);
+
+        this.colorKoefs[sensor_id].Kr   =  red_koef / 100;
+        this.colorKoefs[sensor_id].Kg   =  green_koef / 100;
+        this.colorKoefs[sensor_id].Kb    =  blue_koef / 100;
+
+
+    }
+
+    getColorKoefs(sensor_id:number,koef_name:string){
+
+      switch (koef_name) {
+
+        case "red":
+
+            return this.colorKoefs[sensor_id].Kr.toFixed(2) * 100;
+
+        //  break;
+
+        case "green":
+
+          return this.colorKoefs[sensor_id].Kg.toFixed(2) * 100;
+
+        //  break;
+
+        case "blue":
+
+            return this.colorKoefs[sensor_id].Kb.toFixed(2) * 100;
+
+        //  break;
+
+        default:
+
+            return 0;
+
+      }
+
+
+
+    }
+
+
+    getColorCorrectedRawValues(sensor_id:number){
+
+      let rgb_arr = [0,0,0];
+
+      if ( typeof(this.SensorsData) != 'undefined' ){
+
+        rgb_arr[0] = this.SensorsData[`a${sensor_id}`][0] *  this.colorKoefs[sensor_id].Kr; //red
+        rgb_arr[1] = this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kg; //green
+        rgb_arr[2] = this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kb; //blue
+
+
+
+        return rgb_arr;
+
+      } else return rgb_arr;
+
+
+
+    }
+
+
+
+    setColorFilterTable(sensor_id:number, colorFilterTable:any ){
+
+            this.colorFilterTable[sensor_id] = colorFilterTable;
+
+    }
+
+
+
+    colorFilter(sensor_id:number){
+
+      const getColorFilterTableValue = function(value:string,type:string){
+
+            let arr = value.split("-");
+
+            if (type == "high"){
+
+              return arr[1];
+
+            }else return[0];
+
+      }
+
+      let red_channel      =  this.SensorsData[`a${sensor_id}`][0] *  this.colorKoefs[sensor_id].Kr;
+      let green_channel    =  this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kg;
+      let blue_channel     =  this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kb;
+
+
+
+
+        const colors_arr = {
+
+              "Red":[255,0,0],
+              "Magenta":[0,0,0],
+              "Yellow":[0,0,0],
+              "Green":[0,255,0],
+              "Blue":[0,0,255],
+              "Cyan":[0,0,0],
+              "Black":[0,0,0],
+              "Gray":[],
+              "White":[255,255,255]
+        }
+
+
+        for (var color in colors_arr) {
+
+          if (colors_arr.hasOwnProperty(color)) {
+
+
+                  if (this.colorFilterTable[sensor_id]){
+
+
+                  }
+
+          }
+
+        }
+
 
 
     }
@@ -420,7 +623,20 @@ turnLedOff(led_position:number,robot_number:number){
 
     if ( typeof(this.SensorsData) != 'undefined' ){
 
-        return this.SensorsData.path0;
+        if (!isNaN(this.SensorsData.path0)){
+
+          this.path_left_buffer = this.SensorsData.path0;
+
+          return this.SensorsData.path0;
+
+        }else{
+
+
+          return this.path_left_buffer;
+
+        }
+
+
 
     }else return -1;
 
@@ -431,7 +647,20 @@ turnLedOff(led_position:number,robot_number:number){
 
     if ( typeof(this.SensorsData) != 'undefined' ){
 
-        return this.SensorsData.path1;
+        if (!isNaN(this.SensorsData.path1)){
+
+          this.path_right_buffer = this.SensorsData.path1;
+
+          return this.SensorsData.path1;
+
+        }else{
+
+
+          return this.path_right_buffer;
+
+        }
+
+
 
     }else return -1;
 

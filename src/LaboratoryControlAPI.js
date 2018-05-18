@@ -296,7 +296,11 @@ islaboratoryButtonPressed(laboratory_number:number, button_number:number):boolea
 
           console.log(`islaboratoryButtonPressed button_number: ${button_number}`);
 
+          if ( typeof(this.SensorsData) != 'undefined' ){
+
         return   (this.SensorsData.d8_13 & (1 << (button_number-1)))?true:false;
+
+      }else return false;
 
     } else return false;
 
@@ -320,7 +324,12 @@ labDigitalPinState(laboratory_number:number, digital_pin:string):boolean{
 
           var pin  = Number(digital_pin.replace("D","")) - 8;
 
+
+        if ( typeof(this.SensorsData) != 'undefined' ){
+
           return   (this.SensorsData.d8_13 & (1 << (pin)))?true:false;
+
+        }else return false;
 
     } else return false;
 
@@ -701,7 +710,7 @@ getSensorData(sensor_name:string):number{
 
                   }else{
 
-                      light_value =   1.34 * this.SensorsData.a9;
+                      light_value =  Math.round(1.34 * this.SensorsData.a9);
 
                   }
 

@@ -448,18 +448,24 @@ function InterfaceDevice(port){
 
             /******/
 
-                  if (commands_stack.length >= 1){
-
-                    let command_object =  commands_stack.shift();
-
-                  let  commandToRun_local  = command_object.command;
-                  let  params_local        = command_object.params;
-                  let  fCallback_local     = command_object.fCallback;
-                  let  self                = command_object.self;
-
-                  self.command(commandToRun_local,params_local,fCallback_local);
-
-                  }
+                  // if (commands_stack.length >= 1){
+                  //
+                  // //  let command_object =  commands_stack.shift();
+                  //
+                  //   commands_stack.forEach(function(command_object,command_object_index){
+                  //
+                  //       console.log(`Shift strange: ${command_object.command.code} command_object_index: ${command_object_index}`);
+                  //
+                  //   } );
+                  //
+                  // let  commandToRun_local  = command_object.command;
+                  // let  params_local        = command_object.params;
+                  // let  fCallback_local     = command_object.fCallback;
+                  // let  self                = command_object.self;
+                  //
+                  // self.command(commandToRun_local,params_local,fCallback_local);
+                  //
+                  // }
 
             /******/
 
@@ -489,7 +495,18 @@ function InterfaceDevice(port){
    }
 
    var onSend = function(){
-      console.log(LOG + "buffer sent.");
+
+     if ( commandToRun.code != null){
+
+          console.log(LOG + "buffer sent." + "command: " + commandToRun.code );
+
+     }else{
+
+
+            console.log(LOG + "buffer sent.");
+
+     }
+
 
       time1 = Date.now();
       time_delta = time1 - time2;
@@ -522,7 +539,11 @@ function InterfaceDevice(port){
       var buf=new ArrayBuffer(1);
       var bufView=new Uint8Array(buf);
       bufView[0] = 32;
-      chrome.serial.send(iConnectionId, buf, onSend);
+
+    //  for(var i = 0; i < 1000; i++){
+
+         chrome.serial.send(iConnectionId, buf, onSend);
+    //  }
       state = DEVICE_STATES["TEST_DATA_SENT"];
    }
 
@@ -590,13 +611,15 @@ function InterfaceDevice(port){
 
       iConnectionId = connectionInfo.connectionId;
 
-      chrome.serial.flush(iConnectionId, onFlush);
+        console.log(LOG + "iConnectionId:" + iConnectionId);
+
+  //    chrome.serial.flush(iConnectionId, onFlush);
 
       chrome.serial.onReceive.addListener(onReceiveCallback);
 
       chrome.serial.onReceiveError.addListener(onErrorCallback);
 
-    setTimeout(checkSerialNumber, 300);
+     setTimeout(checkSerialNumber, 300);
 
       automaticStopCheckingSerialNumberTimeout =  setTimeout(function(){
 
@@ -670,15 +693,21 @@ function InterfaceDevice(port){
     //  if(commandToRun != null) return;
     //  commandToRun = command;
 
-    var params = params;
+
     var fCallback = fCallback;
 
-    // command_try_send_time2 = Date.now();
-    //
+    var command_local = command;
+    var params_local  = params;
+
+    command_try_send_time2 = Date.now();
+
     // if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT ){
     //
     //
-    //       chrome.serial.flush(iConnectionId, onFlush);
+    //     //  chrome.serial.flush(iConnectionId, onFlush);
+    //
+    //     commandToRun = null;
+    //
     //
     // }
 
@@ -689,6 +718,12 @@ function InterfaceDevice(port){
              console.log(`buffering commands1... buffer length: ${commands_stack.length}`);
 
             commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
+
+              commands_stack.forEach(function(command_object,command_object_index){
+
+                  console.log(`After push: ${command_object.command.code} command_object_index1: ${command_object_index}`);
+
+              } );
 
         }
 
@@ -706,20 +741,36 @@ function InterfaceDevice(port){
 
           commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
 
+
+          commands_stack.forEach(function(command_object,command_object_index){
+
+              console.log(`Before shift: ${command_object.command.code} command_object_index2: ${command_object_index}`);
+
+          } );
+
         }
 
 
 
-          let command_object =  commands_stack.shift();
+          let command_object          =  commands_stack.shift();
 
-          commandToRun  = command_object.command;
-          params        = command_object.params;
-          fCallback     = command_object.fCallback;
+          commandToRun                = command_object.command;
+          command_local               = command_object.command; //Suprise!!!
+          params_local                = command_object.params; //Surprise!!!
+          fCallback                   = command_object.fCallback;
+
+          commands_stack.forEach(function(command_object,command_object_index){
+
+              console.log(`After shift: ${command_object.command.code} command_object_index3: ${command_object_index}`);
+
+          } );
 
 
       }else{
 
-          commandToRun = command;
+          commandToRun  = command;
+          command_local = command;
+          params_local  = params;
 
       }
 
@@ -730,12 +781,12 @@ function InterfaceDevice(port){
       // },500)
 
 
-    //   command_try_send_time1 = Date.now();
+      command_try_send_time1 = Date.now();
 
       bufIncomingData = new Uint8Array();
-      var buf=new ArrayBuffer(command.code.length + params.length + 1);
+      var buf=new ArrayBuffer(command_local.code.length + params_local.length + 1);
       var bufView=new Uint8Array(buf);
-      var bufCommand = new TextEncoder("utf-8").encode(command.code);
+      var bufCommand = new TextEncoder("utf-8").encode(command_local.code);
       bufView.set(bufCommand);
 
       var iParamOffset = 0;
@@ -750,12 +801,14 @@ function InterfaceDevice(port){
 
       chrome.serial.send(iConnectionId, buf, onSend);
 
+      console.log(`sending command: ${command_local.code}`)
+
       //for #
       var iWaitingNew = 1;
 
       //all params
-      Object.keys(command.response).forEach(function (sField){
-         switch(command.response[sField]){
+      Object.keys(command_local.response).forEach(function (sField){
+         switch(command_local.response[sField]){
             case "uint2":{
                iWaitingNew += 2;
                break;
