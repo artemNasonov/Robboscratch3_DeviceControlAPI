@@ -496,7 +496,7 @@ function InterfaceDevice(port){
 
    var onSend = function(){
 
-     if ( commandToRun.code != null){
+     if ( commandToRun != null){
 
           console.log(LOG + "buffer sent." + "command: " + commandToRun.code );
 
@@ -790,7 +790,7 @@ function InterfaceDevice(port){
       bufView.set(bufCommand);
 
       var iParamOffset = 0;
-      params.forEach(function(param){
+      params_local.forEach(function(param){
          bufView[bufCommand.length + iParamOffset] = param;
          iParamOffset++;
       });
