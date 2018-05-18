@@ -101,9 +101,9 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
           this.colorKoefs[j] = {
 
-                Kr:0,
-                Kg:0,
-                Kb:0
+                Kr:1,
+                Kg:1,
+                Kb:1
 
           }
 
@@ -312,9 +312,9 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       let rgb_array = this.SensorsData[`a${sensor_id}`];
 
-      let red    = rgb_array[0];
-      let green  = rgb_array[1];
-      let blue   = rgb_array[2];
+      let red    = rgb_array[1];
+      let green  = rgb_array[2];
+      let blue   = rgb_array[3];
 
       let rgb_sum =  red + green + blue;
 
@@ -394,9 +394,9 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       if ( typeof(this.SensorsData) != 'undefined' ){
 
-        rgb_arr[0] = this.SensorsData[`a${sensor_id}`][0] *  this.colorKoefs[sensor_id].Kr; //red
-        rgb_arr[1] = this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kg; //green
-        rgb_arr[2] = this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kb; //blue
+        rgb_arr[0] = this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kr; //red
+        rgb_arr[1] = this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kg; //green
+        rgb_arr[2] = this.SensorsData[`a${sensor_id}`][3] *  this.colorKoefs[sensor_id].Kb; //blue
 
 
 
@@ -426,30 +426,42 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
             if (type == "high"){
 
-              return arr[1];
+              return Number(arr[1]);
 
-            }else return[0];
+            }else return Number([0]);
 
       }
 
-      let red_channel      =  this.SensorsData[`a${sensor_id}`][0] *  this.colorKoefs[sensor_id].Kr;
-      let green_channel    =  this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kg;
-      let blue_channel     =  this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kb;
+      let red_channel      =  this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kr;
+      let green_channel    =  this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kg;
+      let blue_channel     =  this.SensorsData[`a${sensor_id}`][3] *  this.colorKoefs[sensor_id].Kb;
+
+      let sum = red_channel + green_channel + blue_channel;
+
+      let red_channel_percent       = red_channel     / sum;
+      let green_channel_percent     = green_channel  / sum;
+      let blue_channel_percent      = blue_channel  /  sum;
+
+
+      if (sum > this.color_P_initial){
+
+          this.color_P_initial = sum;
+      }
 
 
 
 
         const colors_arr = {
 
-              "Red":[255,0,0],
-              "Magenta":[0,0,0],
-              "Yellow":[0,0,0],
-              "Green":[0,255,0],
-              "Blue":[0,0,255],
-              "Cyan":[0,0,0],
-              "Black":[0,0,0],
-              "Gray":[],
-              "White":[255,255,255]
+              "red":[255,0,0],
+              "magenta":[0,0,0],
+              "yellow":[0,0,0],
+              "green":[0,255,0],
+              "blue":[0,0,255],
+              "cyan":[0,0,0],
+              "black":[0,0,0],
+              "gray":[0,0,0],
+              "white":[255,255,255]
         }
 
 
@@ -458,8 +470,17 @@ export default class RobotControlAPI extends DeviceControlAPI {
           if (colors_arr.hasOwnProperty(color)) {
 
 
-                  if (this.colorFilterTable[sensor_id]){
+                  if ( (red_channel_percent > getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"low") ) && (red_channel_percent < getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"high"))
 
+                    && (green_channel_percent > getColorFilterTableValue(this.colorFilterTable[sensor_id][color].G,"low") ) && (green_channel_percent < getColorFilterTableValue(this.colorFilterTable[sensor_id][color].G,"high"))
+
+                    && (blue_channel_percent > getColorFilterTableValue(this.colorFilterTable[sensor_id][color].B,"low") ) && (blue_channel_percent < getColorFilterTableValue(this.colorFilterTable[sensor_id][color].B,"high"))
+
+                    && (sum / this.color_P_initial > getColorFilterTableValue(this.colorFilterTable[sensor_id][color].Bright,"low") ) && (sum / this.color_P_initial< getColorFilterTableValue(this.colorFilterTable[sensor_id][color].Bright,"high"))
+
+                      ){
+
+                            return colors_arr[color];
 
                   }
 

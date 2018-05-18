@@ -728,7 +728,7 @@ getSensorData(sensor_name:string):number{
 
                     var sound_value;
 
-                    sound_value =   Math.round((this.SensorsData.a10 * 256 + this.SensorsData.a11) / 1023 * 100);
+                    sound_value =   Math.round((this.SensorsData.a6 * 256 + this.SensorsData.a7) / 1023 * 100);
 
                     return sound_value;
 
