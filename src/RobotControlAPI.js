@@ -83,7 +83,78 @@ export default class RobotControlAPI extends DeviceControlAPI {
       this.led_states = ['off','off','off','off','off'];
       this.led_bit_mask = 0;
 
-      this.colorFilterTable = [];
+      this.colorFilterTable = [{},{},{},{},{}];
+
+    let i = 0;
+
+    for (i=0;i<4;i++){
+
+        this.colorFilterTable[i] = {
+
+             "red": {
+              "R": "20-30",
+              "G": "20-30",
+              "B": "20-30",
+              "Bright": "20-30"
+             },
+             "magenta": {
+              "R": "20-30",
+              "G": "20-30",
+              "B": "20-30",
+              "Bright": "20-30"
+             },
+             "yellow": {
+              "R": "20-30",
+              "G": "20-30",
+              "B": "20-30",
+              "Bright": "20-30"
+             },
+             "green": {
+              "R": "20-30",
+              "G": "20-30",
+              "B": "20-30",
+              "Bright": "20-30"
+             },
+             "blue": {
+              "R": "20-30",
+              "G": "20-30",
+              "B": "20-30",
+              "Bright": "20-30"
+             },
+             "cyan": {
+              "R": "20-30",
+              "G": "20-30",
+              "B": "20-30",
+              "Bright": "20-30"
+             },
+             "custom": {
+              "R": "20-30",
+              "G": "20-30",
+              "B": "20-30",
+              "Bright": "20-30"
+             },
+             "black": {
+              "R": "20-30",
+              "G": "20-30",
+              "B": "20-30",
+              "Bright": "20-30"
+             },
+             "gray": {
+              "R": "20-30",
+              "G": "20-30",
+              "B": "20-30",
+              "Bright": "20-30"
+             },
+             "white": {
+              "R": "20-30",
+              "G": "20-30",
+              "B": "20-30",
+              "Bright": "20-30"
+             }
+};
+
+    }
+
 
       this.color_P_initial = 0;
 
@@ -428,7 +499,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
               return Number(arr[1]);
 
-            }else return Number([0]);
+            }else return Number(arr[0]);
 
       }
 
@@ -438,9 +509,9 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       let sum = red_channel + green_channel + blue_channel;
 
-      let red_channel_percent       = red_channel     / sum;
-      let green_channel_percent     = green_channel  / sum;
-      let blue_channel_percent      = blue_channel  /  sum;
+      let red_channel_percent       = red_channel     / sum * 100;
+      let green_channel_percent     = green_channel  / sum  * 100;
+      let blue_channel_percent      = blue_channel  /  sum  * 100;
 
 
       if (sum > this.color_P_initial){
@@ -472,20 +543,29 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
                   let table_object = this.colorFilterTable[sensor_id];
 
+                  let red     =  Math.floor(red_channel_percent * 1000);
+                  let green   =  Math.floor(green_channel_percent * 1000);
+                  let blue    =  Math.floor(blue_channel_percent * 1000);
+                  let bright  =  Math.floor(sum / this.color_P_initial * 100 * 1000);
 
-                  if ( (red_channel_percent > getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"low") ) && (red_channel_percent < getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"high"))
+                  let red_low   =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"low") * 1000);
+                  let red_high  =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"high") * 1000);
 
-                    && (green_channel_percent > getColorFilterTableValue(this.colorFilterTable[sensor_id][color].G,"low") ) && (green_channel_percent < getColorFilterTableValue(this.colorFilterTable[sensor_id][color].G,"high"))
+                  let green_low  =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].G,"low") * 1000);
+                  let green_high =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].G,"high") * 1000);
 
-                    && (blue_channel_percent > getColorFilterTableValue(this.colorFilterTable[sensor_id][color].B,"low") ) && (blue_channel_percent < getColorFilterTableValue(this.colorFilterTable[sensor_id][color].B,"high"))
+                  let blue_low   =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].B,"low") * 1000);
+                  let blue_high  =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].B,"high") * 1000);
 
-                    && (sum / this.color_P_initial > getColorFilterTableValue(this.colorFilterTable[sensor_id][color].Bright,"low") ) && (sum / this.color_P_initial< getColorFilterTableValue(this.colorFilterTable[sensor_id][color].Bright,"high"))
+                  let bright_low   =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].Bright,"low") * 1000);
+                  let bright_high  =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].Bright,"high") * 1000);
 
-                      ){
 
-                            return colors_arr[color];
+                  if ( (red > red_low) && (red < red_high) && (green > green_low)  && (green < green_high)  && (blue > blue_low) && (blue < blue_high) && (bright > bright_low)  && (bright < bright_high)){
 
-                  }
+                        return colors_arr[color];
+
+                  }else return [0,0,0];
 
           }
 
