@@ -732,6 +732,13 @@ function InterfaceDevice(port){
 
       }
 
+
+      if (commands_stack.length > 15){
+
+            commands_stack = [];
+
+      }
+
       if (commands_stack.length > 0){
 
 

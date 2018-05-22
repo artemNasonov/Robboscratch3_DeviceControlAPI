@@ -87,7 +87,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
     let i = 0;
 
-    for (i=0;i<4;i++){
+    for (i=0;i<5;i++){
 
         this.colorFilterTable[i] = {
 
@@ -161,6 +161,18 @@ export default class RobotControlAPI extends DeviceControlAPI {
       this.path_left_buffer = 0;
       this.path_right_buffer = 0;
 
+      this.leftPath     = 0;
+      this.leftPathNew  = 0;
+      this.leftPathCorrected = 0;
+      this.leftPathMultiplier = 0;
+      this.leftPathCorrection = 0;
+
+      this.rightPath    = 0;
+      this.rightPathNew = 0;
+      this.rightPathCorrected = 0;
+      this.rightPathMultiplier = 0;
+      this.rightPathCorrection = 0;
+
       this.colorKoefs = [];
 
 
@@ -168,7 +180,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
       let j = 0;
 
 
-      for (j=0;j<4;j++){
+      for (j=0;j<5;j++){
 
           this.colorKoefs[j] = {
 
@@ -487,6 +499,12 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
     }
 
+    getColorFilterTable(sensor_id:number){
+
+
+            return this.colorFilterTable[sensor_id];
+    }
+
 
 
     colorFilter(sensor_id:number){
@@ -565,7 +583,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
                         return colors_arr[color];
 
-                  }else return [0,0,0];
+                  }else return [-1,-1,-1];
 
           }
 
@@ -731,16 +749,28 @@ turnLedOff(led_position:number,robot_number:number){
 
           this.path_left_buffer = this.SensorsData.path0;
 
-          return this.SensorsData.path0;
+        //  return this.SensorsData.path0;
 
         }else{
 
 
-          return this.path_left_buffer;
+        //  return this.path_left_buffer;
 
         }
 
+        this.leftPathNew =   this.path_left_buffer;
 
+        if (this.leftPathNew < this.leftPath){
+
+              this.leftPathMultiplier++;
+        }
+
+        this.leftPath = this.leftPathNew;
+
+
+      this.leftPathCorrected  = (65536 * this.leftPathMultiplier)  + this.leftPath - this.leftPathCorrection;
+
+        return this.leftPathCorrected;
 
     }else return -1;
 
@@ -751,22 +781,41 @@ turnLedOff(led_position:number,robot_number:number){
 
     if ( typeof(this.SensorsData) != 'undefined' ){
 
-        if (!isNaN(this.SensorsData.path1)){
+        if (!isNaN(this.SensorsData.path0)){
 
           this.path_right_buffer = this.SensorsData.path1;
 
-          return this.SensorsData.path1;
+        //  return this.SensorsData.path0;
 
         }else{
 
 
-          return this.path_right_buffer;
+        //  return this.path_left_buffer;
 
         }
 
+        this.rightPathNew =   this.path_right_buffer;
 
+        if (this.rightPathNew < this.rightPath){
+
+              this.leftPathMultiplier++;
+        }
+
+        this.rightPath = this.rightPathNew;
+
+
+      this.rightPathCorrected  = (65536 * this.rightPathMultiplier)  + this.rightPath - this.rightPathCorrection;
+
+      return this.rightPathCorrected;
 
     }else return -1;
+
+  }
+
+  resetTripMeters(){
+
+    this.leftPathCorrection  = (65536 * this.leftPathMultiplier)  + this.leftPath;
+    this.rightPathCorrection = (65536 * this.rightPathMultiplier) + this.rightPath;
 
   }
 
@@ -787,9 +836,37 @@ turnLedOff(led_position:number,robot_number:number){
 
   }
 
+  // getSensorData(sensor_index:number){
+  //
+  //     return this.SensorsData[`a${sensor_index}`];
+  //
+  // }
+
   getSensorData(sensor_index:number){
 
-      return this.SensorsData[`a${sensor_index}`];
+      switch (this.sensors_array[sensor_index]) {
+
+        case 1: //line
+        case 2: //led
+        case 3: //light
+        case 4://touch
+        case 5://proximity
+
+              return Math.round(this.SensorsData[`a${sensor_index}`][3] / 2.55);
+
+        //  break;
+
+        case 6: //proximity
+
+              return (this.SensorsData[`a${sensor_index}`][2] * 256 + this.SensorsData[`a${sensor_index}`][3] );
+
+        //break;
+
+        default:
+
+            return  -1;
+
+      }
 
   }
 
