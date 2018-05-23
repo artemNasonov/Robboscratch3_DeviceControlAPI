@@ -74,125 +74,10 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       super();
 
-      this.RobotSensorsDataRecievingState = SensorsDataRecievingStates.STOPED;
-      this.ConnectedDevices = [];
-      this.ConnectedRobots = [];
-      this.ConnectedRobotsSerials = [];
-      this.sensors_array = [0,0,0,0,0];
-      this.led_positions = [1,2,4,8,16];
-      this.led_states = ['off','off','off','off','off'];
-      this.led_bit_mask = 0;
 
-      this.colorFilterTable = [{},{},{},{},{}];
+      this.init_all();
 
-    let i = 0;
-
-    for (i=0;i<5;i++){
-
-        this.colorFilterTable[i] = {
-
-             "red": {
-              "R": "20-30",
-              "G": "20-30",
-              "B": "20-30",
-              "Bright": "20-30"
-             },
-             "magenta": {
-              "R": "20-30",
-              "G": "20-30",
-              "B": "20-30",
-              "Bright": "20-30"
-             },
-             "yellow": {
-              "R": "20-30",
-              "G": "20-30",
-              "B": "20-30",
-              "Bright": "20-30"
-             },
-             "green": {
-              "R": "20-30",
-              "G": "20-30",
-              "B": "20-30",
-              "Bright": "20-30"
-             },
-             "blue": {
-              "R": "20-30",
-              "G": "20-30",
-              "B": "20-30",
-              "Bright": "20-30"
-             },
-             "cyan": {
-              "R": "20-30",
-              "G": "20-30",
-              "B": "20-30",
-              "Bright": "20-30"
-             },
-             "custom": {
-              "R": "20-30",
-              "G": "20-30",
-              "B": "20-30",
-              "Bright": "20-30"
-             },
-             "black": {
-              "R": "20-30",
-              "G": "20-30",
-              "B": "20-30",
-              "Bright": "20-30"
-             },
-             "gray": {
-              "R": "20-30",
-              "G": "20-30",
-              "B": "20-30",
-              "Bright": "20-30"
-             },
-             "white": {
-              "R": "20-30",
-              "G": "20-30",
-              "B": "20-30",
-              "Bright": "20-30"
-             }
-};
-
-    }
-
-
-      this.color_P_initial = 0;
-
-      this.path_left_buffer = 0;
-      this.path_right_buffer = 0;
-
-      this.leftPath     = 0;
-      this.leftPathNew  = 0;
-      this.leftPathCorrected = 0;
-      this.leftPathMultiplier = 0;
-      this.leftPathCorrection = 0;
-
-      this.rightPath    = 0;
-      this.rightPathNew = 0;
-      this.rightPathCorrected = 0;
-      this.rightPathMultiplier = 0;
-      this.rightPathCorrection = 0;
-
-      this.colorKoefs = [];
-
-
-
-      let j = 0;
-
-
-      for (j=0;j<5;j++){
-
-          this.colorKoefs[j] = {
-
-                Kr:1,
-                Kg:1,
-                Kb:1
-
-          }
-
-      }
-
-
+      this.searching_in_progress = false;
 
       this.stopSearchProcess();
       this.stopDataRecievingProcess();
@@ -201,11 +86,138 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
 }
 
+
+  init_all(){
+
+
+    this.RobotSensorsDataRecievingState = SensorsDataRecievingStates.STOPED;
+    this.ConnectedDevices = [];
+    this.ConnectedRobots = [];
+    this.ConnectedRobotsSerials = [];
+    this.sensors_array = [0,0,0,0,0];
+    this.led_positions = [1,2,4,8,16];
+    this.led_states = ['off','off','off','off','off'];
+    this.led_bit_mask = 0;
+
+    this.colorFilterTable = [{},{},{},{},{}];
+
+  let i = 0;
+
+  for (i=0;i<5;i++){
+
+      this.colorFilterTable[i] = {
+
+           "red": {
+            "R": "20-30",
+            "G": "20-30",
+            "B": "20-30",
+            "Bright": "20-30"
+           },
+           "magenta": {
+            "R": "20-30",
+            "G": "20-30",
+            "B": "20-30",
+            "Bright": "20-30"
+           },
+           "yellow": {
+            "R": "20-30",
+            "G": "20-30",
+            "B": "20-30",
+            "Bright": "20-30"
+           },
+           "green": {
+            "R": "20-30",
+            "G": "20-30",
+            "B": "20-30",
+            "Bright": "20-30"
+           },
+           "blue": {
+            "R": "20-30",
+            "G": "20-30",
+            "B": "20-30",
+            "Bright": "20-30"
+           },
+           "cyan": {
+            "R": "20-30",
+            "G": "20-30",
+            "B": "20-30",
+            "Bright": "20-30"
+           },
+           "custom": {
+            "R": "20-30",
+            "G": "20-30",
+            "B": "20-30",
+            "Bright": "20-30"
+           },
+           "black": {
+            "R": "20-30",
+            "G": "20-30",
+            "B": "20-30",
+            "Bright": "20-30"
+           },
+           "gray": {
+            "R": "20-30",
+            "G": "20-30",
+            "B": "20-30",
+            "Bright": "20-30"
+           },
+           "white": {
+            "R": "20-30",
+            "G": "20-30",
+            "B": "20-30",
+            "Bright": "20-30"
+           }
+};
+
+  }
+
+
+    this.color_P_initial = 0;
+
+    this.path_left_buffer = 0;
+    this.path_right_buffer = 0;
+
+    this.leftPath     = 0;
+    this.leftPathNew  = 0;
+    this.leftPathCorrected = 0;
+    this.leftPathMultiplier = 0;
+    this.leftPathCorrection = 0;
+
+    this.rightPath    = 0;
+    this.rightPathNew = 0;
+    this.rightPathCorrected = 0;
+    this.rightPathMultiplier = 0;
+    this.rightPathCorrection = 0;
+
+    this.colorKoefs = [];
+
+
+
+
+
+    let j = 0;
+
+
+    for (j=0;j<5;j++){
+
+        this.colorKoefs[j] = {
+
+              Kr:1,
+              Kg:1,
+              Kb:1
+
+        }
+
+    }
+
+  }
+
     searchRobotDevices(){
 
 
-    this.ConnectedRobots = [];
-    this.ConnectedRobotsSerials = [];
+      this.init_all();
+
+      this.searching_in_progress = true;
 
 
   //    searchDevices();
@@ -237,6 +249,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
              console.log("Stop devices handle process.");
              clearInterval(self.handleConnectedDevicesInterval);
+             self.searching_in_progress = false;
 
 
 
@@ -332,6 +345,11 @@ export default class RobotControlAPI extends DeviceControlAPI {
     }
 
 
+    isRobotSearching():boolean{
+
+          return   this.searching_in_progress;
+    }
+
 
     getStateNameByID(id:number):string{
 
@@ -357,6 +375,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
         clearInterval(this.handleConnectedDevicesInterval);
         clearTimeout(this.automaticDeviceHandleProcessStopTimeout);
+        this.searching_in_progress = false;
 
         if ( typeof (this.ConnectedDevices) != 'undefined'){
 
@@ -543,13 +562,13 @@ export default class RobotControlAPI extends DeviceControlAPI {
         const colors_arr = {
 
               "red":[255,0,0],
-              "magenta":[0,0,0],
-              "yellow":[0,0,0],
+              "magenta":[255,0,255],
+              "yellow":[255,255,0],
               "green":[0,255,0],
               "blue":[0,0,255],
-              "cyan":[0,0,0],
+              "cyan":[0,255,255],
               "black":[0,0,0],
-              "gray":[0,0,0],
+              "gray":[128,128,128],
               "white":[255,255,255]
         }
 

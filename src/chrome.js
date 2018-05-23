@@ -483,12 +483,37 @@ function InterfaceDevice(port){
 
           console.error(LOG + "error: " + info.error);
 
-          state = DEVICE_STATES["DEVICE_ERROR"];
+          if (info.error == "break"){
 
-          chrome.serial.disconnect(iConnectionId, function(result){
 
-                 console.log("Connection closed: " + result);
-          });
+            // chrome.serial.clearBreak(iConnectionId, function (result){
+            //
+            //       console.error(LOG + "clear break:" + result);
+            //
+            //
+            // })
+
+          }else if ( (info.error == "overrun") || (info.error == "frame_error") ) {
+
+
+                console.error(LOG + "Ignore these errors!");
+
+
+          }else{
+
+            state = DEVICE_STATES["DEVICE_ERROR"];
+
+            chrome.serial.disconnect(iConnectionId, function(result){
+
+                   console.log("Connection closed: " + result);
+            });
+
+
+          }
+
+
+
+
 
       }
 
@@ -611,13 +636,21 @@ function InterfaceDevice(port){
 
       iConnectionId = connectionInfo.connectionId;
 
+      if (typeof(iConnectionId) == 'undefined'){
+
+            state = DEVICE_STATES["DEVICE_ERROR"];
+
+      }
+
         console.log(LOG + "iConnectionId:" + iConnectionId);
+
+
 
   //    chrome.serial.flush(iConnectionId, onFlush);
 
       chrome.serial.onReceive.addListener(onReceiveCallback);
 
-      chrome.serial.onReceiveError.addListener(onErrorCallback);
+  //    chrome.serial.onReceiveError.addListener(onErrorCallback);
 
      setTimeout(checkSerialNumber, 300);
 
@@ -648,15 +681,15 @@ function InterfaceDevice(port){
 
        clearTimeout(automaticStopCheckingSerialNumberTimeout);
 
-       if (state != DEVICE_STATES["DEVICE_ERROR"]){
+       if ( (state != DEVICE_STATES["DEVICE_ERROR"]) && (  iConnectionId != null) ) {
 
 
-         // chrome.serial.disconnect(iConnectionId, function(result){
-         //
-         //        console.log("Connection closed: " + result);
-         //
-         //        iConnectionId = null;
-         // });
+         chrome.serial.disconnect(iConnectionId, function(result){
+
+                console.log("Connection closed: " + result);
+
+                iConnectionId = null;
+         });
 
        }
 
@@ -666,6 +699,11 @@ function InterfaceDevice(port){
 
 
    }
+
+
+    // chrome.serial.onReceive.addListener(onReceiveCallback);
+    //
+     chrome.serial.onReceiveError.addListener(onErrorCallback);
 
 
    chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);

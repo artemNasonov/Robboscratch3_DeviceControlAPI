@@ -75,21 +75,9 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
 
     super();
 
-    this.LaboratorySensorsDataRecievingState = SensorsDataRecievingStates.STOPED;
-    this.ConnectedDevices = [];
-    this.ConnectedLaboratories = [];
-    this.ConnectedLaboratoriesSerials = [];
+    this.searching_in_progress = false;
 
-    this.led_states = ['off','off','off','off','off','off','off','off'];
-    this.led_bit_mask = 0;
-
-    this.led_color_states = ['off','off','off'];
-    this.led_color_bit_mask = 0;
-
-    this.digital_pins_states = ['off','off','off','off','off','off'];
-    this.digital_pins_bit_mask = 0;
-
-    this.lab_sensor_types = [];
+    this.init_all();
 
 
     this.stopSearchProcess();
@@ -99,11 +87,36 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
 
 }
 
+    init_all(){
+
+      this.LaboratorySensorsDataRecievingState = SensorsDataRecievingStates.STOPED;
+      this.ConnectedDevices = [];
+      this.ConnectedLaboratories = [];
+      this.ConnectedLaboratoriesSerials = [];
+
+      this.led_states = ['off','off','off','off','off','off','off','off'];
+      this.led_bit_mask = 0;
+
+      this.led_color_states = ['off','off','off'];
+      this.led_color_bit_mask = 0;
+
+      this.digital_pins_states = ['off','off','off','off','off','off'];
+      this.digital_pins_bit_mask = 0;
+
+      this.lab_sensor_types = [];
+
+
+    }
+
 searchLaboratoryDevices(){
 
+  this.searching_in_progress = true;
 
-this.ConnectedLaboratories = [];
-this.ConnectedLaboratoriesSerials = [];
+
+// this.ConnectedLaboratories = [];
+// this.ConnectedLaboratoriesSerials = [];
+
+this.init_all();
 
 
 //  searchDevices();
@@ -135,7 +148,7 @@ this.ConnectedLaboratoriesSerials = [];
 
          console.log("Stop devices handle process.");
          clearInterval(self.handleConnectedDevicesInterval);
-
+         self.searching_in_progress = false;
 
 
      }  ,DEVICE_HANDLE_TIMEOUT,this);
@@ -215,12 +228,14 @@ stopSearchProcess(){
 
     clearInterval(this.handleConnectedDevicesInterval);
     clearTimeout(this.automaticDeviceHandleProcessStopTimeout);
+    this.searching_in_progress = false;
 
     if ( typeof (this.ConnectedDevices) != 'undefined'){
 
           this.ConnectedDevices.forEach(function(device:InterfaceDevice){
 
                 device.stopCheckingSerialNumber();
+
 
           });
 
@@ -266,6 +281,11 @@ isLaboratoryConnected(laboratory_number:number):boolean{
 
 
 
+}
+
+isLaboratorySearching():boolean{
+
+      return   this.searching_in_progress;
 }
 
 
