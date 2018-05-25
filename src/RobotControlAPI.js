@@ -3,7 +3,7 @@
 
 import DeviceControlAPI from './DeviceControlAPI';
 //import RobotSensorsData from './RobotSensorsData';
-import {InterfaceDevice,searchDevices,getConnectedDevices,DEVICES,DEVICE_STATES} from './chrome';
+import {InterfaceDevice,searchDevices,getConnectedDevices,pushConnectedDevices,DEVICES,DEVICE_STATES} from './chrome';
 
 
 const DEVICE_HANDLE_TIMEOUT:number = 1 * 60 * 1000;
@@ -68,6 +68,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
   led_bit_mask:number;
 
+
+
     constructor(){
 
 
@@ -78,6 +80,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
       this.init_all();
 
       this.searching_in_progress = false;
+      this.previousState = null;
 
       this.stopSearchProcess();
       this.stopDataRecievingProcess();
@@ -85,6 +88,85 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
 
 }
+
+     //Автопереподключение при потере связи с устройсвом
+      auto_reconnect(){
+
+        console.log(`auto reconnect`);
+
+          //  this.autoReconnectInterval = setInterval(function(){
+
+              let devices = [];
+              let connectedDevices = [];
+              var local_self = this;
+
+
+              var onGetDevices = function(ports) {
+
+                var self = local_self;
+
+                for (var i=0; i<ports.length; i++) {
+                  console.log(ports[i].path);
+                   devices.push(ports[i]);
+                }
+
+                  connectedDevices = getConnectedDevices();
+
+                  devices.forEach(function(device,device_index){
+
+                    if (device_index <= (connectedDevices.length - 1) ){
+
+
+                      /*
+                          При переподключении пробуем найти  свой старый порт и подключиться к нему.
+
+                      */
+
+
+                        //Проверяем, что имена уже сохранённого порта и просматриваемого порта совпадают  //Проверяем, что имеем дело с роботом.
+                      if ( (device.path == connectedDevices[device_index].getPortName()) &&  (connectedDevices[device_index].getDeviceID() == 0) ){
+
+
+                            console.log(`Trying to reconnect to the already known port: ${device.path}`);
+                          //  let d =  new InterfaceDevice(device);
+                            connectedDevices[device_index].try_to_reconnect();
+                            self.searchRobotDevices();
+                            self.searching_in_progress = true;
+
+                      } else self.searching_in_progress = false;
+
+                    }
+
+
+
+                  });
+
+                  /*
+                          Если устройство перехало на новый порт, то пробуем подключиться к новому порту.
+                          Определяем, что устройство переехало пуём сравнения длины массива уже подключённых устройств и вновь полученного массива устройств.
+
+                  */
+
+                  if (devices.length > connectedDevices.length){
+
+                          console.log(`Device maybe moved to the new port: ${devices[connectedDevices.length].path} Trying to reconnect.`);
+                        let d = new InterfaceDevice(devices[connectedDevices.length]); // TODO: Не совсем корректно : connectedDevices.length. Нужно по-другому
+                        pushConnectedDevices(d);
+                        this.searchRobotDevices();
+                        this.searching_in_progress = true;
+
+                  } else this.searching_in_progress = false;
+
+
+              }
+
+            chrome.serial.getDevices(onGetDevices);
+
+
+
+          //  },300);
+
+      }
 
 
   init_all(){
@@ -100,6 +182,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
     this.led_bit_mask = 0;
 
     this.colorFilterTable = [{},{},{},{},{}];
+
+    this.dataRecieveTime = 0;
 
   let i = 0;
 
@@ -273,12 +357,14 @@ export default class RobotControlAPI extends DeviceControlAPI {
                    function (device:InterfaceDevice){
 
 
-                     if(device.getDeviceID() == 0 && device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+                     if((device.getDeviceID() == 0 ) && (device.getState() == DEVICE_STATES["DEVICE_IS_READY"])){
 
 
                        if (self.ConnectedRobotsSerials.indexOf(device.getSerialNumber()) == -1 ){
 
                          console.log("We have new ready robot!!!");
+
+                      //   self.searching_in_progress = false;
 
                          console.log("Robot serial: " + device.getSerialNumber());
 
@@ -326,21 +412,39 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
     isRobotConnected(robot_number:number):boolean{
 
+        let is_connected = false;
+
+        if ((Date.now() - this.dataRecieveTime) > (1000 * 5)){
+
+           this.SensorsData = undefined;
+        }
 
         //  return ((this.ConnectedRobots.length-1)>=robot_number)?true:false;
 
         if ((this.ConnectedRobots.length-1)>=robot_number){
 
 
-            return  ( (this.ConnectedRobots[robot_number].getState() == DEVICE_STATES["DEVICE_IS_READY"]) && ( typeof(this.SensorsData) != 'undefined' ) )
+            is_connected =   ( (this.ConnectedRobots[robot_number].getState() == DEVICE_STATES["DEVICE_IS_READY"]) && ( typeof(this.SensorsData) != 'undefined' ) && (this.SensorsData != null) )
 
         }else{
 
-              return false;
+              is_connected =  false;
+
+        }
+
+        if ((this.previousState == true) && (this.previousState != is_connected) && (!this.searching_in_progress)){
+
+              this.auto_reconnect();
+
+        }else{
+
+              this.previousState  = is_connected;
 
         }
 
 
+
+        return is_connected;
 
     }
 
@@ -353,7 +457,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
     getStateNameByID(id:number):string{
 
-        const DEVICE_STATE_NANES: [string,string,string,string,string,string,string,string] = ["INITED","OPENED","TEST_DATA_SENT","RUBBISH","SERIAL_FOUND","PURGING","DEVICE_IS_READY","DEVICE_ERROR"];
+        const DEVICE_STATE_NANES: [string,string,string,string,string,string,string,string,string] = ["INITED","OPENED","CONNECTED","TEST_DATA_SENT","RUBBISH","SERIAL_FOUND","PURGING","DEVICE_IS_READY","DEVICE_ERROR"];
 
 
         if (id < DEVICE_STATE_NANES.length ){
@@ -624,9 +728,11 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
      console.log("setRobotPower send command");
 
-     this.ConnectedDevices[0].command(DEVICES[0].commands.power, [leftMotorPower, rightMotorPower], function(response){
+     this.ConnectedDevices[0].command(DEVICES[0].commands.power, [leftMotorPower, rightMotorPower], (response) => {
 
                 //   console.log("pizda=" + response.a0);
+
+                  this.SensorsData = response;
 
                 });
 
@@ -654,9 +760,11 @@ export default class RobotControlAPI extends DeviceControlAPI {
           let steps_limit_high_byte:number = steps_limit >> 8;
 
 
-          this.ConnectedDevices[0].command(DEVICES[0].commands.rob_pow_encoder, [leftMotorPower, rightMotorPower,steps_limit_high_byte,steps_limit_low_byte], function(response){
+          this.ConnectedDevices[0].command(DEVICES[0].commands.rob_pow_encoder, [leftMotorPower, rightMotorPower,steps_limit_high_byte,steps_limit_low_byte], (response) =>{
 
                      //   console.log("pizda=" + response.a0);
+
+                       this.SensorsData = response;
 
                      });
 
@@ -1015,6 +1123,10 @@ turnLedOff(led_position:number,robot_number:number){
 
   runDataRecieveCommand(device:InterfaceDevice){
 
+  if (device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+
+
+
     console.log("runDataRecieveCommand");
 
   device.command(DEVICES[0].commands.check, [], (response) => {
@@ -1022,10 +1134,20 @@ turnLedOff(led_position:number,robot_number:number){
 
           this.SensorsData = response;
 
-          console.log("response: " + this.SensorsData.a0);
+            this.dataRecieveTime = Date.now();
+
+            this.searching_in_progress = false;
+
+
+
+        //  console.log("response: " + this.SensorsData.a0);
 
 
        });
+
+  }
+
+
 
 
   }

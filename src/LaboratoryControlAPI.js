@@ -76,6 +76,7 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
     super();
 
     this.searching_in_progress = false;
+    this.previousState = null;
 
     this.init_all();
 
@@ -126,7 +127,7 @@ this.init_all();
 
      function (self){
 
-       console.log("Let's get devices from device finder");
+    //   console.log("Let's get devices from device finder");
         let devices:Array<InterfaceDevice> = getConnectedDevices();
 
         // if (self.ConnectedDevices.length != devices.length ){
@@ -160,7 +161,7 @@ this.init_all();
      var handleConnectedDevices = function (Devices,self:LaboratoryConrolAPI){
 
 
-       console.log("Handle connected devices.")
+  //     console.log("Handle connected devices.")
 
      if ((typeof(Devices)!== 'undefined'))  {
 
@@ -190,8 +191,8 @@ this.init_all();
 
                  }else{
 
-                 console.log("Device ID: " + device.getDeviceID()  + " " + "State:  " + device.getState() + " " + "State name: " + self.getStateNameByID(device.getState())
-                               + " " + "Device serial: " + device.getSerialNumber() );
+              //   console.log("Device ID: " + device.getDeviceID()  + " " + "State:  " + device.getState() + " " + "State name: " + self.getStateNameByID(device.getState())
+              //                 + " " + "Device serial: " + device.getSerialNumber() );
 
                  }
 
@@ -292,7 +293,7 @@ isLaboratorySearching():boolean{
 
 getStateNameByID(id:number):string{
 
-    const DEVICE_STATE_NANES: [string,string,string,string,string,string,string,string] = ["INITED","OPENED","TEST_DATA_SENT","RUBBISH","SERIAL_FOUND","PURGING","DEVICE_IS_READY","DEVICE_ERROR"];
+    const DEVICE_STATE_NANES: [string,string,string,string,string,string,string,string,string] = ["INITED","OPENED","CONNECTED","TEST_DATA_SENT","RUBBISH","SERIAL_FOUND","PURGING","DEVICE_IS_READY","DEVICE_ERROR"];
 
 
     if (id < DEVICE_STATE_NANES.length ){

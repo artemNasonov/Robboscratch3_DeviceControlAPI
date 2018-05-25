@@ -15,12 +15,13 @@ console.log = function(string){
 const DEVICE_STATES = Object.freeze({
    "INITED": 0,
    "OPENED": 1,
-   "TEST_DATA_SENT": 2,
-   "RUBBISH": 3,
-   "SERIAL_FOUND": 4,
-   "PURGING": 5,
-   "DEVICE_IS_READY": 6,
-   "DEVICE_ERROR":7
+   "CONNECTED":2,
+   "TEST_DATA_SENT": 3,
+   "RUBBISH": 4,
+   "SERIAL_FOUND": 5,
+   "PURGING": 6,
+   "DEVICE_IS_READY": 7,
+   "DEVICE_ERROR":8
 });
 
 const DEVICES = Object.freeze({
@@ -372,6 +373,7 @@ function InterfaceDevice(port){
    console.log(LOG + "Trying to register a new device...");
 
    var state = DEVICE_STATES["INITED"];
+   var previous_state = state;
    var bufIncomingData = new Uint8Array();
    var iConnectionId;
    var iDeviceID;
@@ -400,25 +402,76 @@ function InterfaceDevice(port){
 
    var can_check_serial_after_flush = true;
 
-   var onReceiveCallback = function(info){
-      if(info.connectionId == iConnectionId && info.data){
-         var buf = new Uint8Array(info.data);
-         console.log(LOG + "<- " + buf.length);
-         var bufIncomingDataNew = new Uint8Array(bufIncomingData.length + buf.length);
-         bufIncomingDataNew.set(bufIncomingData);
-         bufIncomingDataNew.set(buf, bufIncomingData.length);
+   var wait_for_sync = false;
 
-         bufIncomingData = bufIncomingDataNew;
+   var onReceiveCallback = function(info){
+  //    console.log(LOG + "CALLBACK!!! without data");
+      if((info.connectionId == iConnectionId) && info.data){
+         var buf = new Uint8Array(info.data);
+
+         console.log(LOG + "CALLBACK!!! bytes recieved length <- " + buf.length);
+         console.log(LOG + "CALLBACK!!! bytes buf <- " + buf);
+
+          var bufIncomingDataNew = null;
+
+         if ((wait_for_sync) && (buf[0] != 35 ) ){
+
+              if (buf.indexOf(35) != -1){
+
+                 console.log(LOG + "# not in the 0 position but is in data. Making subarray.");
+
+                let local_buf =  new Uint8Array(buf.length - buf.indexOf(35));
+
+                wait_for_sync = false;
+
+
+
+                local_buf = buf.subarray(buf.indexOf(35) - 1);
+
+
+                buf = local_buf;
+
+
+
+              }else{
+
+                     console.log(LOG + "# not in the data.");
+
+              }
+
+
+         }else{
+
+          wait_for_sync = false;
+
+           bufIncomingDataNew = new Uint8Array(bufIncomingData.length + buf.length);
+           bufIncomingDataNew.set(bufIncomingData);
+           bufIncomingDataNew.set(buf, bufIncomingData.length);
+
+           bufIncomingData = bufIncomingDataNew;
+
+         }
+
+
+           console.log(LOG + "bufIncomingData: " + bufIncomingData);
+
+
 
          //We are not waiting for any data;
          if(commandToRun == null) return;
 
 
-         if(bufIncomingData.length >= iWaiting){
+        // commandToRun = null;
+
+
+                                                                                //#
+         if ( (bufIncomingData.length >= iWaiting) /*&& ( bufIncomingData.indexOf(35) != -1 )*/ ){
             console.log(LOG + "command '" + commandToRun.code + "' complete.");
 
+            wait_for_sync = true;
+
             //all params
-            var iResponsePointer = 1;
+            var iResponsePointer = /*(bufIncomingData.indexOf(35) + 1);*/ 1;
             Object.keys(commandToRun.response).forEach(function (sField){
                switch(commandToRun.response[sField]){
                   case "uint2":{
@@ -485,6 +538,20 @@ function InterfaceDevice(port){
 
           if (info.error == "break"){
 
+             console.error(LOG + "error: " + info.error);
+
+               state = DEVICE_STATES["DEVICE_ERROR"];
+
+              chrome.serial.setPaused(iConnectionId, false, function (){
+
+
+                     console.error("Unpaused.");
+
+                       state = DEVICE_STATES["CONNECTED"];
+
+
+              });
+
 
             // chrome.serial.clearBreak(iConnectionId, function (result){
             //
@@ -496,17 +563,127 @@ function InterfaceDevice(port){
           }else if ( (info.error == "overrun") || (info.error == "frame_error") ) {
 
 
-                console.error(LOG + "Ignore these errors!");
+            chrome.serial.setPaused(iConnectionId, false, function (){
+
+                    console.log("Unpaused.");
+
+            });
 
 
-          }else{
+            //    console.error(LOG + "Ignore these errors!");
+
+
+          } else if ((info.error == "device_lost")){
+
+             console.error(LOG + "error: " + info.error);
+
+
+        if (state != DEVICE_STATES["DEVICE_ERROR"]){
 
             state = DEVICE_STATES["DEVICE_ERROR"];
+            //
+            // chrome.serial.setPaused(iConnectionId, false, function (){
+            //
+            //          console.error("Unpaused.");
 
-            chrome.serial.disconnect(iConnectionId, function(result){
+                  //  state = DEVICE_STATES["OPENED"];
 
-                   console.log("Connection closed: " + result);
+                //   chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);
+
+                    chrome.serial.disconnect(iConnectionId, function(result){
+
+                          console.error("Connection closed: " + result);
+
+                          console.error("Trying to reconnect");
+
+
+                          if (result){
+
+                                  chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);
+
+
+                          }
+
+                    });
+
+          //  });
+
+
+
+        }
+
+          } else if (info.error == "disconnected") {
+
+
+            if (state!= DEVICE_STATES["DEVICE_ERROR"]){
+
+                state = DEVICE_STATES["DEVICE_ERROR"];
+
+            chrome.serial.setPaused(iConnectionId, false, function (){
+
+                    console.log("Unpaused.");
+
+
+
+
+                      chrome.serial.disconnect(iConnectionId, function(result){
+
+
+
+                             console.error("Connection closed: " + result);
+
+                             // console.log("tying to reconnect");
+                             //
+                             //  chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);
+                      });
+
+
+
+
+
             });
+
+
+          }
+
+
+          } else {
+
+             console.error("Other errors");
+
+
+            if (state!= DEVICE_STATES["DEVICE_ERROR"]){
+
+                state = DEVICE_STATES["DEVICE_ERROR"];
+
+            chrome.serial.setPaused(iConnectionId, false, function (){
+
+                    console.log("Unpaused.");
+
+
+
+
+                      chrome.serial.disconnect(iConnectionId, function(result){
+
+
+
+                             console.error("Connection closed: " + result);
+
+                             // console.log("tying to reconnect");
+                             //
+                             //  chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);
+                      });
+
+
+
+
+
+            });
+
+
+          }
+
+
 
 
           }
@@ -555,6 +732,8 @@ function InterfaceDevice(port){
       else{
          console.log(LOG + "device is ready.");
          state = DEVICE_STATES["DEVICE_IS_READY"];
+         previous_state = state;
+         wait_for_sync = true;
       }
    }
 
@@ -588,13 +767,16 @@ function InterfaceDevice(port){
             iDeviceID        = parseInt(sIncomingData.substring(iSerialNumberOffset + 6, iSerialNumberOffset + 11));
             iFirmwareVersion = parseInt(sIncomingData.substring(iSerialNumberOffset + 12, iSerialNumberOffset + 17));
             sSerialNumber    = sIncomingData.substring(iSerialNumberOffset + 18, iSerialNumberOffset + DEVICE_SERIAL_NUMBER_LENGTH);
-            console.log(LOG + "Device=" + iDeviceID + " Firmware=" + iFirmwareVersion + " Serial='" + sSerialNumber + "'");
+            console.warn(LOG + "Device=" + iDeviceID + " Firmware=" + iFirmwareVersion + " Serial='" + sSerialNumber + "'");
 
             purgePort();
          }
       }
       else{
-         if((sSerialNumber === undefined) && (!isStopCheckingSerialNumber) && (state != DEVICE_STATES["DEVICE_ERROR"]) /*&& (can_check_serial_after_flush) */) {
+
+
+
+         if((sSerialNumber === undefined) && (!isStopCheckingSerialNumber)/* && (state != DEVICE_STATES["DEVICE_ERROR"])*/ /*&& (can_check_serial_after_flush) */) {
 
 
             // check_serial_number_time2 = Date.now();
@@ -616,15 +798,19 @@ function InterfaceDevice(port){
             //       getSerial();
             // }
 
-            if (iConnectionId != null) {
+            if ( (iConnectionId != null) && (state != DEVICE_STATES["DEVICE_ERROR"]) ) {
 
                   getSerial();
 
+            }else{
+
+
+                console.log(LOG + "Does not call getSerial()");
             }
 
 
             //Let's check the response
-             let checkSerialNumberTimeout =   setTimeout(checkSerialNumber, 100); //100
+           let checkSerialNumberTimeout =   setTimeout(checkSerialNumber, 100); //100
 
          }
       }
@@ -633,6 +819,7 @@ function InterfaceDevice(port){
    var onConnect = function(connectionInfo){
       console.log(LOG + "connected.");
       state = DEVICE_STATES["CONNECTED"];
+
 
       iConnectionId = connectionInfo.connectionId;
 
@@ -653,6 +840,8 @@ function InterfaceDevice(port){
   //    chrome.serial.onReceiveError.addListener(onErrorCallback);
 
      setTimeout(checkSerialNumber, 300);
+
+     clearTimeout(automaticStopCheckingSerialNumberTimeout);
 
       automaticStopCheckingSerialNumberTimeout =  setTimeout(function(){
 
@@ -708,6 +897,65 @@ function InterfaceDevice(port){
 
    chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);
 
+   this.try_to_reconnect = function(){
+
+
+     // state = DEVICE_STATES["INITED"];
+
+
+     sSerialNumber = undefined;
+
+      iWaiting = 0;
+      response = {};
+      commandToRun = null;
+      callback = null;
+
+
+      isStopCheckingSerialNumber = false;
+
+      commands_stack = [];
+
+         time1 = Date.now();
+         time_delta = 0;
+         time2 = Date.now();
+
+      command_try_send_time1 = null;
+      command_try_send_time2 = null;
+
+      check_serial_number_time1 = Date.now();
+      check_serial_number_time2 = Date.now();
+
+      can_check_serial_after_flush = true;
+
+      wait_for_sync = false;
+
+     if (state == DEVICE_STATES["DEVICE_ERROR"]){
+
+
+
+
+       chrome.serial.connect(this.port.path, {bitrate: 115200}, onConnect);
+
+     }else{
+
+
+    //   chrome.serial.disconnect(iConnectionId, function(result){
+
+
+
+        //      console.error("Connection closed: " + result);
+
+
+              chrome.serial.connect(this.port.path, {bitrate: 115200}, onConnect);
+    //   });
+
+
+     }
+
+
+
+   }
+
 
    this.getState = function(){
       return state;
@@ -739,15 +987,21 @@ function InterfaceDevice(port){
 
     command_try_send_time2 = Date.now();
 
-    // if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT ){
-    //
-    //
-    //     //  chrome.serial.flush(iConnectionId, onFlush);
-    //
-    //     commandToRun = null;
-    //
-    //
-    // }
+    if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT ){
+
+
+        if (command == DEVICES[iDeviceID].commands.check){
+
+
+                console.log(`NULL_COMMAND_TIMEOU`);
+
+                commandToRun = null;
+        }
+
+
+
+
+    }
 
       if(commandToRun != null){
 
@@ -917,6 +1171,12 @@ const searchDevices = function(){
 
 };
 
+const pushConnectedDevices = function(device){
+
+  arrDevices.push(device);
+
+}
+
 const getConnectedDevices = function(){
 
     return arrDevices;
@@ -964,6 +1224,7 @@ export  {
   InterfaceDevice,
   searchDevices,
   getConnectedDevices,
+  pushConnectedDevices,
   DEVICES,
   DEVICE_STATES
 
