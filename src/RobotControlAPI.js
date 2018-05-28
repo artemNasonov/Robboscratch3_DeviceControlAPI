@@ -92,7 +92,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
      //Автопереподключение при потере связи с устройсвом
       auto_reconnect(){
 
-        console.log(`auto reconnect`);
+      //  console.log(`auto reconnect`);
 
           //  this.autoReconnectInterval = setInterval(function(){
 
@@ -106,7 +106,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
                 var self = local_self;
 
                 for (var i=0; i<ports.length; i++) {
-                  console.log(ports[i].path);
+            //      console.log(ports[i].path);
                    devices.push(ports[i]);
                 }
 
@@ -300,6 +300,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
 
       this.init_all();
+
+      this.stopDataRecievingProcess();
 
       this.searching_in_progress = true;
 

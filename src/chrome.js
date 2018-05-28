@@ -1,14 +1,14 @@
 const DEVICE_SERIAL_NUMBER_PROBE_INTERVAL = 100;
 const DEVICE_SERIAL_NUMBER_LENGTH = 52;
 const DEVICE_HANDLE_TIMEOUT = 1 * 60 * 1000;
-const NULL_COMMAND_TIMEOUT = 100;
+const NULL_COMMAND_TIMEOUT = 1 * 5 * 1000;
 const CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT = 500;
 
 const log = console.log;
 
 console.log = function(string){
 
-  log("Test_log: " + string);
+  log(string);
 
   }
 
@@ -404,6 +404,9 @@ function InterfaceDevice(port){
 
    var wait_for_sync = false;
 
+   var recieveListener;
+
+
    var onReceiveCallback = function(info){
   //    console.log(LOG + "CALLBACK!!! without data");
       if((info.connectionId == iConnectionId) && info.data){
@@ -412,35 +415,45 @@ function InterfaceDevice(port){
          console.log(LOG + "CALLBACK!!! bytes recieved length <- " + buf.length);
          console.log(LOG + "CALLBACK!!! bytes buf <- " + buf);
 
+         console.log(LOG + "wait_for_sync: " + wait_for_sync);
+
           var bufIncomingDataNew = null;
 
-         if ((wait_for_sync) && (buf[0] != 35 ) ){
-
-              if (buf.indexOf(35) != -1){
-
-                 console.log(LOG + "# not in the 0 position but is in data. Making subarray.");
-
-                let local_buf =  new Uint8Array(buf.length - buf.indexOf(35));
-
-                wait_for_sync = false;
-
-
-
-                local_buf = buf.subarray(buf.indexOf(35) - 1);
-
-
-                buf = local_buf;
-
-
-
-              }else{
-
-                     console.log(LOG + "# not in the data.");
-
-              }
-
-
-         }else{
+         // if ((wait_for_sync) && (buf[0] != 35 ) ){
+         //
+         //      if (buf.indexOf(35) != -1){
+         //
+         //         console.log(LOG + "# not in the 0 position but is in data. Making subarray.");
+         //
+         //        let local_buf =  new Uint8Array(buf.length - buf.indexOf(35));
+         //
+         //        wait_for_sync = false;
+         //
+         //
+         //
+         //        local_buf = buf.subarray(buf.indexOf(35) - 1);
+         //
+         //
+         //        buf = local_buf;
+         //
+         //        wait_for_sync = false;
+         //
+         //         bufIncomingDataNew = new Uint8Array(bufIncomingData.length + buf.length);
+         //         bufIncomingDataNew.set(bufIncomingData);
+         //         bufIncomingDataNew.set(buf, bufIncomingData.length);
+         //
+         //         bufIncomingData = bufIncomingDataNew;
+         //
+         //
+         //
+         //      }else{
+         //
+         //             console.log(LOG + "# not in the data.");
+         //
+         //      }
+         //
+         //
+         // }else{
 
           wait_for_sync = false;
 
@@ -450,9 +463,10 @@ function InterfaceDevice(port){
 
            bufIncomingData = bufIncomingDataNew;
 
-         }
+      //   }
 
 
+           console.log(LOG + "wait_for_sync: " + wait_for_sync);
            console.log(LOG + "bufIncomingData: " + bufIncomingData);
 
 
@@ -525,6 +539,9 @@ function InterfaceDevice(port){
             iWaiting = 0;
             callback(response);
          }
+
+             console.log(LOG + "wait_for_sync after: " + wait_for_sync);
+
       }
    };
 
@@ -714,6 +731,8 @@ function InterfaceDevice(port){
       time_delta = time1 - time2;
       console.log("time delta: " + time_delta)
       time2 = Date.now();
+
+      console.log(LOG + "wait_for_sync: " + wait_for_sync);
    };
    var onFlush = function(){
       console.log(LOG + "port flushed.");
@@ -730,16 +749,32 @@ function InterfaceDevice(port){
          setTimeout(purgePort, 300);
       }
       else{
-         console.log(LOG + "device is ready.");
-         state = DEVICE_STATES["DEVICE_IS_READY"];
-         previous_state = state;
-         wait_for_sync = true;
+
+          if ( (typeof(iDeviceID) != 'undefined') && (typeof(iFirmwareVersion) != 'undefined') && (typeof(sSerialNumber) != 'undefined') ){
+
+                if ( (!isNaN(iDeviceID)) && (!isNaN(iFirmwareVersion)) && ( ( (sSerialNumber).startsWith("R") ) || ((sSerialNumber).startsWith("L")) ) ) {
+
+                        console.log(LOG + "device is ready.");
+                        state = DEVICE_STATES["DEVICE_IS_READY"];
+                        previous_state = state;
+                        wait_for_sync = true;
+
+                        return;
+
+                }
+
+          }
+
+          setTimeout(checkSerialNumber, 100);
+
+
       }
    }
 
 
    var getSerial = function(){
       console.log(LOG + "-> getSerial()");
+      console.log(LOG + "wait_for_sync: " + wait_for_sync);
       var buf=new ArrayBuffer(1);
       var bufView=new Uint8Array(buf);
       bufView[0] = 32;
@@ -749,19 +784,26 @@ function InterfaceDevice(port){
          chrome.serial.send(iConnectionId, buf, onSend);
     //  }
       state = DEVICE_STATES["TEST_DATA_SENT"];
+
+  //    wait_for_sync=false;
    }
 
    var checkSerialNumber = function(){
       console.log(LOG + "let's check the serial");
+      console.log(LOG + "wait_for_sync: " + wait_for_sync);
 
       var sIncomingData = new TextDecoder("utf-8").decode(bufIncomingData);
       console.log(LOG + "Now we have: " + sIncomingData);
+
+      console.log(LOG + "wait_for_sync: " + wait_for_sync);
 
       if(bufIncomingData.length > DEVICE_SERIAL_NUMBER_PROBE_INTERVAL){
          iSerialNumberOffset = sIncomingData.indexOf("ROBBO");
          if(iSerialNumberOffset < 0){
             console.log(LOG + "Rubbish instead of serial number");
             state = DEVICE_STATES["RUBBISH"];
+            bufIncomingData = new Uint8Array();
+            setTimeout(checkSerialNumber, 100);
          }
          else{
             iDeviceID        = parseInt(sIncomingData.substring(iSerialNumberOffset + 6, iSerialNumberOffset + 11));
@@ -776,7 +818,7 @@ function InterfaceDevice(port){
 
 
 
-         if((sSerialNumber === undefined) && (!isStopCheckingSerialNumber)/* && (state != DEVICE_STATES["DEVICE_ERROR"])*/ /*&& (can_check_serial_after_flush) */) {
+         if(/*(sSerialNumber === undefined) && */ (state != DEVICE_STATES["DEVICE_IS_READY"])  &&   (!isStopCheckingSerialNumber)/* && (state != DEVICE_STATES["DEVICE_ERROR"])*/ ) {
 
 
             // check_serial_number_time2 = Date.now();
@@ -812,6 +854,10 @@ function InterfaceDevice(port){
             //Let's check the response
            let checkSerialNumberTimeout =   setTimeout(checkSerialNumber, 100); //100
 
+         }else{
+
+                  console.log(LOG + "Out of checkSerialNumber timeout." + "state: " + state);
+
          }
       }
    }
@@ -832,10 +878,24 @@ function InterfaceDevice(port){
         console.log(LOG + "iConnectionId:" + iConnectionId);
 
 
+        bufIncomingData = new Uint8Array();
+        iWaiting = 0;
+        commandToRun = null;
+        wait_for_sync=false;
+
+        console.log(LOG + "wait_for_sync: " + wait_for_sync);
 
   //    chrome.serial.flush(iConnectionId, onFlush);
 
-      chrome.serial.onReceive.addListener(onReceiveCallback);
+  //if (recieveListener){
+
+
+          console.log(LOG + " Remove recieve listner");
+         chrome.serial.onReceive.removeListener(onReceiveCallback);
+
+  //}
+
+      recieveListener =  chrome.serial.onReceive.addListener(onReceiveCallback);
 
   //    chrome.serial.onReceiveError.addListener(onErrorCallback);
 
@@ -858,6 +918,8 @@ function InterfaceDevice(port){
 
 
       }  ,DEVICE_HANDLE_TIMEOUT);
+
+        console.log(LOG + "wait_for_sync: " + wait_for_sync);
    }
 
    this.stopCheckingSerialNumber = function(){
@@ -987,21 +1049,22 @@ function InterfaceDevice(port){
 
     command_try_send_time2 = Date.now();
 
-    if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT ){
-
-
-        if (command == DEVICES[iDeviceID].commands.check){
-
-
-                console.log(`NULL_COMMAND_TIMEOU`);
-
-                commandToRun = null;
-        }
-
-
-
-
-    }
+    // if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT ){
+    //
+    //
+    //     if (command == DEVICES[iDeviceID].commands.check){
+    //
+    //
+    //             console.log(`NULL_COMMAND_TIMEOUT`);
+    //
+    //             commandToRun = null;
+    //             wait_for_sync = true;
+    //     }
+    //
+    //
+    //
+    //
+    // }
 
       if(commandToRun != null){
 
