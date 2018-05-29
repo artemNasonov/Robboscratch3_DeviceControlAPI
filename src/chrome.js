@@ -333,7 +333,7 @@ const DEVICES = Object.freeze({
 
         "lab_sound":{
            "code": "d",
-           "params": ["ubyte","ubyte"],
+           "params": ["ubyte"],
            "response": {
                      "d8_13" : "ubyte",
                      "a0"       : "ubyte",
@@ -1088,7 +1088,7 @@ function InterfaceDevice(port){
       }
 
 
-      if (commands_stack.length > 15){
+      if (commands_stack.length > 500){
 
             commands_stack = [];
 

@@ -736,6 +736,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
                   this.SensorsData = response;
 
+                  this.dataRecieveTime = Date.now();
+
                 });
 
      }
@@ -768,6 +770,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
                        this.SensorsData = response;
 
+                       this.dataRecieveTime = Date.now();
+
                      });
 
           }
@@ -797,8 +801,12 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
           this.led_states[led_position] = 'on';
 
-          this.ConnectedDevices[0].command(DEVICES[0].commands.rob_lamps, [this.led_bit_mask], function(response){
+          this.ConnectedDevices[0].command(DEVICES[0].commands.rob_lamps, [this.led_bit_mask], (response) => {
 
+
+              this.SensorsData = response;
+
+              this.dataRecieveTime = Date.now();
 
 
                      });
@@ -832,9 +840,12 @@ turnLedOff(led_position:number,robot_number:number){
 
       this.led_states[led_position] = 'off';
 
-      this.ConnectedDevices[0].command(DEVICES[0].commands.rob_lamps, [this.led_bit_mask], function(response){
+      this.ConnectedDevices[0].command(DEVICES[0].commands.rob_lamps, [this.led_bit_mask], (response) => {
 
 
+          this.SensorsData = response;
+
+          this.dataRecieveTime = Date.now();
 
                  });
 
@@ -858,9 +869,12 @@ turnLedOff(led_position:number,robot_number:number){
 
           console.log(`setClawDegrees: ${degrees}`);
 
-          this.ConnectedDevices[0].command(DEVICES[0].commands.rob_claw, [degrees], function(response){
+          this.ConnectedDevices[0].command(DEVICES[0].commands.rob_claw, [degrees], (response) => {
 
 
+              this.SensorsData = response;
+
+              this.dataRecieveTime = Date.now();
 
                      });
 

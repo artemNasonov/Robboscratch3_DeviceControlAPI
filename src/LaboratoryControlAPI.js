@@ -3,7 +3,7 @@
 
 import DeviceControlAPI from './DeviceControlAPI';
 //import RobotSensorsData from './RobotSensorsData';
-import {InterfaceDevice,searchDevices,getConnectedDevices,DEVICES,DEVICE_STATES} from './chrome';
+import {InterfaceDevice,searchDevices,getConnectedDevices,pushConnectedDevices,DEVICES,DEVICE_STATES} from './chrome';
 
 
 
@@ -106,18 +106,98 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
 
       this.lab_sensor_types = [];
 
+      this.dataRecieveTime = 0;
+
 
     }
 
+
+    //Автопереподключение при потере связи с устройсвом
+     auto_reconnect(){
+
+     //  console.log(`auto reconnect`);
+
+         //  this.autoReconnectInterval = setInterval(function(){
+
+             let devices = [];
+             let connectedDevices = [];
+             var local_self = this;
+
+
+             var onGetDevices = function(ports) {
+
+               var self = local_self;
+
+               for (var i=0; i<ports.length; i++) {
+           //      console.log(ports[i].path);
+                  devices.push(ports[i]);
+               }
+
+                 connectedDevices = getConnectedDevices();
+
+                 devices.forEach(function(device,device_index){
+
+                   if (device_index <= (connectedDevices.length - 1) ){
+
+
+                     /*
+                         При переподключении пробуем найти  свой старый порт и подключиться к нему.
+
+                     */
+
+
+                       //Проверяем, что имена уже сохранённого порта и просматриваемого порта совпадают  //Проверяем, что имеем дело с лабораторией.
+                     if ( (device.path == connectedDevices[device_index].getPortName()) &&  (connectedDevices[device_index].getDeviceID() == 2) ){
+
+
+                           console.log(`Trying to reconnect to the already known port: ${device.path}`);
+                         //  let d =  new InterfaceDevice(device);
+                           connectedDevices[device_index].try_to_reconnect();
+                           self.searchLaboratoryDevices();
+                           self.searching_in_progress = true;
+
+                     } else self.searching_in_progress = false;
+
+                   }
+
+
+
+                 });
+
+                 /*
+                         Если устройство перехало на новый порт, то пробуем подключиться к новому порту.
+                         Определяем, что устройство переехало пуём сравнения длины массива уже подключённых устройств и вновь полученного массива устройств.
+
+                 */
+
+                 if (devices.length > connectedDevices.length){
+
+                         console.log(`Device maybe moved to the new port: ${devices[connectedDevices.length].path} Trying to reconnect.`);
+                       let d = new InterfaceDevice(devices[connectedDevices.length]); // TODO: Не совсем корректно : connectedDevices.length. Нужно по-другому
+                       pushConnectedDevices(d);
+                       this.searchRobotDevices();
+                       this.searching_in_progress = true;
+
+                 } else this.searching_in_progress = false;
+
+
+             }
+
+           chrome.serial.getDevices(onGetDevices);
+
+
+
+         //  },300);
+
+     }
+
 searchLaboratoryDevices(){
 
+  this.init_all();
+
+  this.stopDataRecievingProcess();
+
   this.searching_in_progress = true;
-
-
-// this.ConnectedLaboratories = [];
-// this.ConnectedLaboratoriesSerials = [];
-
-this.init_all();
 
 
 //  searchDevices();
@@ -264,23 +344,43 @@ stopDataRecievingProcess(){
 }
 
 
-isLaboratoryConnected(laboratory_number:number):boolean{
 
+
+isLaboratoryConnected(robot_number:number):boolean{
+
+    let is_connected = false;
+
+    if ((Date.now() - this.dataRecieveTime) > (1000 * 5)){
+
+       this.SensorsData = undefined;
+    }
 
     //  return ((this.ConnectedRobots.length-1)>=robot_number)?true:false;
 
-    if ((this.ConnectedLaboratories.length-1)>=laboratory_number){
+    if ((this.ConnectedLaboratories.length-1)>=robot_number){
 
 
-        return (this.ConnectedLaboratories[laboratory_number].getState() == DEVICE_STATES["DEVICE_IS_READY"])
+        is_connected =   ( (this.ConnectedLaboratories[robot_number].getState() == DEVICE_STATES["DEVICE_IS_READY"]) && ( typeof(this.SensorsData) != 'undefined' ) && (this.SensorsData != null) )
 
     }else{
 
-          return false;
+          is_connected =  false;
+
+    }
+
+    if ((this.previousState == true) && (this.previousState != is_connected) && (!this.searching_in_progress)){
+
+          this.auto_reconnect();
+
+    }else{
+
+          this.previousState  = is_connected;
 
     }
 
 
+
+    return is_connected;
 
 }
 
@@ -307,6 +407,33 @@ getStateNameByID(id:number):string{
 
 
 }
+
+  labPlayNote(laboratory_number:number, lab_note:number){
+
+
+    if ((this.ConnectedLaboratories.length - 1) >= laboratory_number ){
+
+
+      if(this.ConnectedLaboratories[0].getDeviceID() == 2 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+
+            console.warn(`labPlayNote note ${lab_note}`);
+
+
+            this.ConnectedLaboratories[0].command(DEVICES[2].commands.lab_sound, [lab_note], (response) => {
+
+
+              this.SensorsData = response;
+
+              this.dataRecieveTime = Date.now();
+
+                       });
+
+        }
+
+
+      }
+
+  }
 
 islaboratoryButtonPressed(laboratory_number:number, button_number:number):boolean{
 
@@ -781,17 +908,29 @@ getSensorData(sensor_name:string):number{
 
 runDataRecieveCommand(device:InterfaceDevice){
 
+
   console.log("runDataRecieveCommand laboratory");
 
-device.command(DEVICES[2].commands.check, [], (response) => {
+  if (device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
 
-        this.SensorsData = response;
-
-      //  console.log("laboratory_response: " + this.SensorsData);
+    device.command(DEVICES[2].commands.check, [], (response) => {
 
 
-     });
+            this.SensorsData = response;
+
+            this.dataRecieveTime = Date.now();
+
+            this.searching_in_progress = false;
+
+          //  console.log("laboratory_response: " + this.SensorsData);
+
+
+         });
+
+  }
+
+
 
 
 }
