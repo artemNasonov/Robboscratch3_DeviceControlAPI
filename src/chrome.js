@@ -368,7 +368,7 @@ var arrDevices = [];
 
 function InterfaceDevice(port){
    this.port = port;
-   var LOG = "[" + port.path + "] ";
+   var LOG = "[" + port.path + " random_object_identifier: " +  (Math.floor( Math.random() * 100) ) +  "] ";
 
    console.log(LOG + "Trying to register a new device...");
 
@@ -818,7 +818,7 @@ function InterfaceDevice(port){
 
 
 
-         if(/*(sSerialNumber === undefined) && */ (state != DEVICE_STATES["DEVICE_IS_READY"])  &&   (!isStopCheckingSerialNumber)/* && (state != DEVICE_STATES["DEVICE_ERROR"])*/ ) {
+         if(/*(sSerialNumber === undefined) && */ (can_check_serial_after_flush) &&  (state != DEVICE_STATES["DEVICE_IS_READY"])  &&   (!isStopCheckingSerialNumber)/* && (state != DEVICE_STATES["DEVICE_ERROR"])*/ ) {
 
 
             // check_serial_number_time2 = Date.now();
@@ -885,7 +885,8 @@ function InterfaceDevice(port){
 
         console.log(LOG + "wait_for_sync: " + wait_for_sync);
 
-  //    chrome.serial.flush(iConnectionId, onFlush);
+        chrome.serial.flush(iConnectionId, onFlush);
+        can_check_serial_after_flush = false;
 
   //if (recieveListener){
 
@@ -954,6 +955,10 @@ function InterfaceDevice(port){
 
     // chrome.serial.onReceive.addListener(onReceiveCallback);
     //
+
+    console.log(LOG + " Remove ReceiveError listner");
+    chrome.serial.onReceiveError.removeListener(onErrorCallback);
+
      chrome.serial.onReceiveError.addListener(onErrorCallback);
 
 
@@ -1220,7 +1225,21 @@ function InterfaceDevice(port){
 
 const searchDevices = function(){
 
-  arrDevices = [];
+//  arrDevices = [];
+
+    if (arrDevices.length > 0){
+
+
+        arrDevices.forEach(function(device,index){
+
+              arrDevices[index].stopCheckingSerialNumber();
+              arrDevices[index] = null;
+
+        });
+
+    }
+
+     arrDevices = [];
 
   var onGetDevices = function(ports) {
     for (var i=0; i<ports.length; i++) {

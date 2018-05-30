@@ -275,6 +275,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
     this.colorKoefs = [];
 
+    this.a_can_send = true;
+
 
 
 
