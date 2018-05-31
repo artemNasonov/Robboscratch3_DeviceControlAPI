@@ -1,6 +1,6 @@
 
 
-import {InterfaceDevice,searchDevices,getConnectedDevices,DEVICES,DEVICE_STATES} from './chrome';
+import {InterfaceDevice,searchDevices,getConnectedDevices,DEVICES,DEVICE_STATES,trigger_logging} from './chrome';
 
 export default  class DeviceControlAPI {
 
@@ -16,6 +16,12 @@ export default  class DeviceControlAPI {
 
             searchDevices();
 
+      }
+
+      triggerLogging(){
+
+
+            trigger_logging();
       }
 
 

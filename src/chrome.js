@@ -6,9 +6,17 @@ const CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT = 500;
 
 const log = console.log;
 
+var can_log = true;
+
 console.log = function(string){
 
-  log(string);
+  if (can_log){
+
+        log(string);
+
+  }
+
+
 
   }
 
@@ -1266,6 +1274,14 @@ const getConnectedDevices = function(){
 }
 
 
+const trigger_logging = function(){
+
+
+        can_log = !can_log;
+
+}
+
+
 
 // var fuck = false;
 // var mainLoop = function(){
@@ -1308,7 +1324,8 @@ export  {
   getConnectedDevices,
   pushConnectedDevices,
   DEVICES,
-  DEVICE_STATES
+  DEVICE_STATES,
+  trigger_logging
 
 
 };
