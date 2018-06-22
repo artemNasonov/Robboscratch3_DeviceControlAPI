@@ -112,7 +112,7 @@ var Crazyradio = (function() {
             } else {
 
               var ack = new Uint8Array(info.data);
-              console.log(ack);
+              console.log("ack: " + ack);
 
               packetSendCb(ack[0]!==0, ack.subarray(1).buffer);
             }
@@ -120,6 +120,29 @@ var Crazyradio = (function() {
       }
     });
   };
+
+  my.getData = function(callback){
+
+    var ti = {
+      'direction': 'in',
+      'endpoint': 1,
+      'length': 64,
+    };
+
+      chrome.usb.bulkTransfer(my.handle, ti, function(info) {
+        if (info.resultCode !== 0) {
+          console.error("Cannot receive data from the dongle");
+        } else {
+
+          var ack = new Uint8Array(info.data);
+          console.log(ack);
+
+          callback(ack[0]!==0, ack.subarray(1).buffer);
+        }
+      });
+
+
+  }
 
   my.setChannel = function(channel, callback) {
     channel = Number(channel);
@@ -164,3 +187,8 @@ var Crazyradio = (function() {
 
   return my;
 }());
+
+export {
+
+   Crazyradio
+}
