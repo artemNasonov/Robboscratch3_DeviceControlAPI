@@ -46,7 +46,14 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
                this.radioState = "connected";
                this.searching_in_progress = false;
-               this.startDataRecieving();
+
+               setTimeout(function(self){
+
+                   self.startDataRecieving();
+
+               },3000,this)
+
+
 
              }
            });
@@ -102,139 +109,141 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
         if ( ([0x50,0x54,0x56,0x5C].indexOf(data[1]) != -1 ) ){ //проверяем, является ли ответ нужным нам.
 
           toc_log_len = data[3];
+          console.log(`toc_log_len: ${toc_log_len}`);
 
         } else  { //если не является, запрашиваем данные повторно
 
 
-            packet = new ArrayBuffer(1);
-            dv  = new DataView(packet);
-
-        dv.setUint8(0,0xf3,true);
-
-
-
-
-        Crazyradio.sendPacket(packet, (state, data) => {
-
-          if (state === true) {
-
-            if ( ([0x50,0x54,0x56,0x5C].indexOf(data[1]) != -1 ) ){ //проверяем, является ли ответ нужным нам.
-
-              toc_log_len = data[3];
-
-            }else{
-
-                        packet = new ArrayBuffer(1);
-                        dv  = new DataView(packet);
-
-                    dv.setUint8(0,0xff,true);
+        //     packet = new ArrayBuffer(1);
+        //     dv  = new DataView(packet);
+        //
+        // dv.setUint8(0,0xf3,true);
 
 
 
 
-                    Crazyradio.sendPacket(packet, (state, data) => {
+        // Crazyradio.sendPacket(packet, (state, data) => {
+        //
+        //   if (state === true) {
+        //
+        //     if ( ([0x50,0x54,0x56,0x5C].indexOf(data[1]) != -1 ) ){ //проверяем, является ли ответ нужным нам.
+        //
+        //       toc_log_len = data[3];
+        //
+        //     }else{
+        //
+        //                 packet = new ArrayBuffer(1);
+        //                 dv  = new DataView(packet);
+        //
+        //             dv.setUint8(0,0xff,true);
+        //
+        //
+        //
+        //
+        //             Crazyradio.sendPacket(packet, (state, data) => {
+        //
+        //               if (state === true) {
+        //
+        //                 if ( ([0x50,0x54,0x56,0x5C].indexOf(data[1]) != -1 ) ){ //проверяем, является ли ответ нужным нам.
+        //
+        //                   toc_log_len = data[3];
+        //
+        //                 }
+        //
+        //                 console.log(`toc_log_len: ${toc_log_len}`);
+        //
+        //                 let toc_element_id = 0;
+        //
+        //                 for (toc_element_id = 0; toc_element_id < toc_log_len; toc_element_id++){
+        //
+        //                     packet = new ArrayBuffer(3);
+        //                     dv  = new DataView(packet);
+        //
+        //                   dv.setUint8(0,0x50,true);
+        //                   dv.setUint8(1,0x00,true);
+        //                   dv.setUint8(2,Number(toc_element_id),true);
+        //
+        //                   Crazyradio.sendPacket(packet, (state, data) => {
+        //                     if (state === true) {
+        //
+        //                   //    if (typeof(data) != 'undefined'){
+        //
+        //                       if (([0x50,0x54,0x56,0x5C].indexOf(data[1]) != -1 ) ){
+        //
+        //                           telemetry_element_table[data[3]] = {
+        //
+        //                                 telemetry_element_type: data[4],
+        //                                 telemetry_element_group_and_name: data.slice(5),
+        //
+        //                           }
+        //
+        //                         console.log(`telemetry_element id: ${data[3]}  type: ${data[4]} group_and_name:  ${String.fromCharCode(data.slice(5))}`);
+        //
+        //                       }else{
+        //
+        //
+        //
+        //
+        //                       }
+        //
+        //
+        //
+        //                   //    }
+        //
+        //                     } else {
+        //                     //  $("#packetLed").removeClass("good");
+        //                     }
+        //                   });
+        //
+        //                 }
+        //
+        //               }else{
+        //
+        //
+        //
+        //               }
+        //   });
+        //
+        //     }
+        //
+        //   }else{
+        //
+        //
+        //
+        //   }
+        // });
 
-                      if (state === true) {
-
-                        if ( ([0x50,0x54,0x56,0x5C].indexOf(data[1]) != -1 ) ){ //проверяем, является ли ответ нужным нам.
-
-                          toc_log_len = data[3];
-
-                        }
-
-                        console.log(`toc_log_len: ${toc_log_len}`);
-
-                        let toc_element_id = 0;
-                        
-                        for (toc_element_id = 0; toc_element_id < toc_log_len; toc_element_id++){
-
-                            packet = new ArrayBuffer(3);
-                            dv  = new DataView(packet);
-
-                          dv.setUint8(0,0x50,true);
-                          dv.setUint8(1,0x00,true);
-                          dv.setUint8(2,Number(toc_element_id),true);
-
-                          Crazyradio.sendPacket(packet, (state, data) => {
-                            if (state === true) {
-
-                          //    if (typeof(data) != 'undefined'){
-
-                              if (([0x50,0x54,0x56,0x5C].indexOf(data[1]) != -1 ) ){
-
-                                  telemetry_element_table[data[3]] = {
-
-                                        telemetry_element_type: data[4],
-                                        telemetry_element_group_and_name: data.slice(5),
-
-                                  }
-
-                                console.log(`telemetry_element id: ${data[3]}  type: ${data[4]} group_and_name:  ${String.fromCharCode(data.slice(5))}`);
-
-                              }else{
 
 
 
+           let toc_fetch_interval = setInterval(() => {
 
-                              }
-
-
-
-                          //    }
-
-                            } else {
-                            //  $("#packetLed").removeClass("good");
-                            }
-                          });
-
-                        }
-
-                      }else{
+             Crazyradio.getData( (state, data) => {
 
 
+               if (([0x50,0x54,0x56,0x5C].indexOf(data[1]) != -1 ) ){
 
-                      }
-          });
-
-            }
-
-          }else{
+                  //получили длину TOC
 
 
+                  toc_log_len = data[3];
+                  console.log(`toc_log_len: ${toc_log_len}`);
+                 clearInterval(toc_fetch_interval);
 
-          }
-        });
+               }
 
 
+           });
 
 
-           // let toc_fetch_interval = setInterval(() => {
-           //
-           //   Crazyradio.getData( (state, data) => {
-           //
-           //
-           //     if (([0x50,0x54,0x56,0x5C].indexOf(data[1]) != -1 ) ){
-           //
-           //        //получили длину TOC
-           //
-           //
-           //       toc_log_len = data[3];
-           //       clearInterval(toc_fetch_interval);
-           //
-           //     }
-           //
-           //
-           // });
-           //
-           //
-           // },30);
-           //
-           // setTimeout(function(){
-           //
-           //    clearInterval(toc_fetch_interval);
-           //
-           //
-           // },30000)
+           },30);
+
+           setTimeout(function(){
+
+              clearInterval(toc_fetch_interval);
+
+
+           },30000)
 
 
           //      toc_log_len = 0;
