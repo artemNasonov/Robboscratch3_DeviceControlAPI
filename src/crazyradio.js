@@ -80,45 +80,110 @@ var Crazyradio = (function() {
     });
   };
 
+  // my.sendPacket = function(buffer, packetSendCb) {
+  //   console.log("sendPacked()");
+  //
+  //   var input = new Uint8Array(buffer);
+  //   console.log(input);
+  //
+  //
+  //
+  //   var to = {
+  //     'direction': 'out',
+  //     'endpoint': 1,
+  //     'data' : buffer
+  //   };
+  //
+  //   chrome.usb.bulkTransfer(my.handle, to, function(info) {
+  //     console.log(info);
+  //
+  //     if (info.resultCode !== 0) {
+  //       console.error("Cannot send data to the dongle");
+  //     } else {
+  //       var ti = {
+  //         'direction': 'in',
+  //         'endpoint': 1,
+  //         'length': 64,
+  //       };
+  //
+  //         chrome.usb.bulkTransfer(my.handle, ti, function(info) {
+  //           if (info.resultCode !== 0) {
+  //             console.error("Cannot receive data from the dongle");
+  //           } else {
+  //
+  //             var ack = new Uint8Array(info.data);
+  //             console.log("ack: " + ack);
+  //
+  //             packetSendCb(ack[0]!==0, ack.subarray(1).buffer);
+  //           }
+  //         });
+  //     }
+  //   });
+  // };
+
   my.sendPacket = function(buffer, packetSendCb) {
-    console.log("sendPacked()");
-
-    var input = new Uint8Array(buffer);
-    console.log(input);
+    console.log("sendPacket()");
 
 
+    return new Promise((resolve,reject)=>{
 
-    var to = {
-      'direction': 'out',
-      'endpoint': 1,
-      'data' : buffer
-    };
+      var input = new Uint8Array(buffer);
+      console.log(input);
 
-    chrome.usb.bulkTransfer(my.handle, to, function(info) {
-      console.log(info);
+      var error = {};
 
-      if (info.resultCode !== 0) {
-        console.error("Cannot send data to the dongle");
-      } else {
-        var ti = {
-          'direction': 'in',
-          'endpoint': 1,
-          'length': 64,
-        };
+      var to = {
+        'direction': 'out',
+        'endpoint': 1,
+        'data' : buffer
+      };
 
-          chrome.usb.bulkTransfer(my.handle, ti, function(info) {
-            if (info.resultCode !== 0) {
-              console.error("Cannot receive data from the dongle");
-            } else {
+      chrome.usb.bulkTransfer(my.handle, to, (info) => {
+        console.log(info);
 
-              var ack = new Uint8Array(info.data);
-              console.log("ack: " + ack);
+        if (info.resultCode !== 0) {
+          console.error("Cannot send data to the dongle");
+          error.code = info.resultCode;
+          error.msg =  "Cannot send data to the dongle";
+          reject(error);
+        } else {
+          var ti = {
+            'direction': 'in',
+            'endpoint': 1,
+            'length': 64,
+          };
 
-              packetSendCb(ack[0]!==0, ack.subarray(1).buffer);
-            }
-          });
-      }
+            chrome.usb.bulkTransfer(my.handle, ti, (info) => {
+
+
+
+
+              if (info.resultCode !== 0) {
+                console.error("Cannot receive data from the dongle");
+                rerror.code = info.resultCode;
+                error.msg =  "Cannot receive data from the dongle";
+                reject(error);
+              } else {
+
+                var ack = new Uint8Array(info.data);
+                console.log("ack: " + ack);
+
+                let result = {};
+                result.state =  ack[0]!==0;
+                result.data  =  ack.subarray(1); //ack.subarray(1).buffer;
+
+                resolve(result);
+
+            //    packetSendCb(ack[0]!==0, ack.subarray(1).buffer);
+              }
+            });
+        }
+      });
+
+
     });
+
+
   };
 
   my.getData = function(callback){
