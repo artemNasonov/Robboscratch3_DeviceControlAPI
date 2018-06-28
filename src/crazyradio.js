@@ -188,23 +188,42 @@ var Crazyradio = (function() {
 
   my.getData = function(callback){
 
+      return new Promise((resolve,reject)=>{
+
+        chrome.usb.bulkTransfer(my.handle, ti, (info) =>{
+
+          if (info.resultCode !== 0) {
+
+            console.error("Cannot receive data from the dongle");
+            rerror.code = info.resultCode;
+            error.msg =  "Cannot receive data from the dongle";
+            reject(error);
+            
+          } else {
+
+            var ack = new Uint8Array(info.data);
+            console.log("ack: " + ack);
+
+            let result = {};
+            result.state =  ack[0]!==0;
+            result.data  =  ack.subarray(1); //ack.subarray(1).buffer;
+
+            resolve(result);
+
+        //    packetSendCb(ack[0]!==0, ack.subarray(1).buffer);
+          }
+        });
+
+
+      });
+
     var ti = {
       'direction': 'in',
       'endpoint': 1,
       'length': 64,
     };
 
-      chrome.usb.bulkTransfer(my.handle, ti, function(info) {
-        if (info.resultCode !== 0) {
-          console.error("Cannot receive data from the dongle");
-        } else {
 
-          var ack = new Uint8Array(info.data);
-          console.log(ack);
-
-          callback(ack[0]!==0, ack.subarray(1).buffer);
-        }
-      });
 
 
   }
