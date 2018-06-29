@@ -29,6 +29,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
      this.getDataInterval = null;
      this.telemetryData = {};
      this.telemetryDataRaw = [];
+     this.move_with_speed_interval_cleared = true;
 
      if (this.radioState === "connected") {
 
@@ -434,7 +435,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
         }else{
 
-
+            return   Crazyradio.sendPacket(packet);
 
         }
 
@@ -453,7 +454,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
       }else{
 
-
+            return   Crazyradio.sendPacket(packet);
 
       }
 
@@ -615,7 +616,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
    //
    //  view = new DataView(buffer);
    //
-   // this.telemetryData.yaw = view.getFloat32(0);
+   // this.telemetryData.yaw = view.getFloat32(0,true);
    //
    // console.log(`Quadcopter telemetry  data yaw: ${this.telemetryData.yaw} `);
    //
@@ -907,10 +908,15 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
                                          if (data[3] == 0){
 
+                                           if ( (this.runningStep != "TOC_BLOCK_STEP_2") || (this.runningStep != "GET_TELEMETRY_DATA") ){
+
                                              var prefered_telemetry_table2 = prefered_telemetry_table.slice(3,prefered_telemetry_table.length);
-                                               console.log(`prefered_telemetry_table2  ${prefered_telemetry_table2}`);
+                                               console.log(`maun branch prefered_telemetry_table2  ${prefered_telemetry_table2}`);
 
                                             return this.TOC_BLOCK_STEP(telemetry_element_table, prefered_telemetry_table2,1);
+
+                                           }
+
                                          }
 
                                     }).then(data => {
@@ -985,6 +991,52 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   move_to_coord(x_coord,y_coord,height,yaw){   //yaw - угол поворота
 
+          clearInterval(this.move_with_speed_interval);
+          this.move_with_speed_interval_cleared = true;
+
+
+                    var  packet = new ArrayBuffer(18);
+                    var  dv  = new DataView(packet);
+
+                  dv.setUint8(0,0x70,true);
+                  dv.setUint8(1,0x07,true);
+
+                  dv.setFloat32(2,x_coord,true);
+                  dv.setFloat32(6,y_coord,true);
+                  dv.setFloat32(10,height,true);
+                  dv.setFloat32(14,yaw,true);
+
+
+                Crazyradio.sendPacket(packet).then(result => {
+
+
+                  if (result.state === true) {
+
+                            if ( ([0x50,0x54,0x56,0x5C,0x52].indexOf(result.data[0]) != -1 ) ){
+
+                                  console.log(`Quadcopter get data: ${result.data} `);
+
+
+
+                                    this.PROCESS_TELEMETRY_DATA(result.data);
+
+
+                            }
+
+
+                      }else{
+
+
+
+                      }
+
+                  }).catch(error => {
+
+
+
+                  });
+
+
 
 
 
@@ -992,7 +1044,31 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   move_with_speed(vx,vy,yaw,height){
 
+    if (this.radioState === "connected"){
 
+
+      this.z_distance = Number(height);
+      this.x_speed    = Number(vx);
+      this.y_speed    = Number(vy);
+      this.rotation   = Number(yaw);
+
+
+  if (this.move_with_speed_interval_cleared){
+
+        this.start_command_sending();
+
+
+  }
+
+
+
+
+
+
+
+
+
+    }
 
 
   }
@@ -1056,6 +1132,22 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
       }
 
       return z_coord;
+
+      case "W":
+
+      let yaw = 0;
+
+      if (typeof(this.telemetryData) != 'undefined'){
+
+        if (typeof(this.telemetryData.yaw) != 'undefined'){
+
+            yaw = this.telemetryData.yaw.toFixed(7);
+
+        }
+
+      }
+
+      return yaw;
 
             break;
 
@@ -1261,9 +1353,11 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   start_command_sending(){
 
-    clearInterval(this.getDataInterval);
+  //  clearInterval(this.getDataInterval);
 
-  //  setTimeout(()=>{
+    setTimeout(()=>{
+
+      this.move_with_speed_interval_cleared = false;
 
       this.move_with_speed_interval  =   setInterval(function(self){
 
@@ -1315,7 +1409,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
       },30,this);
 
 
-  //  },1000)
+    },5000)
 
 
 
