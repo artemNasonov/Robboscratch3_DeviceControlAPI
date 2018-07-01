@@ -31,6 +31,8 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
      this.telemetryDataRaw = [];
      this.move_with_speed_interval_cleared = true;
 
+     this.global_toc_data_object = null;
+
      if (this.radioState === "connected") {
 
        Crazyradio.close();
@@ -222,36 +224,13 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
           if (result.state === true) {
 
-              packet = new ArrayBuffer(1);
-              dv  = new DataView(packet);
-              dv.setUint8(0,0xff,true);
-
-
-              return   Crazyradio.sendPacket(packet);
+              return  this.TOC_DATA_DEVIDER();
 
           }else{
 
-
+                return  this.TOC_DATA_DEVIDER();
 
           }
-
-      }).then(result => {
-
-        if (result.state === true) {
-
-            packet = new ArrayBuffer(1);
-            dv  = new DataView(packet);
-            dv.setUint8(0,0xf3,true);
-
-
-            return   Crazyradio.sendPacket(packet);
-
-        }else{
-
-
-
-        }
-
 
       }).then(result => {
 
@@ -314,38 +293,13 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
         if (result.state === true) {
 
-            packet = new ArrayBuffer(1);
-            dv  = new DataView(packet);
-            dv.setUint8(0,0xff,true);
-
-
-            return   Crazyradio.sendPacket(packet);
+            return  this.TOC_DATA_DEVIDER();
 
         }else{
 
-
+              return  this.TOC_DATA_DEVIDER();
 
         }
-
-    }).then(result => {
-
-        console.log(`TOC_GET_ITEM incoming data: ${result.data}`);
-
-      if (result.state === true) {
-
-          packet = new ArrayBuffer(1);
-          dv  = new DataView(packet);
-          dv.setUint8(0,0xf3,true);
-
-
-          return  Crazyradio.sendPacket(packet);
-
-      }else{
-
-
-
-      }
-
 
     }).then(result => {
 
@@ -426,16 +380,11 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
         if (result.state === true) {
 
-            packet = new ArrayBuffer(1);
-            dv  = new DataView(packet);
-            dv.setUint8(0,0xff,true);
-
-
-            return   Crazyradio.sendPacket(packet);
+            return  this.TOC_DATA_DEVIDER();
 
         }else{
 
-            return   Crazyradio.sendPacket(packet);
+              return  this.TOC_DATA_DEVIDER();
 
         }
 
@@ -445,31 +394,20 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
       if (result.state === true) {
 
-          packet = new ArrayBuffer(1);
-          dv  = new DataView(packet);
-          dv.setUint8(0,0xf3,true);
-
-
-          return  Crazyradio.sendPacket(packet);
-
-      }else{
-
-            return   Crazyradio.sendPacket(packet);
-
-      }
-
-
-    }).then(result => {
-
-        console.log(`TOC_CREATE_BLOCK incoming data: ${result.data}`);
-
-      if (result.state === true) {
 
 
 
 
+        this.TOC_CHECK_HEADER([0x51], result.data, 5).then((data) => {
 
-          resolve(result.data);
+              resolve(result.data);
+
+
+        }).catch((error) => {
+
+
+
+        })
 
 
 
@@ -494,6 +432,233 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
   });
 
   }
+
+
+    TOC_DATA_DEVIDER_F3(try_counter){
+
+
+      console.log(`TOC_DATA_DEVIDER_F3 try_counter: ${try_counter}`);
+
+      return new Promise((resolve,reject)=>{
+
+
+      //  var try_counter = 0;
+
+        var  packet = new ArrayBuffer(1);
+        var  dv  = new DataView(packet);
+        dv.setUint8(0,0xf3,true);
+
+
+         Crazyradio.sendPacket(packet).then(result => {
+
+              console.log(`TOC_DATA_DEVIDER_F3 incoming data: ${result.data}`);
+
+              if (result.state === true) {
+
+                  resolve(result);
+
+              }else{
+
+                  if (try_counter != 0 ){
+
+                  //  try_counter++
+
+                    this.TOC_DATA_DEVIDER_F3(try_counter  - 1).then((result) =>{
+
+                        console.log(`TOC_DATA_DEVIDER_F3 incoming data: ${result.data}`);
+
+                        resolve(result);
+
+                    }).catch((error) => {
+
+
+
+                    })
+
+                  }else{
+
+                      console.log(`TOC_DATA_DEVIDER_F3  ${try_counter} attempts passed but getting 0 `);
+                      resolve(result);
+
+                  }
+
+
+
+              }
+
+
+         }).catch(() => {
+
+
+
+
+         });
+
+      });
+
+    }
+
+    TOC_DATA_DEVIDER_FF(try_counter){
+
+      console.log(`TOC_DATA_DEVIDER_FF try_counter: ${try_counter}`);
+
+      return new Promise((resolve,reject)=>{
+
+
+        //var try_counter = 0;
+
+        var  packet = new ArrayBuffer(1);
+        var  dv  = new DataView(packet);
+        dv.setUint8(0,0xff,true);
+
+
+         Crazyradio.sendPacket(packet).then(result => {
+
+              console.log(`TOC_DATA_DEVIDER_FF incoming data: ${result.data}`);
+
+              if (result.state === true) {
+
+
+
+                  resolve(result);
+
+              }else{
+
+                  if (try_counter != 0){
+
+                  //  try_counter++
+
+                    this.TOC_DATA_DEVIDER_FF((try_counter - 1)).then((result) =>{
+
+                        console.log(`TOC_DATA_DEVIDER_FF incoming data: ${result.data}`);
+
+                        resolve(result);
+
+                    }).catch((error) => {
+
+
+
+                    })
+
+                  }else{
+
+                    console.log(`TOC_DATA_DEVIDER_FF  ${try_counter} attempts passed but getting 0 `);
+
+                    resolve(result);
+
+
+                  }
+
+
+
+              }
+
+
+         }).catch(() => {
+
+
+
+
+         });
+
+      });
+
+    }
+
+
+    TOC_DATA_DEVIDER(){
+
+      console.log(`TOC_DATA_DEVIDER`);
+
+      return new Promise((resolve,reject)=>{
+
+
+            this.TOC_DATA_DEVIDER_FF(5).then((result) => {
+
+
+                if (result.state === true) {
+
+                    return this.TOC_DATA_DEVIDER_F3(5);
+
+                }else{
+
+                    return this.TOC_DATA_DEVIDER_F3(5);
+
+                }
+
+
+
+
+
+            }).then((result) => {
+
+
+                resolve(result);
+
+
+            }).catch((error) => {
+
+
+
+            })
+
+        });
+
+
+
+    }
+
+    TOC_CHECK_HEADER(header_values_to_check,data,try_counter){
+
+      console.log(`TOC_CHECK_HEADER try_counter ${try_counter}`);
+
+      return new Promise((resolve,reject)=>{
+
+        if ( (header_values_to_check.indexOf(data[0]) != -1 ) ){
+
+            resolve(data);
+
+        }else{
+
+
+          if (try_counter != 0 ){
+
+
+              this.TOC_DATA_DEVIDER_FF(5).then((result) => {
+
+              return  this.TOC_CHECK_HEADER(header_values_to_check, result,(try_counter - 1))
+
+
+
+            }).then((result)=> {
+
+                  resolve(result);
+
+            }).catch((error) => {
+
+
+
+
+              });
+
+
+            }else{
+
+
+              console.log(`TOC_CHECK_HEADER  ${try_counter} attempts passed but getting bad answer `);
+
+              resolve(result);
+
+
+            }
+
+        }
+
+
+      });
+
+
+    }
 
   TOC_START_BLOCK(block_id){
 
@@ -520,18 +685,15 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
         console.log(`TOC_START_BLOCK incoming data: ${result.data}`);
 
 
+
+
         if (result.state === true) {
 
-            packet = new ArrayBuffer(1);
-            dv  = new DataView(packet);
-            dv.setUint8(0,0xff,true);
-
-
-            return   Crazyradio.sendPacket(packet);
+            return  this.TOC_DATA_DEVIDER();
 
         }else{
 
-              return   Crazyradio.sendPacket(packet);
+              return  this.TOC_DATA_DEVIDER();
 
         }
 
@@ -541,36 +703,20 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
       if (result.state === true) {
 
-          packet = new ArrayBuffer(1);
-          dv  = new DataView(packet);
-          dv.setUint8(0,0xf3,true);
+            this.TOC_CHECK_HEADER([0x51], result.data, 5).then((data) => {
+
+                  resolve(result.data);
 
 
-          return  Crazyradio.sendPacket(packet);
-
-      }else{
-
-            return   Crazyradio.sendPacket(packet);
-
-      }
-
-
-    }).then(result => {
-
-        console.log(`TOC_START_BLOCK incoming data: ${result.data}`);
-
-      if (result.state === true) {
+            }).catch((error) => {
 
 
 
-
-
-          resolve(result.data);
-
+            })
 
 
 
-      }else{
+  }else{
 
 
 
@@ -594,7 +740,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   PROCESS_TELEMETRY_DATA(data){
 
-      console.log(`PROCESS_TELEMETRY_DATA`);
+  //    console.log(`PROCESS_TELEMETRY_DATA`);
 
 
       /*
@@ -612,13 +758,14 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
     var view;
 
    //
-   //  buffer = this.telemetryDataRaw[1].slice(5,9).buffer
-   //
-   //  view = new DataView(buffer);
-   //
-   // this.telemetryData.yaw = view.getFloat32(0,true);
-   //
-   // console.log(`Quadcopter telemetry  data yaw: ${this.telemetryData.yaw} `);
+    buffer = this.telemetryDataRaw[1].slice(5,9).buffer
+
+    view = new DataView(buffer);
+
+   this.telemetryData.yaw = view.getFloat32(0,true);
+
+   console.log(`Quadcopter telemetry  data yaw: ${this.telemetryData.yaw} `);
+
    //
    //
    //
@@ -627,13 +774,13 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
    //
    //
 
-    buffer = this.telemetryDataRaw[1].slice(5,9).buffer
+    buffer = this.telemetryDataRaw[1].slice(9,13).buffer
 
     view = new DataView(buffer);
 
    this.telemetryData.vbat = view.getFloat32(0,true);
 
-   console.log(`Quadcopter telemetry  data vbat: ${this.telemetryData.vbat} `);
+  // console.log(`Quadcopter telemetry  data vbat: ${this.telemetryData.vbat} `);
 
 
 
@@ -644,7 +791,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   this.telemetryData.x = view.getFloat32(0,true);
 
- console.log(`Quadcopter telemetry  data x: ${this.telemetryData.x} `);
+// console.log(`Quadcopter telemetry  data x: ${this.telemetryData.x} `);
 
 
    buffer = this.telemetryDataRaw[0].slice(9,13).buffer
@@ -653,7 +800,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   this.telemetryData.y = view.getFloat32(0,true);
 
- console.log(`Quadcopter telemetry  data y: ${this.telemetryData.y} `);
+// console.log(`Quadcopter telemetry  data y: ${this.telemetryData.y} `);
 
 
    buffer = this.telemetryDataRaw[0].slice(13).buffer
@@ -662,7 +809,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   this.telemetryData.z = view.getFloat32(0,true);
 
- console.log(`Quadcopter telemetry  data z: ${this.telemetryData.z} `);
+ //console.log(`Quadcopter telemetry  data z: ${this.telemetryData.z} `);
 
 
   }
@@ -691,7 +838,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
                 if ( ([0x50,0x54,0x56,0x5C,0x52].indexOf(result.data[0]) != -1 ) ){
 
-                      console.log(`Quadcopter get data: ${result.data} `);
+                  //    console.log(`Quadcopter get data: ${result.data} `);
 
 
 
@@ -732,6 +879,72 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
     return new Promise((resolve,reject)=>{
 
+      var data_scanning_interval = setInterval(() => {
+
+        if (typeof(this.global_toc_data_object) != 'undefined'){
+
+            if ( ([0x51].indexOf(this.global_toc_data_object[0]) != -1 ) ){
+
+                console.log(`TOC_BLOCK_STEP use data captured by GET_ITEM`);
+
+                switch (this.global_toc_data_object[1]) {
+
+                  case 0:
+
+
+                  clearInterval(data_scanning_interval);
+                  this.TOC_START_BLOCK(this.global_toc_data_object[2]).then(data => {
+
+
+
+                      resolve(data);
+
+
+                  }).catch(error => {
+
+
+
+                  });
+
+
+                    break;
+
+                  case 3:
+
+                     clearInterval(data_scanning_interval);
+                    resolve(this.global_toc_data_object);
+
+                      break;
+                  default:
+
+                }
+
+            }else if ( ([0x50,0xf3,0xf7].indexOf(this.global_toc_data_object[0]) != -1 ) ){
+
+                clearInterval(data_scanning_interval);
+                this.TOC_CHECK_HEADER([0x51], this.global_toc_data_object, 15).then((data) => {
+
+                    // clearInterval(data_scanning_interval);
+
+                    if ( ([0x51].indexOf(data[0]) != -1 ) ){
+
+
+                          resolve(data);
+
+                    }
+
+                }).catch((error) => {
+
+
+
+                })
+
+            }
+
+          }
+
+      },50);
+
 
       this.runningStep = "TOC_BLOCK_STEP_1_START_BLOCK";
       this.TOC_CREATE_BLOCK(telemetry_element_table,prefered_telemetry_table,block_id).then(data => {
@@ -744,7 +957,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
                 this.TOC_START_BLOCK(data[2]).then(data => {
 
 
-
+                     clearInterval(data_scanning_interval);
                     resolve(data);
 
                 }).catch(error => {
@@ -790,6 +1003,184 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   }
 
+  PROCESS_TOC_GET_ITEM_RESULT(data,telemetry_element_table,prefered_telemetry_table){
+
+
+    var telemetry_element_name;
+    var telemetry_element_group;
+
+    data = data.slice(2);
+
+    while (data[0] == 0){
+
+      data = data.slice(1);
+    }
+
+    telemetry_element_name  =  this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1));
+    telemetry_element_group =  this.getStringFromTypedArray(data.slice(2,data.indexOf(0)));
+
+      console.log(`TOC_GET_ITEM  telemetry_element_name ${telemetry_element_name}`);
+
+    telemetry_element_table[data[0]] = {
+
+        telemetry_element_type: data[1],
+        telemetry_element_group_and_name: this.getStringFromTypedArray(data.slice(2)),
+        telemetry_element_group:  this.getStringFromTypedArray(data.slice(2,data.indexOf(0))),
+        telemetry_element_name:   this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1)),
+        telemetry_element_id:      data[0]
+
+  }
+
+
+  if ( (["vbat","x","y","z"].indexOf(telemetry_element_name) != -1) && (["stateEstimate","pm"].indexOf(telemetry_element_group) != -1) ){
+
+
+      prefered_telemetry_table.push(data[0]);
+
+      console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
+
+  }
+
+   console.log(`telemetry_element id: ${data[0]}  type: ${telemetry_element_table[data[0]].telemetry_element_type} group:  ${telemetry_element_table[data[0]].telemetry_element_group} name:  ${telemetry_element_table[data[0]].telemetry_element_name} `);
+
+    var telemetry_object = {};
+
+      telemetry_object.telemetry_element_table  = telemetry_element_table;
+      telemetry_object.prefered_telemetry_table = prefered_telemetry_table;
+
+      return telemetry_object;
+
+
+  }
+
+
+  TOC_GET_ITEMS(toc_log_len){
+
+    console.log(`TOC_GET_ITEMS`);
+
+    return new Promise((resolve,reject)=>{
+
+          var toc_item_index = 0;
+          var toc_item_recieved_answers = 0;
+          var toc_item_sent_queries = 0;
+          var telemetry_object = {};
+
+          var time_now = Date.now();
+          var toc_get_item_sent_time = Date.now();
+          var toc_get_item_time_delta = 250;
+
+          var telemetry_element_table = [];
+          var prefered_telemetry_table = [];
+
+          var telemetry_element_name;
+          var telemetry_element_group;
+
+
+          this.runningStep = "TOC_GET_ITEM";
+
+          var  TOC_GET_ITEM_INTERVAL =    setInterval(() => {
+
+
+            time_now = Date.now();
+            if ( (toc_item_sent_queries == toc_item_recieved_answers) || ( (time_now - toc_get_item_sent_time) > toc_get_item_time_delta )  ){
+
+
+                          toc_get_item_sent_time = Date.now();
+                          toc_item_sent_queries++;
+                          console.log(`TOC_GET_ITEM toc_item_sent_queries  ${toc_item_sent_queries} `);
+
+                          this.TOC_GET_ITEM(toc_item_index).then(data => {
+
+                                console.log(`TOC_GET_ITEM  data resolver`);
+
+                                if (toc_item_recieved_answers >= 243){
+
+                                  this.global_toc_data_object = data;
+                                }
+
+
+                                if ( ([0x50,0x54,0x56,0x5C].indexOf(data[0]) != -1 ) ){   //проверяем, является ли ответ нужным нам.
+
+                                    console.log(`TOC_GET_ITEM  correct answer`);
+
+                                    //telemetry_object = this.PROCESS_TOC_GET_ITEM_RESULT(data,telemetry_element_table,prefered_telemetry_table);
+
+                                    data = data.slice(2);
+
+                                    while (data[0] == 0){
+
+                                      data = data.slice(1);
+                                    }
+
+                                    telemetry_element_name  =  this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1));
+                                    telemetry_element_group =  this.getStringFromTypedArray(data.slice(2,data.indexOf(0)));
+
+                                      console.log(`TOC_GET_ITEM  telemetry_element_name ${telemetry_element_name}`);
+
+                                    telemetry_element_table[data[0]] = {
+
+                                        telemetry_element_type: data[1],
+                                        telemetry_element_group_and_name: this.getStringFromTypedArray(data.slice(2)),
+                                        telemetry_element_group:  this.getStringFromTypedArray(data.slice(2,data.indexOf(0))),
+                                        telemetry_element_name:   this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1)),
+                                        telemetry_element_id:      data[0]
+
+                                  }
+
+                                  if ((telemetry_element_name == "yaw" ) && (telemetry_element_group == "controller")){
+
+                                    prefered_telemetry_table.push(data[0]);
+
+                                    console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
+
+                                  }
+
+
+                                  if ( (["vbat","x","y","z"].indexOf(telemetry_element_name) != -1) && (["stateEstimate","pm"].indexOf(telemetry_element_group) != -1) ){
+
+
+                                      prefered_telemetry_table.push(data[0]);
+
+                                      console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
+
+                                  }
+
+                                   console.log(`telemetry_element id: ${data[0]}  type: ${telemetry_element_table[data[0]].telemetry_element_type} group:  ${telemetry_element_table[data[0]].telemetry_element_group} name:  ${telemetry_element_table[data[0]].telemetry_element_name} `);
+
+                                    toc_item_index++;
+                                    toc_item_recieved_answers++;
+                                    console.log(`TOC_GET_ITEM toc_item_recieved_answers  ${toc_item_recieved_answers} `);
+
+                                    if ((toc_item_index == toc_log_len) ){
+
+
+                                      telemetry_object.telemetry_element_table  = telemetry_element_table;
+                                      telemetry_object.prefered_telemetry_table = prefered_telemetry_table;
+
+                                        clearInterval(TOC_GET_ITEM_INTERVAL);
+                                        resolve(telemetry_object);
+
+                                    }
+
+
+                              }
+
+
+                          }).catch((error) => {
+
+
+
+                          });
+
+            }
+
+
+        },100);
+
+    });
+
+  }
+
   startDataRecieving(){
 
 
@@ -804,180 +1195,45 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
               console.log("Quadcopter TOC Len Recieve step was sucessfully passed");
 
+            return this.TOC_GET_ITEMS(toc_log_len);
 
-              let get_item_functions_arr = [];
-              var toc_item_index = 0;
-              var toc_item_recieved_answers = 0;
-              var toc_item_sent_queries = 0;
-              var telemetry_element_table = [];
-              var prefered_telemetry_table = [];
-              var   telemetry_element_name;
-              var   telemetry_element_group;
-          //    for (i=0;i<toc_log_len;i++){
+        }).then((telemetry_object) => {
 
+          var prefered_telemetry_table =  telemetry_object.prefered_telemetry_table;
+          var telemetry_element_table  =  telemetry_object.telemetry_element_table;
 
-              this.runningStep = "TOC_GET_ITEM";
-              var  TOC_GET_ITEM_INTERVAL =    setInterval(() => {
+          var prefered_telemetry_table1 = prefered_telemetry_table.slice(0,3);
 
-                    toc_item_sent_queries++;
-                    this.TOC_GET_ITEM(toc_item_index).then(data => {
+          console.log(`prefered_telemetry_table1  ${prefered_telemetry_table1}`);
 
-                        console.log(`TOC_GET_ITEM  data resolver`);
 
-                          console.log(`TOC_GET_DATA running step: ${this.runningStep}`);
+          this.runningStep = "TOC_BLOCK_STEP_1";
 
-                          if (this.runningStep == "TOC_BLOCK_STEP_1_START_BLOCK"){
+          this.TOC_BLOCK_STEP(telemetry_element_table, prefered_telemetry_table1, 0).then(data => {
 
-                            this.TOC_START_BLOCK(data[2]).then(data => {
+               if (data[3] == 0){
 
+                  console.log(`startDataRecieving running step: ${this.runningStep}`);
 
-                              var prefered_telemetry_table2 = prefered_telemetry_table.slice(3,prefered_telemetry_table.length);
-                              console.log(`prefered_telemetry_table2  ${prefered_telemetry_table2}`);
+                   var prefered_telemetry_table2 = prefered_telemetry_table.slice(3,prefered_telemetry_table.length);
+                    console.log(`main branch prefered_telemetry_table2  ${prefered_telemetry_table2}`);
 
-                              return this.TOC_BLOCK_STEP(telemetry_element_table, prefered_telemetry_table2,1)
+                  return this.TOC_BLOCK_STEP(telemetry_element_table, prefered_telemetry_table2,1);
+                }
 
+          }).then(data => {
 
-                            }).then(data => {
+            if (data[3] == 0){
 
-                              if (data[3] == 0){
+                  this.runningStep = "GET_TELEMETRY_DATA";
+                  this.GET_TELEMETRY_DATA();
+            }
 
-                                    this.runningStep = "GET_TELEMETRY_DATA";
-                                    this.GET_TELEMETRY_DATA();
-                              }
+          }).catch(error => {
 
-                            }).catch(error => {
 
 
-
-                            });
-
-
-                          } else  if ( ([0x50,0x54,0x56,0x5C].indexOf(data[0]) != -1 ) ){ //проверяем, является ли ответ нужным нам.
-
-                              console.log(`TOC_GET_ITEM  correct answer`);
-
-                            data = data.slice(2);
-
-                            while (data[0] == 0){
-
-                              data = data.slice(1);
-                            }
-
-                            telemetry_element_name  =  this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1));
-                            telemetry_element_group =  this.getStringFromTypedArray(data.slice(2,data.indexOf(0)));
-
-                              console.log(`TOC_GET_ITEM  telemetry_element_name ${telemetry_element_name}`);
-
-                            telemetry_element_table[data[0]] = {
-
-                                telemetry_element_type: data[1],
-                                telemetry_element_group_and_name: this.getStringFromTypedArray(data.slice(2)),
-                                telemetry_element_group:  this.getStringFromTypedArray(data.slice(2,data.indexOf(0))),
-                                telemetry_element_name:   this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1)),
-                                telemetry_element_id:      data[0]
-
-                          }
-
-                          //"vbat","x","y","z","yaw",   "stateEstimate" "controller",   "roll","pitch","yaw"   "stabilizer"
-
-                          if ( (["vbat","x","y","z"].indexOf(telemetry_element_name) != -1) && (["stateEstimate","pm"].indexOf(telemetry_element_group) != -1) ){
-
-
-                              prefered_telemetry_table.push(data[0]);
-
-                              console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
-
-                          }
-
-                        console.log(`telemetry_element id: ${data[0]}  type: ${telemetry_element_table[data[0]].telemetry_element_type} group:  ${telemetry_element_table[data[0]].telemetry_element_group} name:  ${telemetry_element_table[data[0]].telemetry_element_name} `);
-
-
-                              toc_item_index++;
-                              toc_item_recieved_answers++;
-
-                              if ((toc_item_index == toc_log_len) /* && (toc_item_recieved_answers== toc_item_sent_queries)*/){
-                                    clearInterval(TOC_GET_ITEM_INTERVAL);
-
-                                    var prefered_telemetry_table1 = prefered_telemetry_table.slice(0,3);
-
-                                    console.log(`prefered_telemetry_table1  ${prefered_telemetry_table1}`);
-
-
-                                    this.runningStep = "TOC_BLOCK_STEP_1";
-                                    this.TOC_BLOCK_STEP(telemetry_element_table, prefered_telemetry_table1, 0).then(data => {
-
-                                         if (data[3] == 0){
-
-                                           if ( (this.runningStep != "TOC_BLOCK_STEP_2") || (this.runningStep != "GET_TELEMETRY_DATA") ){
-
-                                             var prefered_telemetry_table2 = prefered_telemetry_table.slice(3,prefered_telemetry_table.length);
-                                               console.log(`maun branch prefered_telemetry_table2  ${prefered_telemetry_table2}`);
-
-                                            return this.TOC_BLOCK_STEP(telemetry_element_table, prefered_telemetry_table2,1);
-
-                                           }
-
-                                         }
-
-                                    }).then(data => {
-
-                                      if (data[3] == 0){
-
-                                            this.runningStep = "GET_TELEMETRY_DATA";
-                                            this.GET_TELEMETRY_DATA();
-                                      }
-
-                                    }).catch(error => {
-
-
-
-                                    })
-
-
-
-                              }else{
-
-                              //      clearInterval(TOC_GET_ITEM_INTERVAL);
-
-                              }
-
-
-
-
-
-                          }
-
-
-
-
-
-
-                    }).catch(error => {
-
-
-
-                    });
-
-
-
-                  },100);
-
-
-
-          //    }
-
-              // Promise.all(get_item_functions_arr).then(results => {
-              //
-              //   for (i=0;i<toc_log_len;i++){
-              //
-              //       console.log(`COPTER_TOC_GET_ITEM: ${results[i]}`);
-              //
-              //   }
-              //
-              // });
-
-
-
+          });
 
         }).catch(error => {
 
@@ -1384,7 +1640,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
                   if ( ([0x50,0x54,0x56,0x5C,0x52].indexOf(result.data[0]) != -1 ) ){
 
-                        console.log(`Quadcopter get data: ${result.data} `);
+                    //    console.log(`Quadcopter get data: ${result.data} `);
 
 
 
@@ -1445,6 +1701,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
     console.log("copter copter_land()");
 
+    clearInterval(this.move_with_speed_interval);
     Crazyradio.close();
 
 
