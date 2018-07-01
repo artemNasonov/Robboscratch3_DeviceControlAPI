@@ -881,7 +881,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
       var data_scanning_interval = setInterval(() => {
 
-        if (typeof(this.global_toc_data_object) != 'undefined'){
+        if ( (typeof(this.global_toc_data_object) != 'undefined') && (this.global_toc_data_object != null) ){
 
             if ( ([0x51].indexOf(this.global_toc_data_object[0]) != -1 ) ){
 
@@ -1060,122 +1060,186 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
     return new Promise((resolve,reject)=>{
 
-          var toc_item_index = 0;
-          var toc_item_recieved_answers = 0;
-          var toc_item_sent_queries = 0;
+
           var telemetry_object = {};
-
-          var time_now = Date.now();
-          var toc_get_item_sent_time = Date.now();
-          var toc_get_item_time_delta = 250;
-
           var telemetry_element_table = [];
           var prefered_telemetry_table = [];
 
-          var telemetry_element_name;
-          var telemetry_element_group;
+        //   var toc_item_index = 0;
+        //   var toc_item_recieved_answers = 0;
+        //   var toc_item_sent_queries = 0;
+        //   var telemetry_object = {};
+        //
+        //   var time_now = Date.now();
+        //   var toc_get_item_sent_time = Date.now();
+        //   var toc_get_item_time_delta = 250;
+        //
+        //   var telemetry_element_table = [];
+        //   var prefered_telemetry_table = [];
+        //
+        //   var telemetry_element_name;
+        //   var telemetry_element_group;
+        //
+        //
+        //   this.runningStep = "TOC_GET_ITEM";
+        //
+        //   var  TOC_GET_ITEM_INTERVAL =    setInterval(() => {
+        //
+        //
+        //     time_now = Date.now();
+        //     if ( (toc_item_sent_queries == toc_item_recieved_answers) || ( (time_now - toc_get_item_sent_time) > toc_get_item_time_delta )  ){
+        //
+        //
+        //                   toc_get_item_sent_time = Date.now();
+        //                   toc_item_sent_queries++;
+        //                   console.log(`TOC_GET_ITEM toc_item_sent_queries  ${toc_item_sent_queries} `);
+        //
+        //                   this.TOC_GET_ITEM(toc_item_index).then(data => {
+        //
+        //                         console.log(`TOC_GET_ITEM  data resolver`);
+        //
+        //                         if (toc_item_recieved_answers >= 243){
+        //
+        //                           this.global_toc_data_object = data;
+        //                         }
+        //
+        //
+        //                         if ( ([0x50,0x54,0x56,0x5C].indexOf(data[0]) != -1 ) ){   //проверяем, является ли ответ нужным нам.
+        //
+        //                             console.log(`TOC_GET_ITEM  correct answer`);
+        //
+        //                             //telemetry_object = this.PROCESS_TOC_GET_ITEM_RESULT(data,telemetry_element_table,prefered_telemetry_table);
+        //
+        //                             data = data.slice(2);
+        //
+        //                             while (data[0] == 0){
+        //
+        //                               data = data.slice(1);
+        //                             }
+        //
+        //                             telemetry_element_name  =  this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1));
+        //                             telemetry_element_group =  this.getStringFromTypedArray(data.slice(2,data.indexOf(0)));
+        //
+        //                               console.log(`TOC_GET_ITEM  telemetry_element_name ${telemetry_element_name}`);
+        //
+        //                             telemetry_element_table[data[0]] = {
+        //
+        //                                 telemetry_element_type: data[1],
+        //                                 telemetry_element_group_and_name: this.getStringFromTypedArray(data.slice(2)),
+        //                                 telemetry_element_group:  this.getStringFromTypedArray(data.slice(2,data.indexOf(0))),
+        //                                 telemetry_element_name:   this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1)),
+        //                                 telemetry_element_id:      data[0]
+        //
+        //                           }
+        //
+        //                           if ((telemetry_element_name == "yaw" ) && (telemetry_element_group == "controller")){
+        //
+        //                             prefered_telemetry_table.push(data[0]);
+        //
+        //                             console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
+        //
+        //                           }
+        //
+        //
+        //                           if ( (["vbat","x","y","z"].indexOf(telemetry_element_name) != -1) && (["stateEstimate","pm"].indexOf(telemetry_element_group) != -1) ){
+        //
+        //
+        //                               prefered_telemetry_table.push(data[0]);
+        //
+        //                               console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
+        //
+        //                           }
+        //
+        //                            console.log(`telemetry_element id: ${data[0]}  type: ${telemetry_element_table[data[0]].telemetry_element_type} group:  ${telemetry_element_table[data[0]].telemetry_element_group} name:  ${telemetry_element_table[data[0]].telemetry_element_name} `);
+        //
+        //                             toc_item_index++;
+        //                             toc_item_recieved_answers++;
+        //                             console.log(`TOC_GET_ITEM toc_item_recieved_answers  ${toc_item_recieved_answers} `);
+        //
+        //                             if ((toc_item_index == toc_log_len) ){
+        //
+        //
+        //                               telemetry_object.telemetry_element_table  = telemetry_element_table;
+        //                               telemetry_object.prefered_telemetry_table = prefered_telemetry_table;
+        //
+        //                                 clearInterval(TOC_GET_ITEM_INTERVAL);
+        //                                 resolve(telemetry_object);
+        //
+        //                             }
+        //
+        //
+        //                       }
+        //
+        //
+        //                   }).catch((error) => {
+        //
+        //
+        //
+        //                   });
+        //
+        //     }
+        //
+        //
+        // },100);
 
 
-          this.runningStep = "TOC_GET_ITEM";
+        telemetry_element_table[62] = {
 
-          var  TOC_GET_ITEM_INTERVAL =    setInterval(() => {
+                          telemetry_element_type: 0x07,
+                          telemetry_element_group_and_name:"",
+                          telemetry_element_group:  "stateEstimate",
+                          telemetry_element_name:    "x",
+                          telemetry_element_id:     62
 
+                                  }
 
-            time_now = Date.now();
-            if ( (toc_item_sent_queries == toc_item_recieved_answers) || ( (time_now - toc_get_item_sent_time) > toc_get_item_time_delta )  ){
+        telemetry_element_table[63] = {
 
+                          telemetry_element_type: 0x07,
+                          telemetry_element_group_and_name:"",
+                          telemetry_element_group:  "stateEstimate",
+                          telemetry_element_name:    "y",
+                          telemetry_element_id:     63
 
-                          toc_get_item_sent_time = Date.now();
-                          toc_item_sent_queries++;
-                          console.log(`TOC_GET_ITEM toc_item_sent_queries  ${toc_item_sent_queries} `);
+                                  }
 
-                          this.TOC_GET_ITEM(toc_item_index).then(data => {
+        telemetry_element_table[64] = {
 
-                                console.log(`TOC_GET_ITEM  data resolver`);
+                          telemetry_element_type: 0x07,
+                          telemetry_element_group_and_name:"",
+                          telemetry_element_group:  "stateEstimate",
+                          telemetry_element_name:    "z",
+                          telemetry_element_id:     64
 
-                                if (toc_item_recieved_answers >= 243){
+                                  }
 
-                                  this.global_toc_data_object = data;
-                                }
+        telemetry_element_table[92] = {
 
+                            telemetry_element_type: 0x07,
+                            telemetry_element_group_and_name:"",
+                            telemetry_element_group:  "controller",
+                            telemetry_element_name:    "yaw",
+                            telemetry_element_id:     92
 
-                                if ( ([0x50,0x54,0x56,0x5C].indexOf(data[0]) != -1 ) ){   //проверяем, является ли ответ нужным нам.
-
-                                    console.log(`TOC_GET_ITEM  correct answer`);
-
-                                    //telemetry_object = this.PROCESS_TOC_GET_ITEM_RESULT(data,telemetry_element_table,prefered_telemetry_table);
-
-                                    data = data.slice(2);
-
-                                    while (data[0] == 0){
-
-                                      data = data.slice(1);
                                     }
 
-                                    telemetry_element_name  =  this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1));
-                                    telemetry_element_group =  this.getStringFromTypedArray(data.slice(2,data.indexOf(0)));
+        telemetry_element_table[100] = {
 
-                                      console.log(`TOC_GET_ITEM  telemetry_element_name ${telemetry_element_name}`);
-
-                                    telemetry_element_table[data[0]] = {
-
-                                        telemetry_element_type: data[1],
-                                        telemetry_element_group_and_name: this.getStringFromTypedArray(data.slice(2)),
-                                        telemetry_element_group:  this.getStringFromTypedArray(data.slice(2,data.indexOf(0))),
-                                        telemetry_element_name:   this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1)),
-                                        telemetry_element_id:      data[0]
-
-                                  }
-
-                                  if ((telemetry_element_name == "yaw" ) && (telemetry_element_group == "controller")){
-
-                                    prefered_telemetry_table.push(data[0]);
-
-                                    console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
-
-                                  }
-
-
-                                  if ( (["vbat","x","y","z"].indexOf(telemetry_element_name) != -1) && (["stateEstimate","pm"].indexOf(telemetry_element_group) != -1) ){
-
-
-                                      prefered_telemetry_table.push(data[0]);
-
-                                      console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
-
-                                  }
-
-                                   console.log(`telemetry_element id: ${data[0]}  type: ${telemetry_element_table[data[0]].telemetry_element_type} group:  ${telemetry_element_table[data[0]].telemetry_element_group} name:  ${telemetry_element_table[data[0]].telemetry_element_name} `);
-
-                                    toc_item_index++;
-                                    toc_item_recieved_answers++;
-                                    console.log(`TOC_GET_ITEM toc_item_recieved_answers  ${toc_item_recieved_answers} `);
-
-                                    if ((toc_item_index == toc_log_len) ){
-
-
-                                      telemetry_object.telemetry_element_table  = telemetry_element_table;
-                                      telemetry_object.prefered_telemetry_table = prefered_telemetry_table;
-
-                                        clearInterval(TOC_GET_ITEM_INTERVAL);
-                                        resolve(telemetry_object);
+                            telemetry_element_type: 0x07,
+                            telemetry_element_group_and_name:"",
+                            telemetry_element_group:  "pm",
+                            telemetry_element_name:    "vbat",
+                            telemetry_element_id:     100
 
                                     }
 
 
-                              }
+        prefered_telemetry_table = [62,63,64,92,100];
 
+        telemetry_object.telemetry_element_table  = telemetry_element_table;
+        telemetry_object.prefered_telemetry_table = prefered_telemetry_table;
 
-                          }).catch((error) => {
-
-
-
-                          });
-
-            }
-
-
-        },100);
+         resolve(telemetry_object);
 
     });
 
