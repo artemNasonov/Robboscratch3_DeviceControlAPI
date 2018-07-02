@@ -1675,7 +1675,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   //  clearInterval(this.getDataInterval);
 
-    setTimeout(()=>{
+  //  setTimeout(()=>{
 
       this.move_with_speed_interval_cleared = false;
 
@@ -1702,6 +1702,13 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
             if (result.state === true) {
 
+                // if (!this.move_with_speed_interval_cleared){
+                //
+                //         this.start_command_sending();
+                //
+                // }
+
+
                   if ( ([0x50,0x54,0x56,0x5C,0x52].indexOf(result.data[0]) != -1 ) ){
 
                     //    console.log(`Quadcopter get data: ${result.data} `);
@@ -1726,10 +1733,10 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
         });
 
-      },30,this);
+      },100,this);
 
 
-    },5000)
+  //  },5000)
 
 
 
