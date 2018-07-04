@@ -32,317 +32,150 @@ const DEVICE_STATES = Object.freeze({
    "DEVICE_ERROR":8
 });
 
-const DEVICES = Object.freeze({
-   //Basic Robot
-   0:{
-      "firmware":7,
-      "commands":{
-         "check":{
-            "code": "a",
-            "params": [],
-            "response": {
-                         "encoder0" : "uint2",
-                         "encoder1" : "uint2",
-                         "path0"    : "uint2",
-                         "path1"    : "uint2",
-                         "a0"       : "ubyte[4]",
-                         "a1"       : "ubyte[4]",
-                         "a2"       : "ubyte[4]",
-                         "a3"       : "ubyte[4]",
-                         "a4"       : "ubyte[4]",
-                         "button"   : "ubyte"
-                        }
-         },
-         "power":{
-            "code": "c",
-            "params": ["ubyte", "ubyte"],
-            "response": {
-                         "encoder0" : "uint2",
-                         "encoder1" : "uint2",
-                         "path0"    : "uint2",
-                         "path1"    : "uint2",
-                         "a0"       : "ubyte[4]",
-                         "a1"       : "ubyte[4]",
-                         "a2"       : "ubyte[4]",
-                         "a3"       : "ubyte[4]",
-                         "a4"       : "ubyte[4]",
-                         "button"   : "ubyte"
-                        }
-         },
-         "rob_encoder":{
-            "code": "e",
-            "params": ["ubyte"],
-            "response": {
-                         "encoder0" : "uint2",
-                         "encoder1" : "uint2",
-                         "path0"    : "uint2",
-                         "path1"    : "uint2",
-                         "a0"       : "ubyte[4]",
-                         "a1"       : "ubyte[4]",
-                         "a2"       : "ubyte[4]",
-                         "a3"       : "ubyte[4]",
-                         "a4"       : "ubyte[4]",
-                         "button"   : "ubyte"
-                        }
-         },
-         "rob_lamps":{
-            "code": "h",
-            "params": ["ubyte"],
-            "response": {
-                         "encoder0" : "uint2",
-                         "encoder1" : "uint2",
-                         "path0"    : "uint2",
-                         "path1"    : "uint2",
-                         "a0"       : "ubyte[4]",
-                         "a1"       : "ubyte[4]",
-                         "a2"       : "ubyte[4]",
-                         "a3"       : "ubyte[4]",
-                         "a4"       : "ubyte[4]",
-                         "button"   : "ubyte"
-                        }
-         },
-         "rob_pow_encoder":{
-            "code": "g",
-            "params": ["ubyte", "ubyte","ubyte","ubyte"],
-            "response": {
-                         "encoder0" : "uint2",
-                         "encoder1" : "uint2",
-                         "path0"    : "uint2",
-                         "path1"    : "uint2",
-                         "a0"       : "ubyte[4]",
-                         "a1"       : "ubyte[4]",
-                         "a2"       : "ubyte[4]",
-                         "a3"       : "ubyte[4]",
-                         "a4"       : "ubyte[4]",
-                         "button"   : "ubyte"
-                        }
-         },
-         "rob_claw":{
-            "code": "j",
-            "params": ["ubyte"],
-            "response": {
-                         "encoder0" : "uint2",
-                         "encoder1" : "uint2",
-                         "path0"    : "uint2",
-                         "path1"    : "uint2",
-                         "a0"       : "ubyte[4]",
-                         "a1"       : "ubyte[4]",
-                         "a2"       : "ubyte[4]",
-                         "a3"       : "ubyte[4]",
-                         "a4"       : "ubyte[4]",
-                         "button"   : "ubyte"
-                        }
-         },
-         "sensors":{
-            "code": "i",
-            "params": ["ubyte", "ubyte", "ubyte", "ubyte", "ubyte"],
-            "response": {
-                         "encoder0" : "uint2",
-                         "encoder1" : "uint2",
-                         "path0"    : "uint2",
-                         "path1"    : "uint2",
-                         "a0"       : "ubyte[4]",
-                         "a1"       : "ubyte[4]",
-                         "a2"       : "ubyte[4]",
-                         "a3"       : "ubyte[4]",
-                         "a4"       : "ubyte[4]",
-                         "button"   : "ubyte"
-                        }
-         }
-      }
+const commands_list_robot = {
+   "check":{
+      "code": "a",
+      "params": [],
+      "response": {
+                   "encoder0" : "uint2",
+                   "encoder1" : "uint2",
+                   "path0"    : "uint2",
+                   "path1"    : "uint2",
+                   "a0"       : "ubyte[4]",
+                   "a1"       : "ubyte[4]",
+                   "a2"       : "ubyte[4]",
+                   "a3"       : "ubyte[4]",
+                   "a4"       : "ubyte[4]",
+                   "button"   : "ubyte"
+                  }
    },
-
-   //Old lab
-   1:{
-
-     "firmware":5,
-     "commands":{
-        "check":{
-           "code": "a",
-           "params": [],
-           "response": {
-                         "d8_13" : "ubyte",
-                         "a0"       : "ubyte",
-                         "a1"       : "ubyte",
-                         "a2"       : "ubyte",
-                         "a3"       : "ubyte",
-                         "a4"       : "ubyte",
-                         "a5"       : "ubyte",
-                         "a6"       : "ubyte",
-                         "a7"       : "ubyte",
-                         "a8"       : "ubyte",
-                         "a9"       : "ubyte",
-                         "a10"       : "ubyte",
-                         "a11"       : "ubyte",
-                         "a12"       : "ubyte",
-                         "a13"       : "ubyte",
-                         "a14"       : "ubyte",
-                         "a15"       : "ubyte"
-
-                       }
-        }
-
-    }
+   "power":{
+      "code": "c",
+      "params": ["ubyte", "ubyte"],
+      "response": {
+                   "encoder0" : "uint2",
+                   "encoder1" : "uint2",
+                   "path0"    : "uint2",
+                   "path1"    : "uint2",
+                   "a0"       : "ubyte[4]",
+                   "a1"       : "ubyte[4]",
+                   "a2"       : "ubyte[4]",
+                   "a3"       : "ubyte[4]",
+                   "a4"       : "ubyte[4]",
+                   "button"   : "ubyte"
+                  }
    },
+   "rob_encoder":{
+      "code": "e",
+      "params": ["ubyte"],
+      "response": {
+                   "encoder0" : "uint2",
+                   "encoder1" : "uint2",
+                   "path0"    : "uint2",
+                   "path1"    : "uint2",
+                   "a0"       : "ubyte[4]",
+                   "a1"       : "ubyte[4]",
+                   "a2"       : "ubyte[4]",
+                   "a3"       : "ubyte[4]",
+                   "a4"       : "ubyte[4]",
+                   "button"   : "ubyte"
+                  }
+   },
+   "rob_lamps":{
+      "code": "h",
+      "params": ["ubyte"],
+      "response": {
+                   "encoder0" : "uint2",
+                   "encoder1" : "uint2",
+                   "path0"    : "uint2",
+                   "path1"    : "uint2",
+                   "a0"       : "ubyte[4]",
+                   "a1"       : "ubyte[4]",
+                   "a2"       : "ubyte[4]",
+                   "a3"       : "ubyte[4]",
+                   "a4"       : "ubyte[4]",
+                   "button"   : "ubyte"
+                  }
+   },
+   "rob_pow_encoder":{
+      "code": "g",
+      "params": ["ubyte", "ubyte","ubyte","ubyte"],
+      "response": {
+                   "encoder0" : "uint2",
+                   "encoder1" : "uint2",
+                   "path0"    : "uint2",
+                   "path1"    : "uint2",
+                   "a0"       : "ubyte[4]",
+                   "a1"       : "ubyte[4]",
+                   "a2"       : "ubyte[4]",
+                   "a3"       : "ubyte[4]",
+                   "a4"       : "ubyte[4]",
+                   "button"   : "ubyte"
+                  }
+   },
+   "rob_claw":{
+      "code": "j",
+      "params": ["ubyte"],
+      "response": {
+                   "encoder0" : "uint2",
+                   "encoder1" : "uint2",
+                   "path0"    : "uint2",
+                   "path1"    : "uint2",
+                   "a0"       : "ubyte[4]",
+                   "a1"       : "ubyte[4]",
+                   "a2"       : "ubyte[4]",
+                   "a3"       : "ubyte[4]",
+                   "a4"       : "ubyte[4]",
+                   "button"   : "ubyte"
+                  }
+   },
+   "sensors":{
+      "code": "i",
+      "params": ["ubyte", "ubyte", "ubyte", "ubyte", "ubyte"],
+      "response": {
+                   "encoder0" : "uint2",
+                   "encoder1" : "uint2",
+                   "path0"    : "uint2",
+                   "path1"    : "uint2",
+                   "a0"       : "ubyte[4]",
+                   "a1"       : "ubyte[4]",
+                   "a2"       : "ubyte[4]",
+                   "a3"       : "ubyte[4]",
+                   "a4"       : "ubyte[4]",
+                   "button"   : "ubyte"
+                  }
+   }
+ };
 
-   //New lab
-   2:{
+ const commands_list_laboratory = {
+    "check":{
+       "code": "a",
+       "params": [],
+       "response": {
+                       "d8_13" : "ubyte",
+                       "a0"       : "ubyte",
+                       "a1"       : "ubyte",
+                       "a2"       : "ubyte",
+                       "a3"       : "ubyte",
+                       "a4"       : "ubyte",
+                       "a5"       : "ubyte",
+                       "a6"       : "ubyte",
+                       "a7"       : "ubyte",
+                       "a8"       : "ubyte",
+                       "a9"       : "ubyte",
+                       "a10"       : "ubyte",
+                       "a11"       : "ubyte",
+                       "a12"       : "ubyte",
+                       "a13"       : "ubyte",
+                       "a14"       : "ubyte",
+                       "a15"       : "ubyte"
 
-     "firmware":2,
-     "commands":{
-        "check":{
-           "code": "a",
-           "params": [],
-           "response": {
-                           "d8_13" : "ubyte",
-                           "a0"       : "ubyte",
-                           "a1"       : "ubyte",
-                           "a2"       : "ubyte",
-                           "a3"       : "ubyte",
-                           "a4"       : "ubyte",
-                           "a5"       : "ubyte",
-                           "a6"       : "ubyte",
-                           "a7"       : "ubyte",
-                           "a8"       : "ubyte",
-                           "a9"       : "ubyte",
-                           "a10"       : "ubyte",
-                           "a11"       : "ubyte",
-                           "a12"       : "ubyte",
-                           "a13"       : "ubyte",
-                           "a14"       : "ubyte",
-                           "a15"       : "ubyte"
-
-                       }
-        },
-        "lab_lamps":{
-           "code": "b",
-           "params": ["ubyte"],
-           "response": {
-                         "d8_13" : "ubyte",
-                         "a0"       : "ubyte",
-                         "a1"       : "ubyte",
-                         "a2"       : "ubyte",
-                         "a3"       : "ubyte",
-                         "a4"       : "ubyte",
-                         "a5"       : "ubyte",
-                         "a6"       : "ubyte",
-                         "a7"       : "ubyte",
-                         "a8"       : "ubyte",
-                         "a9"       : "ubyte",
-                         "a10"       : "ubyte",
-                         "a11"       : "ubyte",
-                         "a12"       : "ubyte",
-                         "a13"       : "ubyte",
-                         "a14"       : "ubyte",
-                         "a15"       : "ubyte"
-
-                       }
-        },
-
-        "lab_color_lamps":{
-           "code": "c",
-           "params": ["ubyte"],
-           "response": {
-                         "d8_13" : "ubyte",
-                         "a0"       : "ubyte",
-                         "a1"       : "ubyte",
-                         "a2"       : "ubyte",
-                         "a3"       : "ubyte",
-                         "a4"       : "ubyte",
-                         "a5"       : "ubyte",
-                         "a6"       : "ubyte",
-                         "a7"       : "ubyte",
-                         "a8"       : "ubyte",
-                         "a9"       : "ubyte",
-                         "a10"       : "ubyte",
-                         "a11"       : "ubyte",
-                         "a12"       : "ubyte",
-                         "a13"       : "ubyte",
-                         "a14"       : "ubyte",
-                         "a15"       : "ubyte"
-
-                       }
-        },
-
-        "lab_dig_on":{
-           "code": "e",
-           "params": ["ubyte"],
-           "response": {
-                         "d8_13" : "ubyte",
-                         "a0"       : "ubyte",
-                         "a1"       : "ubyte",
-                         "a2"       : "ubyte",
-                         "a3"       : "ubyte",
-                         "a4"       : "ubyte",
-                         "a5"       : "ubyte",
-                         "a6"       : "ubyte",
-                         "a7"       : "ubyte",
-                         "a8"       : "ubyte",
-                         "a9"       : "ubyte",
-                         "a10"       : "ubyte",
-                         "a11"       : "ubyte",
-                         "a12"       : "ubyte",
-                         "a13"       : "ubyte",
-                         "a14"       : "ubyte",
-                         "a15"       : "ubyte"
-
-                       }
-        },
-
-
-        "lab_dig_off":{
-           "code": "f",
-           "params": ["ubyte"],
-           "response": {
-                         "d8_13" : "ubyte",
-                         "a0"       : "ubyte",
-                         "a1"       : "ubyte",
-                         "a2"       : "ubyte",
-                         "a3"       : "ubyte",
-                         "a4"       : "ubyte",
-                         "a5"       : "ubyte",
-                         "a6"       : "ubyte",
-                         "a7"       : "ubyte",
-                         "a8"       : "ubyte",
-                         "a9"       : "ubyte",
-                         "a10"       : "ubyte",
-                         "a11"       : "ubyte",
-                         "a12"       : "ubyte",
-                         "a13"       : "ubyte",
-                         "a14"       : "ubyte",
-                         "a15"       : "ubyte"
-
-                       }
-        },
-
-        "lab_dig_pwm":{
-           "code": "g",
-           "params": ["ubyte","ubyte"],
-           "response": {
-                         "d8_13" : "ubyte",
-                         "a0"       : "ubyte",
-                         "a1"       : "ubyte",
-                         "a2"       : "ubyte",
-                         "a3"       : "ubyte",
-                         "a4"       : "ubyte",
-                         "a5"       : "ubyte",
-                         "a6"       : "ubyte",
-                         "a7"       : "ubyte",
-                         "a8"       : "ubyte",
-                         "a9"       : "ubyte",
-                         "a10"       : "ubyte",
-                         "a11"       : "ubyte",
-                         "a12"       : "ubyte",
-                         "a13"       : "ubyte",
-                         "a14"       : "ubyte",
-                         "a15"       : "ubyte"
-                       }
-        },
-
-        "lab_sound":{
-           "code": "d",
-           "params": ["ubyte"],
-           "response": {
+                   }
+    },
+    "lab_lamps":{
+       "code": "b",
+       "params": ["ubyte"],
+       "response": {
                      "d8_13" : "ubyte",
                      "a0"       : "ubyte",
                      "a1"       : "ubyte",
@@ -361,10 +194,166 @@ const DEVICES = Object.freeze({
                      "a14"       : "ubyte",
                      "a15"       : "ubyte"
 
-                       }
-        }
+                   }
+    },
 
+    "lab_color_lamps":{
+       "code": "c",
+       "params": ["ubyte"],
+       "response": {
+                     "d8_13" : "ubyte",
+                     "a0"       : "ubyte",
+                     "a1"       : "ubyte",
+                     "a2"       : "ubyte",
+                     "a3"       : "ubyte",
+                     "a4"       : "ubyte",
+                     "a5"       : "ubyte",
+                     "a6"       : "ubyte",
+                     "a7"       : "ubyte",
+                     "a8"       : "ubyte",
+                     "a9"       : "ubyte",
+                     "a10"       : "ubyte",
+                     "a11"       : "ubyte",
+                     "a12"       : "ubyte",
+                     "a13"       : "ubyte",
+                     "a14"       : "ubyte",
+                     "a15"       : "ubyte"
+
+                   }
+    },
+
+    "lab_dig_on":{
+       "code": "e",
+       "params": ["ubyte"],
+       "response": {
+                     "d8_13" : "ubyte",
+                     "a0"       : "ubyte",
+                     "a1"       : "ubyte",
+                     "a2"       : "ubyte",
+                     "a3"       : "ubyte",
+                     "a4"       : "ubyte",
+                     "a5"       : "ubyte",
+                     "a6"       : "ubyte",
+                     "a7"       : "ubyte",
+                     "a8"       : "ubyte",
+                     "a9"       : "ubyte",
+                     "a10"       : "ubyte",
+                     "a11"       : "ubyte",
+                     "a12"       : "ubyte",
+                     "a13"       : "ubyte",
+                     "a14"       : "ubyte",
+                     "a15"       : "ubyte"
+
+                   }
+    },
+
+
+    "lab_dig_off":{
+       "code": "f",
+       "params": ["ubyte"],
+       "response": {
+                     "d8_13" : "ubyte",
+                     "a0"       : "ubyte",
+                     "a1"       : "ubyte",
+                     "a2"       : "ubyte",
+                     "a3"       : "ubyte",
+                     "a4"       : "ubyte",
+                     "a5"       : "ubyte",
+                     "a6"       : "ubyte",
+                     "a7"       : "ubyte",
+                     "a8"       : "ubyte",
+                     "a9"       : "ubyte",
+                     "a10"       : "ubyte",
+                     "a11"       : "ubyte",
+                     "a12"       : "ubyte",
+                     "a13"       : "ubyte",
+                     "a14"       : "ubyte",
+                     "a15"       : "ubyte"
+
+                   }
+    },
+
+    "lab_dig_pwm":{
+       "code": "g",
+       "params": ["ubyte","ubyte"],
+       "response": {
+                     "d8_13" : "ubyte",
+                     "a0"       : "ubyte",
+                     "a1"       : "ubyte",
+                     "a2"       : "ubyte",
+                     "a3"       : "ubyte",
+                     "a4"       : "ubyte",
+                     "a5"       : "ubyte",
+                     "a6"       : "ubyte",
+                     "a7"       : "ubyte",
+                     "a8"       : "ubyte",
+                     "a9"       : "ubyte",
+                     "a10"       : "ubyte",
+                     "a11"       : "ubyte",
+                     "a12"       : "ubyte",
+                     "a13"       : "ubyte",
+                     "a14"       : "ubyte",
+                     "a15"       : "ubyte"
+                   }
+    },
+
+    "lab_sound":{
+       "code": "d",
+       "params": ["ubyte"],
+       "response": {
+                 "d8_13" : "ubyte",
+                 "a0"       : "ubyte",
+                 "a1"       : "ubyte",
+                 "a2"       : "ubyte",
+                 "a3"       : "ubyte",
+                 "a4"       : "ubyte",
+                 "a5"       : "ubyte",
+                 "a6"       : "ubyte",
+                 "a7"       : "ubyte",
+                 "a8"       : "ubyte",
+                 "a9"       : "ubyte",
+                 "a10"       : "ubyte",
+                 "a11"       : "ubyte",
+                 "a12"       : "ubyte",
+                 "a13"       : "ubyte",
+                 "a14"       : "ubyte",
+                 "a15"       : "ubyte"
+
+                   }
     }
+
+};
+
+const DEVICES = Object.freeze({
+   //Basic Robot
+   0:{
+      "firmware":7,
+      "commands":commands_list_robot
+   },
+   3:{
+      "firmware":7,
+      "commands":commands_list_robot
+   },
+
+   //Old lab
+   1:{
+
+     "firmware":5,
+     "commands": commands_list_laboratory
+   },
+
+   //New lab
+   2:{
+
+     "firmware":2,
+     "commands": commands_list_laboratory
+
+   },
+   //Old lab
+   4:{
+
+     "firmware":5,
+     "commands": commands_list_laboratory
 
    }
 });
@@ -413,6 +402,8 @@ function InterfaceDevice(port){
    var wait_for_sync = false;
 
    var recieveListener;
+
+   var bitrate = 115200;
 
 
    var onReceiveCallback = function(info){
@@ -624,7 +615,7 @@ function InterfaceDevice(port){
 
                           if (result){
 
-                                  chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);
+                                  chrome.serial.connect(port.path, {bitrate: bitrate}, onConnect);
 
 
                           }
@@ -871,64 +862,67 @@ function InterfaceDevice(port){
    }
 
    var onConnect = function(connectionInfo){
-      console.log(LOG + "connected.");
-      state = DEVICE_STATES["CONNECTED"];
+
+           if(typeof(connectionInfo)!== "undefined")
+           {console.log(LOG + "connected.");
+           state = DEVICE_STATES["CONNECTED"];
+
+           iConnectionId = connectionInfo.connectionId;
+
+           if (typeof(iConnectionId) == 'undefined'){
+
+                 state = DEVICE_STATES["DEVICE_ERROR"];
+
+           }
+
+             console.log(LOG + "iConnectionId:" + iConnectionId);
 
 
-      iConnectionId = connectionInfo.connectionId;
+             bufIncomingData = new Uint8Array();
+             iWaiting = 0;
+             commandToRun = null;
+             wait_for_sync=false;
 
-      if (typeof(iConnectionId) == 'undefined'){
+             console.log(LOG + "wait_for_sync: " + wait_for_sync);
 
-            state = DEVICE_STATES["DEVICE_ERROR"];
+             chrome.serial.flush(iConnectionId, onFlush);
+             can_check_serial_after_flush = false;
 
-      }
-
-        console.log(LOG + "iConnectionId:" + iConnectionId);
-
-
-        bufIncomingData = new Uint8Array();
-        iWaiting = 0;
-        commandToRun = null;
-        wait_for_sync=false;
-
-        console.log(LOG + "wait_for_sync: " + wait_for_sync);
-
-        chrome.serial.flush(iConnectionId, onFlush);
-        can_check_serial_after_flush = false;
-
-  //if (recieveListener){
+       //if (recieveListener){
 
 
-          console.log(LOG + " Remove recieve listner");
-         chrome.serial.onReceive.removeListener(onReceiveCallback);
+               console.log(LOG + " Remove recieve listner");
+              chrome.serial.onReceive.removeListener(onReceiveCallback);
 
-  //}
+       //}
 
-      recieveListener =  chrome.serial.onReceive.addListener(onReceiveCallback);
+           recieveListener =  chrome.serial.onReceive.addListener(onReceiveCallback);
 
-  //    chrome.serial.onReceiveError.addListener(onErrorCallback);
+       //    chrome.serial.onReceiveError.addListener(onErrorCallback);
 
-     setTimeout(checkSerialNumber, 300);
+          setTimeout(checkSerialNumber, 300);
 
-     clearTimeout(automaticStopCheckingSerialNumberTimeout);
+          clearTimeout(automaticStopCheckingSerialNumberTimeout);
 
-      automaticStopCheckingSerialNumberTimeout =  setTimeout(function(){
+           automaticStopCheckingSerialNumberTimeout =  setTimeout(function(){
 
 
-          console.log("Stop checking serial number.");
-        //  clearTimeout(checkSerialNumberTimeout);
-          isStopCheckingSerialNumber = true;
+               console.log("Stop checking serial number.");
+             //  clearTimeout(checkSerialNumberTimeout);
+               isStopCheckingSerialNumber = true;
 
-          // chrome.serial.disconnect(iConnectionId, function(result){
-          //
-          //        console.log("Connection closed: " + result);
-          // });
+               // chrome.serial.disconnect(iConnectionId, function(result){
+               //
+               //        console.log("Connection closed: " + result);
+               // });
 
 
 
-      }  ,DEVICE_HANDLE_TIMEOUT);
+           }  ,DEVICE_HANDLE_TIMEOUT);
 
-        console.log(LOG + "wait_for_sync: " + wait_for_sync);
+             console.log(LOG + "wait_for_sync: " + wait_for_sync);
+           }
+
    }
 
    this.stopCheckingSerialNumber = function(){
@@ -970,7 +964,28 @@ function InterfaceDevice(port){
      chrome.serial.onReceiveError.addListener(onErrorCallback);
 
 
-   chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);
+   chrome.serial.connect(port.path, {bitrate: bitrate}, onConnect);//38400
+
+   setTimeout(()=>{
+
+    if(state != DEVICE_STATES["DEVICE_IS_READY"])
+    {
+
+      chrome.serial.disconnect(iConnectionId, (result) =>{
+
+             console.log("Connection closed: " + result);
+
+             iConnectionId = null;
+
+             bitrate = 38400;
+             chrome.serial.connect(port.path, {bitrate: bitrate}, onConnect);
+      });
+
+
+
+    }
+
+  },5000);
 
    this.try_to_reconnect = function(){
 
@@ -1009,7 +1024,7 @@ function InterfaceDevice(port){
 
 
 
-       chrome.serial.connect(this.port.path, {bitrate: 115200}, onConnect);
+       chrome.serial.connect(this.port.path, {bitrate: bitrate}, onConnect);
 
      }else{
 
@@ -1021,7 +1036,7 @@ function InterfaceDevice(port){
         //      console.error("Connection closed: " + result);
 
 
-              chrome.serial.connect(this.port.path, {bitrate: 115200}, onConnect);
+              chrome.serial.connect(this.port.path, {bitrate: bitrate}, onConnect);
     //   });
 
 
@@ -1081,7 +1096,7 @@ function InterfaceDevice(port){
 
       if(commandToRun != null){
 
-        if ((command != DEVICES[0].commands.check) && (command != DEVICES[2].commands.check)){
+        if ((command != DEVICES[iDeviceID].commands.check) ){
 
              console.log(`buffering commands1... buffer length: ${commands_stack.length}`);
 
@@ -1110,7 +1125,7 @@ function InterfaceDevice(port){
       if (commands_stack.length > 0){
 
 
-        if ( (command != DEVICES[0].commands.check) && (command != DEVICES[2].commands.check) ){
+        if ( (command != DEVICES[iDeviceID].commands.check) ){
 
           console.log(`buffering commands2... buffer length: ${commands_stack.length}`);
 
