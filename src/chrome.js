@@ -968,7 +968,7 @@ function InterfaceDevice(port){
 
    setTimeout(()=>{
 
-    if(state != DEVICE_STATES["DEVICE_IS_READY"])
+    if((state != DEVICE_STATES["DEVICE_IS_READY"]) && (iConnectionId !== null) && (typeof(iConnectionId) !== "undefined"))
     {
 
       chrome.serial.disconnect(iConnectionId, (result) =>{

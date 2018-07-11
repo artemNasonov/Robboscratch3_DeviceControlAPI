@@ -132,6 +132,8 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
           var sent_packets = 0;
           var recieved_packets = 0;
 
+          var can_resolve = true;
+
          var cleanQuadcopterInitDataInterval =  setInterval(() => {
 
 
@@ -156,7 +158,18 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
                       //    if (sent_packets == recieved_packets){
 
 
-                                resolve("Quadcopter init data clean step was succesfully passed");
+                            if (can_resolve){
+
+                                setTimeout(() => {
+
+                                      resolve("Quadcopter init data clean step was succesfully passed");
+
+                                }, 1000);
+
+                              can_resolve = false;    
+
+                            }
+
                       //    }
 
 
@@ -1773,6 +1786,8 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
     console.log("copter copter_land()");
 
     clearInterval(this.move_with_speed_interval);
+    clearInterval(this.getDataInterval);
+    this.move_with_speed_interval_cleared = true;
     Crazyradio.close();
 
 
