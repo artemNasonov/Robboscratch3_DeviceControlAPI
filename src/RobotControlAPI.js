@@ -400,7 +400,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
           }else{
 
-             console.log("Devices array is empty");
+        //     console.log("Devices array is empty");
 
           }
 

@@ -597,10 +597,16 @@ function InterfaceDevice(port){
         if (state != DEVICE_STATES["DEVICE_ERROR"]){
 
             state = DEVICE_STATES["DEVICE_ERROR"];
-            //
+
             // chrome.serial.setPaused(iConnectionId, false, function (){
             //
             //          console.error("Unpaused.");
+            //
+            //          setTimeout(() => {
+            //
+            //                state = DEVICE_STATES["CONNECTED"];
+            //
+            //          },1000);
 
                   //  state = DEVICE_STATES["OPENED"];
 

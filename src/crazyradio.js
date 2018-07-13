@@ -122,13 +122,13 @@ var Crazyradio = (function() {
   // };
 
   my.sendPacket = function(buffer, packetSendCb) {
-    console.log("sendPacket()");
+  //  console.log("sendPacket()");
 
 
     return new Promise((resolve,reject)=>{
 
       var input = new Uint8Array(buffer);
-      console.log(input);
+    //  console.log(input);
 
       var error = {};
 
@@ -139,7 +139,7 @@ var Crazyradio = (function() {
       };
 
       chrome.usb.bulkTransfer(my.handle, to, (info) => {
-        console.log(info);
+      //  console.log(info);
 
         if (info.resultCode !== 0) {
           console.error("Cannot send data to the dongle");
@@ -166,7 +166,7 @@ var Crazyradio = (function() {
               } else {
 
                 var ack = new Uint8Array(info.data);
-                console.log("ack: " + ack);
+            //    console.log("ack: " + ack);
 
                 let result = {};
                 result.state =  ack[0]!==0;
@@ -198,7 +198,7 @@ var Crazyradio = (function() {
             rerror.code = info.resultCode;
             error.msg =  "Cannot receive data from the dongle";
             reject(error);
-            
+
           } else {
 
             var ack = new Uint8Array(info.data);

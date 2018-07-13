@@ -289,7 +289,7 @@ searchLaboratoryDevices(){
 
       }else{
 
-         console.log("Devices array is empty");
+    //     console.log("Devices array is empty");
 
       }
 

@@ -11,6 +11,10 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
       this.searching_in_progress = false;
       this.radioState = "disconnected";
+      this.data_recieve_time = 0;
+      this.getDataInterval = null;
+      this.move_with_speed_interval_cleared = true;
+      this.move_with_speed_interval = null;
 
       this.x_speed = Number(0);
       this.y_speed = Number(0);
@@ -24,22 +28,25 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
    searchQuadcopterDevices(){
 
      this.searching_in_progress = true;
-     this.move_with_speed_interval = null;
-     this.move_to_coords_interval  = null;
-     this.getDataInterval = null;
+
+     //this.move_to_coords_interval  = null;
+
      this.telemetryData = {};
      this.telemetryDataRaw = [];
-     this.move_with_speed_interval_cleared = true;
+
 
      this.global_toc_data_object = null;
 
-     if (this.radioState === "connected") {
+    // this.data_recieve_time = 0;
+     this.data_check_time   = Date.now();
+
+     //if (this.radioState === "connected") {
 
        Crazyradio.close();
        this.radioState = "disconnected";
 
 
-    }
+  //  }
 
 
 
@@ -52,20 +59,29 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
              if (state) {
 
 
-              // this.radioState = "connected";
-              // this.searching_in_progress = false;
+               this.data_check_time = Date.now();
 
-              // setTimeout(function(self){
+               if ((this.data_check_time - this.data_recieve_time) > 1000){
 
-                   this.startDataRecieving();
+                    this.startDataRecieving();
 
-            //   },3000,this)
+               }
+
+
+
+
+
 
 
 
              }
            });
          });
+
+       }else{
+
+          this.searching_in_progress = false;
+
        }
      });
    } else if (this.radioState === "connected") {
@@ -89,6 +105,18 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
   isQuadcopterConnected(){
 
       let is_connected = false;
+
+      this.data_check_time = Date.now();
+
+      if ((this.data_check_time - this.data_recieve_time) > 1000){
+
+            this.radioState = "disconnected";
+
+      }else{
+
+            this.radioState = "connected";
+
+      }
 
       is_connected = (this.radioState === "connected")?true:false;
 
@@ -166,7 +194,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
                                 }, 1000);
 
-                              can_resolve = false;    
+                              can_resolve = false;
 
                             }
 
@@ -753,7 +781,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   PROCESS_TELEMETRY_DATA(data){
 
-  //    console.log(`PROCESS_TELEMETRY_DATA`);
+    console.log(`PROCESS_TELEMETRY_DATA`);
 
 
       /*
@@ -763,6 +791,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
       */
 
+    this.data_recieve_time = Date.now();
 
 
     this.telemetryDataRaw[data[1]] = data;
@@ -1259,6 +1288,10 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
   }
 
   startDataRecieving(){
+
+    clearInterval(this.move_with_speed_interval);
+    clearInterval(this.getDataInterval);
+    this.move_with_speed_interval_cleared = true;
 
 
         this.cleanQuadcopterInitData().then(result => {
