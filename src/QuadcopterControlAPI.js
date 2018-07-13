@@ -61,11 +61,21 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
                this.data_check_time = Date.now();
 
-               if ((this.data_check_time - this.data_recieve_time) > 1000){
 
-                    this.startDataRecieving();
 
-               }
+                  setTimeout(()=> {
+
+                     if ((this.data_check_time - this.data_recieve_time) > 1000){
+
+                      this.startDataRecieving();
+
+                    }
+
+                  },300);
+
+
+
+
 
 
 
