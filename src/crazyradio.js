@@ -166,7 +166,7 @@ var Crazyradio = (function() {
               } else {
 
                 var ack = new Uint8Array(info.data);
-            //    console.log("ack: " + ack);
+                console.log("ack: " + ack);
 
                 let result = {};
                 result.state =  ack[0]!==0;

@@ -125,6 +125,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
       }else{
 
             this.radioState = "connected";
+            this.searching_in_progress = false;
 
       }
 
@@ -1829,7 +1830,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
     console.log("copter copter_land()");
 
     clearInterval(this.move_with_speed_interval);
-    clearInterval(this.getDataInterval);
+    //clearInterval(this.getDataInterval);
     this.move_with_speed_interval_cleared = true;
     Crazyradio.close();
 
