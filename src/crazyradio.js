@@ -172,6 +172,82 @@ var Crazyradio = (function() {
                 result.state =  ack[0]!==0;
                 result.data  =  ack.subarray(1); //ack.subarray(1).buffer;
 
+                if ( ack[0]!==0){
+
+                    resolve(result);
+
+
+                }else{
+
+                         my.sendPacketRecursive(buffer, (result) => {resolve(result)}, 5);
+
+                }
+
+
+
+            //    packetSendCb(ack[0]!==0, ack.subarray(1).buffer);
+              }
+            });
+        }
+      });
+
+
+    });
+
+
+  };
+
+  my.sendPacketNotRecursive = function(buffer, packetSendCb) {
+  //  console.log("sendPacket()");
+
+
+    return new Promise((resolve,reject)=>{
+
+      var input = new Uint8Array(buffer);
+    //  console.log(input);
+
+      var error = {};
+
+      var to = {
+        'direction': 'out',
+        'endpoint': 1,
+        'data' : buffer
+      };
+
+      chrome.usb.bulkTransfer(my.handle, to, (info) => {
+      //  console.log(info);
+
+        if (info.resultCode !== 0) {
+          console.error("Cannot send data to the dongle");
+          error.code = info.resultCode;
+          error.msg =  "Cannot send data to the dongle";
+          reject(error);
+        } else {
+          var ti = {
+            'direction': 'in',
+            'endpoint': 1,
+            'length': 64,
+          };
+
+            chrome.usb.bulkTransfer(my.handle, ti, (info) => {
+
+
+
+
+              if (info.resultCode !== 0) {
+                console.error("Cannot receive data from the dongle");
+                rerror.code = info.resultCode;
+                error.msg =  "Cannot receive data from the dongle";
+                reject(error);
+              } else {
+
+                var ack = new Uint8Array(info.data);
+                console.log("ack: " + ack);
+
+                let result = {};
+                result.state =  ack[0]!==0;
+                result.data  =  ack.subarray(1); //ack.subarray(1).buffer;
+
                 resolve(result);
 
             //    packetSendCb(ack[0]!==0, ack.subarray(1).buffer);
@@ -184,6 +260,69 @@ var Crazyradio = (function() {
     });
 
 
+  };
+
+
+   my.sendPacketRecursive = function(buffer, packetSendCb,recursive_depth) {
+
+  //  console.log("sendPacketRecursive recursive_depth: " + recursive_depth );
+
+    var input = new Uint8Array(buffer);
+  //  console.log(input);
+
+
+
+    var to = {
+      'direction': 'out',
+      'endpoint': 1,
+      'data' : buffer
+    };
+
+    chrome.usb.bulkTransfer(my.handle, to, function(info) {
+    //  console.log(info);
+
+      if (info.resultCode !== 0) {
+        console.error("Cannot send data to the dongle");
+      } else {
+        var ti = {
+          'direction': 'in',
+          'endpoint': 1,
+          'length': 64,
+        };
+
+          chrome.usb.bulkTransfer(my.handle, ti, function(info) {
+            if (info.resultCode !== 0) {
+              console.error("Cannot receive data from the dongle");
+            } else {
+
+              var ack = new Uint8Array(info.data);
+              console.log("ack: " + ack);
+
+              if ((ack[0]!==0)){
+
+                let result = {};
+                result.state = true;
+                result.data  =  ack.subarray(1); //ack.subarray(1).buffer;
+
+                  packetSendCb(result);
+
+              }else{
+
+                if  (recursive_depth !== 0){
+
+                       my.sendPacketRecursive(buffer, packetSendCb,--recursive_depth);
+
+                }
+
+
+
+              }
+
+
+            }
+          });
+      }
+    });
   };
 
   my.getData = function(callback){
@@ -254,7 +393,7 @@ var Crazyradio = (function() {
     controlTransfer(0x03, datarate, new ArrayBuffer(0), callback);
   };
 
-  my.close = function() {
+  my.close = function(callback) {
     if (state !== "opened") {
       return;
     }
@@ -264,6 +403,7 @@ var Crazyradio = (function() {
     chrome.usb.releaseInterface(my.handle, 0, function() {
       chrome.usb.closeDevice(my.handle, noop);
       state = "closed";
+      callback();
     });
   };
 

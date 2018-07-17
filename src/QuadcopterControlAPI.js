@@ -792,7 +792,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   PROCESS_TELEMETRY_DATA(data){
 
-    console.log(`PROCESS_TELEMETRY_DATA`);
+  //  console.log(`PROCESS_TELEMETRY_DATA`);
 
 
       /*
@@ -817,7 +817,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
    this.telemetryData.yaw = view.getFloat32(0,true);
 
-   console.log(`Quadcopter telemetry  data yaw: ${this.telemetryData.yaw} `);
+  // console.log(`Quadcopter telemetry  data yaw: ${this.telemetryData.yaw} `);
 
    //
    //
@@ -877,41 +877,51 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
     this.getDataInterval =  setInterval(()=>{
 
 
-      var  packet = new ArrayBuffer(1);
-      var  dv  = new DataView(packet);
-      dv.setUint8(0,0xff,true);
 
 
-      Crazyradio.sendPacket(packet).then(result => {
+      if (Crazyradio.handle != null){
 
 
+        var  packet = new ArrayBuffer(1);
+        var  dv  = new DataView(packet);
+        dv.setUint8(0,0xff,true);
 
 
-          if (result.state === true) {
-
-                if ( ([0x50,0x54,0x56,0x5C,0x52].indexOf(result.data[0]) != -1 ) ){
-
-                  //    console.log(`Quadcopter get data: ${result.data} `);
+        Crazyradio.sendPacket(packet).then(result => {
 
 
 
-                        this.PROCESS_TELEMETRY_DATA(result.data);
 
+            if (result.state === true) {
 
-                }
+                  if ( ([0x50,0x54,0x56,0x5C,0x52].indexOf(result.data[0]) != -1 ) ){
 
-
-          }else{
-
-
-
-          }
-
-      }).catch(error => {
+                    //    console.log(`Quadcopter get data: ${result.data} `);
 
 
 
-      });
+                          this.PROCESS_TELEMETRY_DATA(result.data);
+
+
+                  }
+
+
+            }else{
+
+
+
+            }
+
+        }).catch(error => {
+
+
+
+        });
+
+      }
+
+
+
 
 
 
@@ -1832,7 +1842,8 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
     clearInterval(this.move_with_speed_interval);
     //clearInterval(this.getDataInterval);
     this.move_with_speed_interval_cleared = true;
-    Crazyradio.close();
+    Crazyradio.close(() => {  Crazyradio.handle = null});
+
 
 
   }
