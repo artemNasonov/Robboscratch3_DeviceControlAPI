@@ -265,7 +265,7 @@ var Crazyradio = (function() {
 
    my.sendPacketRecursive = function(buffer, packetSendCb,recursive_depth) {
 
-  //  console.log("sendPacketRecursive recursive_depth: " + recursive_depth );
+    console.log("sendPacketRecursive recursive_depth: " + recursive_depth );
 
     var input = new Uint8Array(buffer);
   //  console.log(input);
