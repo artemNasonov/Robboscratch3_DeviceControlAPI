@@ -197,6 +197,8 @@ searchLaboratoryDevices(){
 
   this.stopDataRecievingProcess();
 
+  this.can_autoreconnect = true;
+
   this.searching_in_progress = true;
 
 
@@ -340,10 +342,38 @@ stopDataRecievingProcess(){
 
   }
 
+  this.can_autoreconnect = false;
 
 }
 
+checkLabByPort(port,callback){
 
+    var result = {};
+    result.device = {};
+
+    result.code = -1;
+    result.device.id = -1;
+    result.device.firmware_version = -1;
+
+    for (var i = 0; i < this.ConnectedLaboratories.length; i++) {
+
+          if (this.ConnectedLaboratories[i].getPortName() == port){
+
+            result.code = 0;
+            result.device.id = this.ConnectedLaboratories[i].getDeviceID();
+            result.device.firmware_version = this.ConnectedLaboratories[i].getFirmwareVersion();
+
+            callback(result);
+
+            return;
+
+          }
+
+    }
+
+        callback(result);
+
+}
 
 
 isLaboratoryConnected(robot_number:number):boolean{
@@ -368,7 +398,7 @@ isLaboratoryConnected(robot_number:number):boolean{
 
     }
 
-    if ((this.previousState == true) && (this.previousState != is_connected) && (!this.searching_in_progress)){
+    if ((this.previousState == true) && (this.previousState != is_connected) && (!this.searching_in_progress) && (this.can_autoreconnect)){
 
           this.auto_reconnect();
 
@@ -442,7 +472,7 @@ islaboratoryButtonPressed(laboratory_number:number, button_number:number):boolea
 
     if([1,2,4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-          console.log(`islaboratoryButtonPressed button_number: ${button_number}`);
+        //  console.log(`islaboratoryButtonPressed button_number: ${button_number}`);
 
           if ( typeof(this.SensorsData) != 'undefined' ){
 

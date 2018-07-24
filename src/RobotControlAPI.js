@@ -307,6 +307,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       this.searching_in_progress = true;
 
+      this.can_autoreconnect = true;
+
 
   //    searchDevices();
 
@@ -413,6 +415,34 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
     }
 
+    checkRobotByPort(port,callback){
+
+        var result = {};
+        result.device = {};
+
+        result.code = -1;
+        result.device.id = -1;
+        result.device.firmware_version = -1;
+
+        for (var i = 0; i < this.ConnectedRobots.length; i++) {
+
+              if (this.ConnectedRobots[i].getPortName() == port){
+
+                result.code = 0;
+                result.device.id = this.ConnectedRobots[i].getDeviceID();
+                result.device.firmware_version = this.ConnectedRobots[i].getFirmwareVersion();
+
+                callback(result);
+
+                return;
+
+              }
+
+        }
+
+            callback(result);
+
+    }
 
     isRobotConnected(robot_number:number):boolean{
 
@@ -436,7 +466,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
         }
 
-        if ((this.previousState == true) && (this.previousState != is_connected) && (!this.searching_in_progress)){
+        if ((this.previousState == true) && (this.previousState != is_connected) && (!this.searching_in_progress) && (this.can_autoreconnect)){
 
               this.auto_reconnect();
 
@@ -511,8 +541,9 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
           clearInterval(this.DataRecievingLoopInterval);
 
-      }
+        }
 
+      this.can_autoreconnect = false;
 
     }
 

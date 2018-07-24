@@ -330,12 +330,13 @@ const DEVICES = Object.freeze({
       "firmware":7,
       "commands":commands_list_robot
    },
+   //Old Robot
    3:{
       "firmware":7,
       "commands":commands_list_robot
    },
 
-   //Old lab
+   //New lab
    1:{
 
      "firmware":5,
@@ -1069,6 +1070,12 @@ function InterfaceDevice(port){
 
         return sSerialNumber;
 
+   }
+
+   this.getFirmwareVersion = function(){
+
+
+      return iFirmwareVersion;
    }
 
    this.command = function(command, params, fCallback){

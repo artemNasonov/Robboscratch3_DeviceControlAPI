@@ -26,9 +26,9 @@ export default  class DeviceControlAPI {
             trigger_logging();
       }
 
-      flashFirmware(port_num,callback){
+      flashFirmware(port_path,config,callback){
 
-          flash_firmware(port_num,callback);
+          flash_firmware(port_path,callback,config);
 
       }
 

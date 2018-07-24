@@ -176,57 +176,67 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
          var cleanQuadcopterInitDataInterval =  setInterval(() => {
 
 
-            sent_packets++;
-            console.log(`cleanQuadcopterInitData sent_packets: ${sent_packets}`);
 
-            Crazyradio.sendPacket(packet).then(result => {
-
-                console.log(`cleanQuadcopterInitData incoming data: ${result.data}`);
+           if (sent_packets == recieved_packets){
 
 
-                if (result.state === true) {
+             sent_packets++;
+             console.log(`cleanQuadcopterInitData sent_packets: ${sent_packets}`);
 
-                    recieved_packets++;
-                    console.log(`cleanQuadcopterInitData recieved_packets: ${recieved_packets}`);
+             Crazyradio.sendPacket(packet).then(result => {
 
-                    if (( [0xf3,0xf7].indexOf(result.data[0]) != -1 )){
-
-
-                        clearInterval(cleanQuadcopterInitDataInterval);
-
-                      //    if (sent_packets == recieved_packets){
+                 console.log(`cleanQuadcopterInitData incoming data: ${result.data}`);
 
 
-                            if (can_resolve){
+                 if (result.state === true) {
 
-                                setTimeout(() => {
+                     recieved_packets++;
+                     console.log(`cleanQuadcopterInitData recieved_packets: ${recieved_packets}`);
 
-                                      resolve("Quadcopter init data clean step was succesfully passed");
-
-                                }, 1000);
-
-                              can_resolve = false;
-
-                            }
-
-                      //    }
+                     if (( [0xf3,0xf7].indexOf(result.data[0]) != -1 )){
 
 
+                         clearInterval(cleanQuadcopterInitDataInterval);
 
-                    }
+                       //    if (sent_packets == recieved_packets){
 
 
-                }else{
+                             if (can_resolve){
+
+                                 setTimeout(() => {
+
+                                       resolve("Quadcopter init data clean step was succesfully passed");
+
+                                 }, 1000);
+
+                               can_resolve = false;
+
+                             }
+
+                       //    }
 
 
 
-                }
+                     }
 
-            }).catch(error => {
 
-                    reject();
+                 }else{
 
-            });
+
+
+                 }
+
+             }).catch(error => {
+
+                     reject();
+
+             });
+
+
+           }
+
+
+
 
 
           },100);
