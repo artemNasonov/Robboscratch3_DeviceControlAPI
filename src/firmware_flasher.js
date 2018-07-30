@@ -107,6 +107,9 @@ const flash_firmware = function(port_path,print_status,config){
    0x15 : "NOSYNC"
  };
  var timer = 0;
+ var two_dots = false;
+ var dots  = ".";
+
  function transmitPacket(buffer,delay) {
      setTimeout(function() {
  //        display_console('.', '', '');
@@ -115,9 +118,30 @@ const flash_firmware = function(port_path,print_status,config){
              for (var x = 0; x < buffer.length; x++) {
                  debug += "[" + buffer.charCodeAt(x).toString(16) + "]";
              }
-             console.log(debug);
+          //   console.log(debug);
          //}
-         chrome.serial.send(iConnectionId,str2ab(buffer),function(){console.log("poshel nahui")});
+         chrome.serial.send(iConnectionId,str2ab(buffer),function(){
+
+      //     console.log("poshel nahui")
+
+
+           if (two_dots){
+
+              dots = "...";
+              two_dots = false;
+
+           }else{
+
+                dots = "..";
+                two_dots = true;
+           }
+
+           print_status(LOG +  "Uploading" + dots);
+
+         });
+
+
+
      },delay + timer);
      timer = timer + delay;
  }
@@ -125,7 +149,9 @@ const flash_firmware = function(port_path,print_status,config){
    function stk500_prgpage(address,data,delay,flag) {
      address = hexpad16(address.toString(16)); /* convert and pad number to hex */
      address = address[2] + address[3] + address[0] + address[1];  /* make LSB first */
+     print_status(LOG +  "Programming 0x" + address);
      //if(verbose_logging) console.log("Programming 0x"+address);
+     console.log("Programming 0x"+address);
      address = String.fromCharCode(parseInt(address[0] + address[1],16)) +  String.fromCharCode(parseInt(address[2] + address[3],16)); /* h2b */
      transmitPacket(d2b(command.LOAD_ADDRESS)+address+d2b(command.Sync_CRC_EOP),delay);
      var debug = "";
@@ -142,11 +168,13 @@ const flash_firmware = function(port_path,print_status,config){
      //  termmode = 0;
        //display_console("Binary data broken into "+blk+" blocks (block size is 128)\nComplete when you see "+blk+" dots: \n\n", "", "\n");
        //set_progress(80, "Serial upload...");
+          print_status(LOG + "Serial upload");
        var b;
        for(b = 0; b < Math.ceil(heximage.length / blocksize); b++) {
            var currentbyte = blocksize * b;
            var block = heximage.substr(currentbyte,blocksize);
-           /* console.log("Block "+b+" starts at byte "+currentbyte+": "+block) */
+            print_status(LOG + "Block: " + b);
+          //  console.log("Block "+b+" starts at byte "+currentbyte+": "+block);
    //        flag = 0;
            stk500_prgpage(flashblock,block,250);
            flashblock = flashblock + 64;
@@ -155,10 +183,11 @@ const flash_firmware = function(port_path,print_status,config){
            chrome.serial.update(iConnectionId, {bitrate: 115200}, success => {
 if(success) {
 console.log("Baud for connection set back to 115200");
-chrome.serial.disconnect(iConnectionId, success => {
-        if(!success) console.error('could not disconnect');
-        this.connectionId = -1;
-    });
+print_status(LOG + "Baud for connection set back to 115200");
+//chrome.serial.disconnect(iConnectionId, success => {
+//        if(!success) console.error('could not disconnect');
+//        this.connectionId = -1;
+//    });
 }
 else console.error("Could not set baud rate.");
              //  set_progress(100, "Serial programming finished.");
@@ -176,6 +205,37 @@ cb(success);
              //  if (terminal) terminal.clear();
              console.log("zalupa");
              console.log("Resetting device....");
+             print_status(LOG + "End of downloading");
+				 /////////////////
+		//		 function reset() {
+   // log("Resetting device....");
+    chrome.serial.setControlSignals(iConnectionId,DTRRTSOff,function(result) {
+        console.log("DTR off: " + result);
+        setTimeout(function(){
+            chrome.serial.setControlSignals(iConnectionId,DTRRTSOn,function(result) {
+                console.log("DTR on:" + result);
+                console.log("reseted");
+                console.log("done.\n");
+            		});
+        			}, 100);
+    			});
+
+		//	}
+             /////////////////
+
+
+             if ((config.device.device_id == -1) && (iDeviceID == -1))
+             {
+
+                    console.log("onReceiveCallback addded");
+                    recieveListener =  chrome.serial.onReceive.addListener(onReceiveCallback);
+
+
+
+              }
+
+
+             /*
     chrome.serial.setControlSignals(iConnectionId,DTRRTSOff,function(result) {
         console.log("DTR off: " + result);
         setTimeout(function(){
@@ -184,7 +244,7 @@ cb(success);
                 console.log("done.\n");
             });
         }, 100);
-    });
+    });*/
           });
        },timer + 1000);
 
@@ -206,12 +266,13 @@ console.log("Baud for connection set back to your anus(57600)");
        var buffer = hexfileascii.split(".");
      console.log(buffer.length);
        for(var x = 0; x < buffer.length; x++) {
-       console.log("voshel");
+    //   console.log("voshel");
        var  size = parseInt(buffer[x].substr(1,2),16);
            if(size == 0) {
                console.log("complete!\n");
                //set_progress(50, "Intel Hex decoded, launching programmer...");
                stk500_program();
+
                return;
            }
            for(var y = 0; y < (size * 2); y = y + 2){
@@ -219,17 +280,24 @@ console.log("Baud for connection set back to your anus(57600)");
                hexfile += String.fromCharCode(parseInt(buffer[x].substr(y+9,2),16));
            }
        }
-     console.log("vishel");
+//     console.log("vishel");
+
+
      }
+
+
+
    function stk500_program() {
    //  fixHex();
      //set_progress(60, "Putting Arduino in program mode (DTR Reset)...");
+     			print_status(LOG + "Putting Arduino in program mode (DTR Reset)...");
      chrome.serial.setControlSignals(iConnectionId,DTRRTSOff,function(result) {
          console.log("DTR off: " + result);
          setTimeout(function(){
              chrome.serial.setControlSignals(iConnectionId,DTRRTSOn,function(result) {
                  console.log("DTR on:" + result);
                  setTimeout(function() {
+                 				print_status(LOG + "Upload blocks");
                      //set_progress(70, "Reset complete...prepping upload blocks..");
                      //log("Arduino reset, now uploading.\n");
                      stk500_upload(hexfile);
@@ -239,41 +307,248 @@ console.log("Baud for connection set back to your anus(57600)");
      });
  }
 
-
+   var iSerialNumberOffset;
  var recieveListener;
  var bufIncomingData = new Uint8Array();
- var onReceiveCallback = function()
+ var iDeviceID = -1;
+ var iFirmwareVersion;
+ var wait_for_sync= false;
+ var onReceiveCallback = function(info)
  {
 
+ 	          var bufIncomingDataNew = null;
+
  	        var buf = new Uint8Array(info.data);
+ 	      console.log(LOG + "CALLBACK!!! bytes recieved length <- " + buf.length);
+         console.log(LOG + "CALLBACK!!! bytes buf <- " + buf);
+         console.log(LOG + "wait_for_sync: " + wait_for_sync);
 	var sIncomingData = new TextDecoder("utf-8").decode(bufIncomingData);
 	           bufIncomingDataNew = new Uint8Array(bufIncomingData.length + buf.length);
            bufIncomingDataNew.set(bufIncomingData);
            bufIncomingDataNew.set(buf, bufIncomingData.length);
+           bufIncomingData = bufIncomingDataNew;
 
       console.log(LOG + "Now we have: " + sIncomingData);
+
+
+
+
  	  iSerialNumberOffset = sIncomingData.indexOf("ROBBO");
- 	   iDeviceID        = parseInt(sIncomingData.substring(iSerialNumberOffset + 6, iSerialNumberOffset + 11));
-            iFirmwareVersion = parseInt(sIncomingData.substring(iSerialNumberOffset + 12, iSerialNumberOffset + 17));
-            sSerialNumber    = sIncomingData.substring(iSerialNumberOffset + 18, iSerialNumberOffset + DEVICE_SERIAL_NUMBER_LENGTH);
-            console.warn(LOG + "Device=" + iDeviceID + " Firmware=" + iFirmwareVersion + " Serial='" + sSerialNumber + "'");
+
+
+ 	 iDeviceID  = parseInt(sIncomingData.substring(iSerialNumberOffset + 6, iSerialNumberOffset + 11));
+ 	 console.log(+iDeviceID);
+ 	 print_status(LOG+"Device ID is:"+iDeviceID);
+
+	//	if(iSerialNumberOffset!=-1 )
+	//	{
+
 
          //  purgePort();
 
-   if ( (typeof(iDeviceID) != 'undefined') && (typeof(iFirmwareVersion) != 'undefined') && (typeof(sSerialNumber) != 'undefined') )
+   if (typeof(iDeviceID) != 'undefined')
    {
-      if ( (!isNaN(iDeviceID)) && (!isNaN(iFirmwareVersion)) && ( ( (sSerialNumber).startsWith("R") ) || ((sSerialNumber).startsWith("L")) ) )
+      if (!isNaN(iDeviceID))
       {
-        fixHex(firmware);
+        if(bufIncomingData.length > iSerialNumberOffset + 10){
+        chrome.serial.onReceive.removeListener(onReceiveCallback);
+
+
+var firmware = firmwares["device_id_" + iDeviceID]["max_version"];
+ 	      print_status(LOG+"Start downloading firmware");
+                  fixHex(firmware);
+
       }
-      console.log("jopa");
+      else
+      console.log("Nan");
+
       }
+    }
   else {
   console.log("hui tebe a ne seriinik");
   }
+
+//	 }
  }
+
+
+ var onErrorCallback = function (info){
+
+   console.log("onErrorCallback");
+
+    if (info.connectionId == iConnectionId){
+
+        console.error(LOG + "error: " + info.error);
+
+        if (info.error == "break"){
+
+           console.error(LOG + "error: " + info.error);
+
+          //   state = DEVICE_STATES["DEVICE_ERROR"];
+
+            chrome.serial.setPaused(iConnectionId, false, function (){
+
+
+                   console.error("Unpaused.");
+
+                  //   state = DEVICE_STATES["CONNECTED"];
+
+
+            });
+
+
+          // chrome.serial.clearBreak(iConnectionId, function (result){
+          //
+          //       console.error(LOG + "clear break:" + result);
+          //
+          //
+          // })
+
+        }else if ( (info.error == "overrun") || (info.error == "frame_error") ) {
+
+
+          chrome.serial.setPaused(iConnectionId, false, function (){
+
+                  console.log("Unpaused.");
+
+          });
+
+
+          //    console.error(LOG + "Ignore these errors!");
+
+
+        } else if ((info.error == "device_lost")){
+
+      //      console.error(LOG + "error: " + info.error);
+      //
+      //
+      // if (state != DEVICE_STATES["DEVICE_ERROR"]){
+      //
+      //     state = DEVICE_STATES["DEVICE_ERROR"];
+      //
+      //     // chrome.serial.setPaused(iConnectionId, false, function (){
+      //     //
+      //     //          console.error("Unpaused.");
+      //     //
+      //     //          setTimeout(() => {
+      //     //
+      //     //                state = DEVICE_STATES["CONNECTED"];
+      //     //
+      //     //          },1000);
+      //
+      //           //  state = DEVICE_STATES["OPENED"];
+      //
+      //         //   chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);
+      //
+      //             chrome.serial.disconnect(iConnectionId, function(result){
+      //
+      //                   console.error("Connection closed: " + result);
+      //
+      //                   console.error("Trying to reconnect");
+      //
+      //
+      //                   if (result){
+      //
+      //                           chrome.serial.connect(port.path, {bitrate: bitrate}, onConnect);
+      //
+      //
+      //                   }
+      //
+      //             });
+      //
+      //   //  });
+      //
+      //
+      //
+      // }
+
+        } else if (info.error == "disconnected") {
+
+
+        //   if (state!= DEVICE_STATES["DEVICE_ERROR"]){
+        //
+        //       state = DEVICE_STATES["DEVICE_ERROR"];
+        //
+        //   chrome.serial.setPaused(iConnectionId, false, function (){
+        //
+        //           console.log("Unpaused.");
+        //
+        //
+        //
+        //
+        //             chrome.serial.disconnect(iConnectionId, function(result){
+        //
+        //
+        //
+        //                    console.error("Connection closed: " + result);
+        //
+        //                    // console.log("tying to reconnect");
+        //                    //
+        //                    //  chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);
+        //             });
+        //
+        //
+        //
+        //
+        //
+        //   });
+        //
+        //
+        // }
+
+
+        } else {
+
+           console.error("Other errors");
+
+
+        //   if (state!= DEVICE_STATES["DEVICE_ERROR"]){
+        //
+        //       state = DEVICE_STATES["DEVICE_ERROR"];
+        //
+        //   chrome.serial.setPaused(iConnectionId, false, function (){
+        //
+        //           console.log("Unpaused.");
+        //
+        //
+        //
+        //
+        //             chrome.serial.disconnect(iConnectionId, function(result){
+        //
+        //
+        //
+        //                    console.error("Connection closed: " + result);
+        //
+        //                    // console.log("tying to reconnect");
+        //                    //
+        //                    //  chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);
+        //             });
+        //
+        //
+        //
+        //
+        //
+        //   });
+        //
+        //
+        // }
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+ }
+
+
+
       var onConnect = function(connectionInfo){
-		var MAX_VERSION = {  }
              if(typeof(connectionInfo)!== "undefined")
 
              {
@@ -297,34 +572,65 @@ console.log("Baud for connection set back to your anus(57600)");
                   }
                   if(config.device.device_id !== -1|| config.device.device_firmware_version !==-1)
                   {
+                  console.log(LOG+"defined ass:"+config.device.device_id);
                   var firmware = firmwares["device_id_" + config.device.device_id]["max_version"];
+                  print_status(LOG+"Start downloading firmware");
                   fixHex(firmware);
                 }
                 else{
+                	                   	console.log("undefined");
+						print_status(LOG+"Start downloading diagnostic");
                   fixHex(firmwares["diagnostics"]);
                   //
-                           recieveListener =  chrome.serial.onReceive.addListener(onReceiveCallback);
+
                   //
 
                 }
              }
+                   else{
+
+
+                            console.error("Connection id is undefined");
+
+
+
+									// 			print_status(LOG+"Start downloading diagnostic");
+                  //
+                  // fixHex(firmwares["diagnostics"]);
+
+                  //
+
+                }
 
 
 
 
 
              }
+                   else{
+													print_status(LOG+"Start downloading diagnostic");
+
+                   	console.log("undefined");
+                  fixHex(firmwares["diagnostics"]);
+
+                  //
+
+                }
 
      }
 
 
 
 
-  //  var port_path = arrPorts[port_num].path;
+//    var port_path = arrPorts[port_num].path;
 
     console.log(`flash_firmware ${port_path}`);
 
     const LOG = "[" + port_path + "] ";
+
+     chrome.serial.onReceiveError.removeListener(onErrorCallback);
+
+     chrome.serial.onReceiveError.addListener(onErrorCallback);
 
      chrome.serial.connect(port_path, {bitrate: bitrate}, onConnect);
 

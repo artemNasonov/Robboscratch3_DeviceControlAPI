@@ -354,6 +354,7 @@ checkLabByPort(port,callback){
     result.code = -1;
     result.device.id = -1;
     result.device.firmware_version = -1;
+    result.device.serial_number = -1;
 
     for (var i = 0; i < this.ConnectedLaboratories.length; i++) {
 
@@ -362,6 +363,7 @@ checkLabByPort(port,callback){
             result.code = 0;
             result.device.id = this.ConnectedLaboratories[i].getDeviceID();
             result.device.firmware_version = this.ConnectedLaboratories[i].getFirmwareVersion();
+            result.device.serial_number = this.ConnectedLaboratories[i].getShorterSerialNumber();
 
             callback(result);
 

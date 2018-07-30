@@ -599,37 +599,37 @@ function InterfaceDevice(port){
 
             state = DEVICE_STATES["DEVICE_ERROR"];
 
-            // chrome.serial.setPaused(iConnectionId, false, function (){
-            //
-            //          console.error("Unpaused.");
-            //
-            //          setTimeout(() => {
-            //
-            //                state = DEVICE_STATES["CONNECTED"];
-            //
-            //          },1000);
+            chrome.serial.setPaused(iConnectionId, false, function (){
+
+                     console.error("Unpaused.");
+
+                     setTimeout(() => {
+
+                           state = DEVICE_STATES["CONNECTED"];
+
+                     },1000);
 
                   //  state = DEVICE_STATES["OPENED"];
 
                 //   chrome.serial.connect(port.path, {bitrate: 115200}, onConnect);
 
-                    chrome.serial.disconnect(iConnectionId, function(result){
+                    // chrome.serial.disconnect(iConnectionId, function(result){
+                    //
+                    //       console.error("Connection closed: " + result);
+                    //
+                    //       console.error("Trying to reconnect");
+                    //
+                    //
+                    //       if (result){
+                    //
+                    //               chrome.serial.connect(port.path, {bitrate: bitrate}, onConnect);
+                    //
+                    //
+                    //       }
+                    //
+                    // });
 
-                          console.error("Connection closed: " + result);
-
-                          console.error("Trying to reconnect");
-
-
-                          if (result){
-
-                                  chrome.serial.connect(port.path, {bitrate: bitrate}, onConnect);
-
-
-                          }
-
-                    });
-
-          //  });
+           });
 
 
 
@@ -1069,6 +1069,68 @@ function InterfaceDevice(port){
    this.getSerialNumber = function(){
 
         return sSerialNumber;
+
+   }
+
+   this.getShorterSerialNumber = function(){
+
+     function countAllSubstrings(string,substring){
+
+       var pos = -1;
+       var entries_count = 0;
+       while ((pos = string.indexOf(substring, pos + 1)) != -1) {
+
+            entries_count++;
+
+       }
+
+       return entries_count;
+
+     }
+
+
+     var buf = "";
+     var buf2 = "";
+     var shorterSerialNumber = "";
+     var index = 0;
+     var defis_devider_count = 0;
+
+    shorterSerialNumber = sSerialNumber.substring(0,1);
+
+    buf = sSerialNumber.replace(shorterSerialNumber+"-","");
+
+
+    defis_devider_count = countAllSubstrings(buf,"-");
+
+
+    for (var i=0; i<=defis_devider_count; i++){
+
+      while (buf.indexOf("-") == 0){
+
+        buf = buf.replace("-","");
+      }
+
+
+      index = (i==defis_devider_count)?buf.length:buf.indexOf("-");
+
+      buf2 =  buf.substring(0,index);
+
+      buf =  buf.replace(buf2,"");
+
+      while ((buf2.indexOf("0") == 0) && (buf2.length != 1)){
+
+        buf2 = buf2.replace("0","");
+      }
+
+
+
+      shorterSerialNumber = shorterSerialNumber + "-" +  buf2;
+
+    }
+
+
+    return shorterSerialNumber;
+
 
    }
 
