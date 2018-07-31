@@ -160,7 +160,7 @@ var Crazyradio = (function() {
 
               if (info.resultCode !== 0) {
                 console.error("Cannot receive data from the dongle");
-                rerror.code = info.resultCode;
+                error.code = info.resultCode;
                 error.msg =  "Cannot receive data from the dongle";
                 reject(error);
               } else {
@@ -236,7 +236,7 @@ var Crazyradio = (function() {
 
               if (info.resultCode !== 0) {
                 console.error("Cannot receive data from the dongle");
-                rerror.code = info.resultCode;
+                error.code = info.resultCode;
                 error.msg =  "Cannot receive data from the dongle";
                 reject(error);
               } else {
@@ -334,7 +334,7 @@ var Crazyradio = (function() {
           if (info.resultCode !== 0) {
 
             console.error("Cannot receive data from the dongle");
-            rerror.code = info.resultCode;
+            error.code = info.resultCode;
             error.msg =  "Cannot receive data from the dongle";
             reject(error);
 
