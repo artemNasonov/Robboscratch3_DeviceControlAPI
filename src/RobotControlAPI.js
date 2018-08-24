@@ -192,64 +192,64 @@ export default class RobotControlAPI extends DeviceControlAPI {
       this.colorFilterTable[i] = {
 
            "red": {
-            "R": "20-30",
-            "G": "20-30",
-            "B": "20-30",
-            "Bright": "20-30"
+            "R": "51.00-64.00",
+            "G": "13.00-25.00",
+            "B": "20.00-27.00",
+            "Bright": "0-100"
            },
            "magenta": {
-            "R": "20-30",
-            "G": "20-30",
-            "B": "20-30",
-            "Bright": "20-30"
+            "R": "35.00-58.00",
+            "G": "13.00-25.00",
+            "B": "26.00-32.00",
+            "Bright": "0-100"
            },
            "yellow": {
-            "R": "20-30",
-            "G": "20-30",
-            "B": "20-30",
-            "Bright": "20-30"
+            "R": "40.00-47.00",
+            "G": "33.00-44.00",
+            "B": "17.00-23.00",
+            "Bright": "0-100"
            },
            "green": {
-            "R": "20-30",
-            "G": "20-30",
-            "B": "20-30",
-            "Bright": "20-30"
+            "R": "23.00-32.00",
+            "G": "38.00-49.00",
+            "B": "25.00-33.00",
+            "Bright": "0-100"
            },
            "blue": {
-            "R": "20-30",
-            "G": "20-30",
-            "B": "20-30",
-            "Bright": "20-30"
+            "R": "15.00-27.00",
+            "G": "24.00-34.00",
+            "B": "41.00-58.00",
+            "Bright": "0-100"
            },
            "cyan": {
-            "R": "20-30",
-            "G": "20-30",
-            "B": "20-30",
-            "Bright": "20-30"
+            "R": "24.00-32.00",
+            "G": "32.00-39.00",
+            "B": "32.00-40.00",
+            "Bright": "0-100"
            },
            "custom": {
-            "R": "20-30",
-            "G": "20-30",
-            "B": "20-30",
-            "Bright": "20-30"
+            "R": "28.00-34.00",
+            "G": "22.00-28.00",
+            "B": "41.00-47.00",
+            "Bright": "0-0"
            },
            "black": {
-            "R": "20-30",
-            "G": "20-30",
-            "B": "20-30",
-            "Bright": "20-30"
+            "R": "30.00-40.00",
+            "G": "30.00-40.00",
+            "B": "30.00-40.00",
+            "Bright": "0-20"
            },
            "gray": {
-            "R": "20-30",
-            "G": "20-30",
-            "B": "20-30",
-            "Bright": "20-30"
+            "R": "30.00-40.00",
+            "G": "30.00-40.00",
+            "B": "30.00-40.00",
+            "Bright": "20-80"
            },
            "white": {
-            "R": "20-30",
-            "G": "20-30",
-            "B": "20-30",
-            "Bright": "20-30"
+            "R": "30.00-40.00",
+            "G": "30.00-40.00",
+            "B": "30.00-40.00",
+            "Bright": "80-100"
            }
 };
 
@@ -687,6 +687,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       let sum = red_channel + green_channel + blue_channel;
 
+    console.warn("sum: " + sum);
+
       let red_channel_percent       = red_channel     / sum * 100;
       let green_channel_percent     = green_channel  / sum  * 100;
       let blue_channel_percent      = blue_channel  /  sum  * 100;
@@ -737,6 +739,21 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
                   let bright_low   =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].Bright,"low") * 1000);
                   let bright_high  =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].Bright,"high") * 1000);
+
+
+                  console.warn("red: " + red);
+                  console.warn("green: " + green);
+                  console.warn("blue: " + blue);
+                  console.warn("bright: " + bright);
+
+                  console.warn("red_low: " + red_low);
+                  console.warn("red_high: " + red_high);
+
+                  console.warn("blue_low: " + blue_low);
+                  console.warn("blue_high: " + blue_high);
+
+                  console.warn("bright_low: " + bright_low);
+                  console.warn("bright_high: " + bright_high);
 
 
                   if ( (red > red_low) && (red < red_high) && (green > green_low)  && (green < green_high)  && (blue > blue_low) && (blue < blue_high) && (bright > bright_low)  && (bright < bright_high)){
