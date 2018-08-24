@@ -4,7 +4,7 @@ import {firmwares} from './firmwares';
 var    arrPorts = [];
 var    bitrate = 9600;
 
-var THEEND = false;
+
 
 const flash_firmware = function(port_path,print_status,config){
   var  iConnectionId = null;
@@ -17,9 +17,7 @@ const flash_firmware = function(port_path,print_status,config){
 
   const serial = chrome.serial;
   var seq = 1;
-  var UNO=false;
-  var stilluno = false;
-  var unotime;
+
 const  command = {
 
 "Sync_CRC_EOP" : 0x20,
@@ -200,7 +198,6 @@ const responses = {
 
    var onConnect = function(connectionInfo){
      /////////start
-     THEEND= false;
           if(typeof(connectionInfo)!== "undefined")
           {
              iConnectionId = connectionInfo.connectionId;
@@ -218,7 +215,7 @@ const responses = {
                    config.device.device_id = iDeviceID;
                }
 //////////////////////////////////////baud
-               chrome.serial.update(iConnectionId, {bitrate: 57600}, success => {
+               chrome.serial.update(iConnectionId, {bitrate: 9600}, success => {
                  if(success)
                  {
                    console.log(LOG +  "Baud for connection set back to your anus(57600)");
@@ -236,39 +233,14 @@ const responses = {
                     //   }
                    console.log(LOG+"defined ass:"+config.device.device_id);
                    hexfileascii = firmwares["device_id_" + config.device.device_id]["max_version"];
-
-                   if((iDeviceID==3)||(iDeviceID==4))
-                   {
-                   		   chrome.serial.update(iConnectionId, {bitrate: 115200}, success => {
-                 if(success)
-                 {
-                   console.log(LOG +  "Baud for connection set back to your anus(115200)");
-                   print_status(LOG + "Baud for connection set  to 115200");
-                   print_status(LOG+"Start downloading firmware for uno");
-                   console.log(LOG+"Start downloading firmware for uno");
-                     THEEND=true;
+                   print_status(LOG+"Start downloading firmware");
+                   console.log(LOG+"Start downloading firmware");
                    fixHex();
-
-                   }
-                   else{console.log(LOG +  "pizdec");
-                   print_status(LOG + "can not set baud");
-
-       }
-    });
-                   }
-                   else{
-                   print_status(LOG+"Start downloading firmware for not uno");
-                   console.log(LOG+"Start downloading firmware for not uno");
-                   THEEND=true;
-                   fixHex();
-                  							}
                  }
 //////////////////////////////////////////////////////////////////////////diagnoz
                  else{
-                 	 UNO = true;
-
-                   console.log(LOG+"Start downloading diagnostic for not uno");
-                   print_status(LOG+"Start downloading for not uno");
+                   console.log(LOG+"Start downloading diagnostic");
+                   print_status(LOG+"Start downloading diagnostic");
                    hexfileascii = firmwares["diagnostics"];
                    fixHex();
                        }
@@ -403,130 +375,36 @@ function stk500_upload(heximage) {
     }
     ////////////////////////////////////////////////////////////////////////////////////////////baud
     setTimeout(function () {
-    	chrome.serial.update(iConnectionId, {bitrate: 115200}, success => {
-                 if(success)
-                 {
-                   console.log(LOG +  "Baud for connection set back to your anus(115200)");
-                   print_status(LOG + "Baud for connection set  to 115200");
-                   if(THEEND)
-                   {
-                     print_status(LOG + "END");
-                     console.log(LOG +  "END");
-                     setTimeout(function (){reset();},1000);
-                   }
-                   }
-                   else{console.log(LOG +  "pizdec");
-                   print_status(LOG + "can not set baud");
-
-       }
-    });
-                     // chrome.serial.update(iConnectionId, {bitrate: 115200}, success => {
-                     //       if(success)
-                     //       {
-                     //         console.log(LOG +  "Baud for connection set back to your anus(115200)");
-                     //         print_status(LOG + "Baud for connection set  to  115200");
+                        chrome.serial.update(iConnectionId, {bitrate: 38400}, success => {
+                            if(success)
+                            {
+                              console.log(LOG +  "Baud for connection set back to your anus(115200)");
+                              print_status(LOG + "Baud for connection set  to 115200");
                               if ((config.device.device_id == -1) && (iDeviceID == -1))
                               {
 
                                      console.log("onReceiveCallback addded");
                                      recieveListener =  chrome.serial.onReceive.addListener(onReceiveCallback);
-												setTimeout(function () {
-													if(UNO)
-												{
-												unotime = setTimeout(function ()
-												{
-							                              console.log(LOG +  "UNOTIME!");
-							                              print_status(LOG + "It's UNO, load another diagnostic");
-							                               chrome.serial.update(iConnectionId, {bitrate: 115200}, success => {
-                 if(success)
-                 {
-                   console.log(LOG +  "Baud for connection set back to your anus(115200)");
-                   print_status(LOG + "Baud for connection set  to 115200");
-                   if(THEEND)
-                   {
-                     print_status(LOG + "END");
-                     console.log(LOG +  "END");
-                     setTimeout(function (){reset();},1000);
-                   }
-                   }
-                   else{console.log(LOG +  "pizdec");
-                   print_status(LOG + "can not set baud");
-
-       }
 
 
-
-	       														console.log(LOG+"Start downloading diagnostic for uno");
-                   											print_status(LOG+"Start downloading diagnostic for uno");
-                  											hexfileascii = firmwares["diagnoz"];
-																	UNO = false;
-																	stilluno = true;
-                  											fixHex();
-
-												});
-
-												},3000);
 
                                }
-                            },5000);
+                               else{
+
+                                 chrome.serial.disconnect(iConnectionId, function(result){
+
+
+
+                                        console.log(LOG + "Connection closed: " + result);
+
+                                  });
+
+                               }
                             }
-                         //  }
-                            //   else{
-
-                               //  chrome.serial.disconnect(iConnectionId, function(result){
-
-
-
-                             //           console.log(LOG + "Connection closed: " + result);
-
-                           //       });
-
-
-                        // }
-       // });
-           if (stilluno)
-    {
-	   stilluno=false;
-	   chrome.serial.update(iConnectionId, {bitrate: 38400}, success => {
-                 if(success)
-                 {
-                   console.log(LOG +  "Baud for connection set back to your anus(38400) becourse still uno");
-                   print_status(LOG + "Baud for connection set  to 38400");
-                   }
-                   else{console.log(LOG +  "pizdec");
-                   print_status(LOG + "can not set baud");
-
-       }
-    });
- }
- if((iDeviceID==3)||(iDeviceID==4))
- {
- 		   chrome.serial.update(iConnectionId, {bitrate: 38400}, success => {
-                 if(success)
-                 {
-                   console.log(LOG +  "Baud for connection set back to your anus(38400) becaurse iDeviceID is "+ iDeviceID);
-                   print_status(LOG + "Baud for connection set  to 38400");
-                   if(THEEND)
-                   {
-                     print_status(LOG + "END");
-                     console.log(LOG +  "END");
-                     setTimeout(function (){reset();},1000);
-                   }
-                   }
-                   else{console.log(LOG +  "pizdec");
-                   print_status(LOG + "can not set baud");
-
-       }
-    });
- }
-    }
-    ,timer + 1000);
-
- /**/
-
+        });
+    },timer + 1000);
     timer = 0;
 }
-
 
 function stk500_prgpage(address,data,delay,flag) {
   address = hexpad16(address.toString(16)); /* convert and pad number to hex */
@@ -554,7 +432,7 @@ function transmitPacket(buffer,delay) {
             for (var  x = 0; x < buffer.length; x++) {
                 debug += "[" + buffer.charCodeAt(x).toString(16) + "]";
             }
-     //       console.log(debug);
+            console.log(debug);
       //  }
       //  connection.send(buffer);
         chrome.serial.send(iConnectionId, str2ab(buffer), function() {
@@ -620,13 +498,13 @@ function d2b(number) {
 
 
 function reset() {
-    console.log("Resetting device....");
-    chrome.serial.setControlSignals(iConnectionId,DTRRTSOff,function(result) {
+    log("Resetting device....");
+    serial.setControlSignals(connection.connectionId,DTRRTSOff,function(result) {
         console.log("DTR off: " + result);
         setTimeout(function(){
-            chrome.serial.setControlSignals(iConnectionId,DTRRTSOn,function(result) {
+            serial.setControlSignals(connection.connectionId,DTRRTSOn,function(result) {
                 console.log("DTR on:" + result);
-                console.log("done.\n");
+                log("done.\n");
             });
         }, 100);
     });
@@ -650,16 +528,16 @@ var onReceiveCallback = function(info)
          var bufIncomingDataNew = null;
 
        var buf = new Uint8Array(info.data);
-  //      console.log(LOG + "CALLBACK!!! bytes recieved length <- " + buf.length);
- //     console.log(LOG + "CALLBACK!!! bytes buf <- " + buf);
- //     console.log(LOG + "wait_for_sync: " + wait_for_sync);
+     console.log(LOG + "CALLBACK!!! bytes recieved length <- " + buf.length);
+      console.log(LOG + "CALLBACK!!! bytes buf <- " + buf);
+      console.log(LOG + "wait_for_sync: " + wait_for_sync);
 var sIncomingData = new TextDecoder("utf-8").decode(bufIncomingData);
           bufIncomingDataNew = new Uint8Array(bufIncomingData.length + buf.length);
         bufIncomingDataNew.set(bufIncomingData);
         bufIncomingDataNew.set(buf, bufIncomingData.length);
         bufIncomingData = bufIncomingDataNew;
 
-  // console.log(LOG + "Now we have: " + sIncomingData);
+   console.log(LOG + "Now we have: " + sIncomingData);
 
 
 
@@ -669,7 +547,6 @@ var sIncomingData = new TextDecoder("utf-8").decode(bufIncomingData);
 
 iDeviceID  = parseInt(sIncomingData.substring(iSerialNumberOffset + 6, iSerialNumberOffset + 11));
 console.log(+iDeviceID);
- if (!isNaN(iDeviceID))
 print_status(LOG+"Device ID is:"+iDeviceID);
 
 //	if(iSerialNumberOffset!=-1 )
@@ -683,8 +560,8 @@ if (typeof(iDeviceID) != 'undefined')
    if (!isNaN(iDeviceID))
    {
      if(sIncomingData.length > iSerialNumberOffset + 10){
-UNO = false;
-	clearTimeout(unotime);
+
+
 
 
 
