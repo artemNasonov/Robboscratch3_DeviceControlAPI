@@ -572,7 +572,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
       Kg = rgb_sum / (3 * green);
       Kb = rgb_sum / (3 * blue);
 
-      console.log(`colorAutoCorection: sensor_id: ${sensor_id} Kr: ${Kr} Kg: ${Kg} Kb: ${Kb}`);
+      console.warn(`colorAutoCorection: sensor_id: ${sensor_id} red: ${red} green: ${green} blue: ${blue}`);
+      console.warn(`colorAutoCorection: sensor_id: ${sensor_id} Kr: ${Kr} Kg: ${Kg} Kb: ${Kb}`);
 
       this.colorKoefs[sensor_id].Kr = Kr;
       this.colorKoefs[sensor_id].Kg = Kg;
