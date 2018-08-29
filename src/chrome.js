@@ -392,7 +392,7 @@ function InterfaceDevice(port){
    var    time_delta = 0;
    var    time2 = Date.now();
 
-   var command_try_send_time1 = null;
+   var command_try_send_time1 = Date.now();
    var command_try_send_time2 = null;
 
    var check_serial_number_time1 = Date.now();
@@ -751,8 +751,9 @@ function InterfaceDevice(port){
       state = DEVICE_STATES["PURGE"];
       if(bufIncomingData.length > 0){
          chrome.serial.flush(iConnectionId, onFlush);
+         console.log("FLUSH && PURGE");
          bufIncomingData = new Uint8Array();
-         setTimeout(purgePort, 300);
+         setTimeout(purgePort, 10);
       }
       else{
 
@@ -768,9 +769,13 @@ function InterfaceDevice(port){
                         return;
 
                 }
+                else
+                {console.log("jui gavno");}
 
           }
-
+          else
+          {console.log("UNDERFINED CHETo");}
+          console.log("kyky epta");
           setTimeout(checkSerialNumber, 100);
 
 
@@ -793,19 +798,81 @@ function InterfaceDevice(port){
 
   //    wait_for_sync=false;
    }
-
+   function isN(n) {
+      return (!isNaN(parseFloat(n)) && isFinite(n));
+      // Метод isNaN пытается преобразовать переданный параметр в число.
+      // Если параметр не может быть преобразован, возвращает true, иначе возвращает false.
+      // isNaN("12") // false
+   }
+   var check_correct_serial = function(bufIncomingData)
+   {console.log("MAGII NET!");
+    if(bufIncomingData[iSerialNumberOffset+5]  == '-' &&
+       bufIncomingData[iSerialNumberOffset+11] == '-'  &&
+       bufIncomingData[iSerialNumberOffset+17] == '-'  &&
+       bufIncomingData[iSerialNumberOffset+19] == '-'  &&
+       bufIncomingData[iSerialNumberOffset+25] == '-'  &&
+       bufIncomingData[iSerialNumberOffset+31] == '-'  &&
+       isN(bufIncomingData[iSerialNumberOffset+51]) == 1 &&
+       isN(bufIncomingData[iSerialNumberOffset+20]) == 1 &&
+       isN(bufIncomingData[iSerialNumberOffset+26]) == 1 &&
+       isN(bufIncomingData[iSerialNumberOffset+32]) == 1 &&
+       isN(bufIncomingData[iSerialNumberOffset+37]) == 1 &&
+     isN(bufIncomingData[iSerialNumberOffset+42]) == 1 &&
+   isN(bufIncomingData[iSerialNumberOffset+47]) == 1 )
+       {
+         console.log("data is" + bufIncomingData[iSerialNumberOffset+5] +
+            bufIncomingData[iSerialNumberOffset+11] +
+            bufIncomingData[iSerialNumberOffset+17] +
+            bufIncomingData[iSerialNumberOffset+19] +
+            bufIncomingData[iSerialNumberOffset+25] +
+            bufIncomingData[iSerialNumberOffset+31] + " " +
+            isN(bufIncomingData[iSerialNumberOffset+51]) + " " +
+            isN(bufIncomingData[iSerialNumberOffset+20]) + " " +
+            isN(bufIncomingData[iSerialNumberOffset+26]) + " " +
+            isN(bufIncomingData[iSerialNumberOffset+32]) + " " +
+            isN(bufIncomingData[iSerialNumberOffset+37]) + " " +
+            isN(bufIncomingData[iSerialNumberOffset+42]) + " " +
+            isN(bufIncomingData[iSerialNumberOffset+47] ));
+            console.log(
+              "data is:"+ bufIncomingData[iSerialNumberOffset+51] + " " +
+                        bufIncomingData[iSerialNumberOffset+20] + " " +
+                      bufIncomingData[iSerialNumberOffset+26] + " " +
+                    bufIncomingData[iSerialNumberOffset+32] + " " +
+                  bufIncomingData[iSerialNumberOffset+37] + " " +
+                bufIncomingData[iSerialNumberOffset+42] + " " +
+              bufIncomingData[iSerialNumberOffset+47] )
+         console.log("PROVERENO_MAXOM!");
+         return 1;
+       }
+       console.log("data is" + bufIncomingData[iSerialNumberOffset+5] +
+          bufIncomingData[iSerialNumberOffset+11] +
+          bufIncomingData[iSerialNumberOffset+17] +
+          bufIncomingData[iSerialNumberOffset+19] +
+          bufIncomingData[iSerialNumberOffset+25] +
+          bufIncomingData[iSerialNumberOffset+31] + " " +
+          isN(bufIncomingData[iSerialNumberOffset+51]) + " " +
+          isN(bufIncomingData[iSerialNumberOffset+20]) + " " +
+          isN(bufIncomingData[iSerialNumberOffset+26]) + " " +
+          isN(bufIncomingData[iSerialNumberOffset+32]) + " " +
+          isN(bufIncomingData[iSerialNumberOffset+37]) + " " +
+        isN(bufIncomingData[iSerialNumberOffset+42]) + " " +
+      isN(bufIncomingData[iSerialNumberOffset+47]) );
+       console.log("MAXY_NE_PONRAVILOS'!");
+         return 0;
+   }
+//ROBBO-00000-00007-R-ROBBO-00000-00007 -R-00001-00001-
+//ROBBO-00000-00007-R-00001-00001-00000 000000000000001
    var checkSerialNumber = function(){
       console.log(LOG + "let's check the serial");
       console.log(LOG + "wait_for_sync: " + wait_for_sync);
 
       var sIncomingData = new TextDecoder("utf-8").decode(bufIncomingData);
       console.log(LOG + "Now we have: " + sIncomingData);
-
       console.log(LOG + "wait_for_sync: " + wait_for_sync);
-
-      if(bufIncomingData.length > DEVICE_SERIAL_NUMBER_PROBE_INTERVAL){
-         iSerialNumberOffset = sIncomingData.indexOf("ROBBO");
-         if(iSerialNumberOffset < 0){
+      iSerialNumberOffset = sIncomingData.indexOf("ROBBO");
+      console.log(bufIncomingData.length + " doljna bit > chem " + (DEVICE_SERIAL_NUMBER_PROBE_INTERVAL+iSerialNumberOffset));
+      if(bufIncomingData.length > (DEVICE_SERIAL_NUMBER_PROBE_INTERVAL+iSerialNumberOffset)){
+           if((iSerialNumberOffset < 0)||(!(check_correct_serial(sIncomingData)))){
             console.log(LOG + "Rubbish instead of serial number");
             state = DEVICE_STATES["RUBBISH"];
             bufIncomingData = new Uint8Array();
@@ -1016,8 +1083,8 @@ function InterfaceDevice(port){
          time_delta = 0;
          time2 = Date.now();
 
-      command_try_send_time1 = null;
-      command_try_send_time2 = null;
+      command_try_send_time1 = Date.now();
+      command_try_send_time2 =  Date.now();
 
       check_serial_number_time1 = Date.now();
       check_serial_number_time2 = Date.now();
@@ -1152,22 +1219,14 @@ function InterfaceDevice(port){
 
     command_try_send_time2 = Date.now();
 
-    // if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT ){
-    //
-    //
-    //     if (command == DEVICES[iDeviceID].commands.check){
-    //
-    //
-    //             console.log(`NULL_COMMAND_TIMEOUT`);
-    //
-    //             commandToRun = null;
-    //             wait_for_sync = true;
-    //     }
-    //
-    //
-    //
-    //
-    // }
+     if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT){
+       console.log(command_try_send_time2 + " looool " + command_try_send_time1);
+         if (command == DEVICES[iDeviceID].commands.check){
+                 console.log(`OSHIBKA!`);
+                 commandToRun = null;
+                 wait_for_sync = true;
+         }
+     }
 
       if(commandToRun != null){
 

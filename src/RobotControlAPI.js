@@ -306,7 +306,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
       this.stopDataRecievingProcess();
 
       this.searching_in_progress = true;
-
+      console.log("searching_in_progress = true i can autorecconect toje !!!!!!!!!!!!!!!!!JOAP!!!!!!!" + this.searching_in_progress);
       this.can_autoreconnect = true;
 
 
@@ -467,7 +467,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
               is_connected =  false;
 
         }
-
+      //  console.log("searching_progress: " + this.searching_in_progress);
         if ((this.previousState == true) && (this.previousState != is_connected) && (!this.searching_in_progress) && (this.can_autoreconnect)){
 
               this.auto_reconnect();
@@ -546,43 +546,99 @@ export default class RobotControlAPI extends DeviceControlAPI {
         }
 
       this.can_autoreconnect = false;
-
+       console.log("this.can_autoreconnect = false;                                                                                   stopDatarecieving lol");
     }
 
     colorAutoCorection(sensor_id:number){
 
-    if ( typeof(this.SensorsData) != 'undefined' ){
+      if ( typeof(this.SensorsData) != 'undefined' ){
 
-      let rgb_array = this.SensorsData[`a${sensor_id}`];
+  let rgb_array = this.SensorsData[`a${sensor_id}`];
 
-      let red    = rgb_array[1];
-      let green  = rgb_array[2];
-      let blue   = rgb_array[3];
+  let red    = rgb_array[1];
+  let green  = rgb_array[2];
+  let blue   = rgb_array[3];
 
-      let rgb_sum =  red + green + blue;
-
-
-
-      let Kr = 0; //koef for red channel
-      let Kg = 0; //koef for green channel
-      let Kb = 0; //koef for blue channel
+  let rgb_sum =  red + green + blue;
 
 
-      Kr = rgb_sum / (3 * red);
-      Kg = rgb_sum / (3 * green);
-      Kb = rgb_sum / (3 * blue);
 
-      console.warn(`colorAutoCorection: sensor_id: ${sensor_id} red: ${red} green: ${green} blue: ${blue}`);
-      console.warn(`colorAutoCorection: sensor_id: ${sensor_id} Kr: ${Kr} Kg: ${Kg} Kb: ${Kb}`);
-
-      this.colorKoefs[sensor_id].Kr = Kr;
-      this.colorKoefs[sensor_id].Kg = Kg;
-      this.colorKoefs[sensor_id].Kb = Kb;
-
-      this.color_P_initial  = red * Kr + green * Kg + blue * Kb;
+  let Kr = 0; //koef for red channel
+  let Kg = 0; //koef for green channel
+  let Kb = 0; //koef for blue channel
 
 
-    }
+  // Kr = rgb_sum / (3 * red);
+  // Kg = rgb_sum / (3 * green);
+  // Kb = rgb_sum / (3 * blue);
+
+
+      Kr = 0.666666666666666666 - red  / rgb_sum;
+      Kg = 0.666666666666666666 - green  / rgb_sum;
+      Kb = 0.666666666666666666 - blue  / rgb_sum;
+
+
+  if(Kr < Kg && Kr < Kb){
+     Kr += 0.01
+  }
+  if(Kg < Kr && Kg < Kb){
+     Kg += 0.01
+  }
+  if(Kb < Kr && Kb < Kg){
+     Kb += 0.01
+  }
+
+
+  var red_corrected   = red * Kr * 3;
+  var green_corrected = green * Kg * 3;
+  var blue_corrected  = blue * Kb * 3;
+
+
+   if(red_corrected > green_corrected && red_corrected > blue_corrected){
+     Kr -= 0.02
+  }
+  if(green_corrected > red_corrected && green_corrected > blue_corrected){
+     Kg -= 0.02
+  }
+  if(blue_corrected > red_corrected && blue_corrected > green_corrected){
+     Kb -= 0.02
+  }
+
+   red_corrected   = red * Kr * 3;
+   green_corrected = green * Kg * 3;
+   blue_corrected  = blue * Kb * 3;
+
+
+var Kr_in_percent = Kr.toFixed(2) * 300;
+var Kg_in_percent = Kg.toFixed(2) * 300;
+var Kb_in_percent = Kb.toFixed(2) * 300;
+
+var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
+
+
+
+
+
+
+
+
+  console.warn(`colorAutoCorection: sensor_id: ${sensor_id} red: ${red} green: ${green} blue: ${blue}`);
+  console.warn(`colorAutoCorection: sensor_id: ${sensor_id} Kr: ${Kr} Kg: ${Kg} Kb: ${Kb}`);
+
+  console.warn(`red_corrected: ${red_corrected} green_corrected: ${green_corrected} blue_corrected: ${blue_corrected}`);
+
+ console.warn(`Kr_in_percent: ${Kr_in_percent} Kg_in_percent: ${Kg_in_percent} Kb_in_percent: ${Kb_in_percent}`);
+
+ console.warn(`percent_sum: ${percent_sum} `);
+
+  this.colorKoefs[sensor_id].Kr = Kr;
+  this.colorKoefs[sensor_id].Kg = Kg;
+  this.colorKoefs[sensor_id].Kb = Kb;
+
+  this.color_P_initial  = red * Kr * 3 + green * Kg * 3 + blue * Kb * 3;
+
+
+}
 
 
 
@@ -592,32 +648,126 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       console.log(`setColorKoefs: sensor_id: ${sensor_id} red_koef: ${red_koef} green_koef: ${green_koef} blue_koef: ${blue_koef}`);
 
-        this.colorKoefs[sensor_id].Kr   =  red_koef / 100;
-        this.colorKoefs[sensor_id].Kg   =  green_koef / 100;
-        this.colorKoefs[sensor_id].Kb    =  blue_koef / 100;
+        this.colorKoefs[sensor_id].Kr   =  red_koef /  300; //100;
+        this.colorKoefs[sensor_id].Kg   =  green_koef / 300; //100;
+        this.colorKoefs[sensor_id].Kb    =  blue_koef / 300; //100;
 
 
     }
 
     getColorKoefs(sensor_id:number,koef_name:string){
 
+
+      var Kr_in_percent = this.colorKoefs[sensor_id].Kr.toFixed(2) * 300; //100
+      var Kg_in_percent =  this.colorKoefs[sensor_id].Kg.toFixed(2) * 300;
+      var Kb_in_percent =  this.colorKoefs[sensor_id].Kb.toFixed(2) * 300;
+
+      var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
+
+      var delta = 0;
+
+      if (percent_sum > 300){ //приводим сумму к 300. Если сумма  больше отнимаем от каналов по одному проценту в зависимости от дельты. Если 										меньше, прибавляем.
+
+			console.warn(` getColorKoefs percent_sum > 300 `);
+
+            delta = percent_sum - 300;
+
+			  switch (delta) {
+
+              case 1:
+
+						Kr_in_percent   -= 1;
+
+
+               break;
+
+			case 2:
+
+            Kr_in_percent -= 1;
+						Kg_in_percent -= 1;
+
+               break;
+
+			case 3:
+
+
+					Kr_in_percent -= 1;
+					Kg_in_percent -= 1;
+					Kb_in_percent -= 1;
+
+
+              break;
+
+              default:
+
+            }
+
+
+
+
+      }else if (percent_sum < 300){
+
+			console.warn(` getColorKoefs percent_sum < 300 `);
+
+          delta = 300 - percent_sum;
+
+
+
+		console.warn(`getColorKoefs delta: ${delta}`);
+
+			  switch (delta) {
+
+              case 1:
+
+						Kr_in_percent   += 1;
+
+
+               break;
+
+			case 2:
+
+            Kr_in_percent += 1;
+						Kg_in_percent += 1;
+
+               break;
+
+			case 3:
+
+
+					Kr_in_percent += 1;
+					Kg_in_percent += 1;
+					Kb_in_percent += 1;
+
+
+              break;
+
+              default:
+
+            }
+
+	}
+
+
+	percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
+
+
       switch (koef_name) {
 
         case "red":
 
-            return this.colorKoefs[sensor_id].Kr.toFixed(2) * 100;
+            return Kr_in_percent;
 
         //  break;
 
         case "green":
 
-          return this.colorKoefs[sensor_id].Kg.toFixed(2) * 100;
+          return Kg_in_percent;
 
         //  break;
 
         case "blue":
 
-            return this.colorKoefs[sensor_id].Kb.toFixed(2) * 100;
+            return Kb_in_percent;
 
         //  break;
 
@@ -638,9 +788,9 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       if ( typeof(this.SensorsData) != 'undefined' ){
 
-        rgb_arr[0] = this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kr; //red
-        rgb_arr[1] = this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kg; //green
-        rgb_arr[2] = this.SensorsData[`a${sensor_id}`][3] *  this.colorKoefs[sensor_id].Kb; //blue
+        rgb_arr[0] = this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kr * 3; //red
+        rgb_arr[1] = this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kg * 3; //green
+        rgb_arr[2] = this.SensorsData[`a${sensor_id}`][3] *  this.colorKoefs[sensor_id].Kb * 3; //blue
 
 
 
@@ -682,9 +832,9 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       }
 
-      let red_channel      =  this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kr;
-      let green_channel    =  this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kg;
-      let blue_channel     =  this.SensorsData[`a${sensor_id}`][3] *  this.colorKoefs[sensor_id].Kb;
+      let red_channel      =  this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kr * 3;
+      let green_channel    =  this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kg * 3 ;
+      let blue_channel     =  this.SensorsData[`a${sensor_id}`][3] *  this.colorKoefs[sensor_id].Kb * 3;
 
       let sum = red_channel + green_channel + blue_channel;
 
@@ -1192,13 +1342,14 @@ turnLedOff(led_position:number,robot_number:number){
 
   runDataRecieveCommand(device:InterfaceDevice){
 
-  if (device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+  if (this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-
-
+this.can_autoreconnect = false;
+//  console.log("this.can_autoreconnect = false;                                                                                   11111111111111111111111");
     console.log("runDataRecieveCommand");
+//      this.searching_in_progress = false;
 
-  device.command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.check, [], (response) => {
+this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.check, [], (response) => {
 
 
           this.SensorsData = response;
@@ -1206,8 +1357,8 @@ turnLedOff(led_position:number,robot_number:number){
             this.dataRecieveTime = Date.now();
 
             this.searching_in_progress = false;
-
-
+this.can_autoreconnect = false;
+//  console.log("this.can_autoreconnect = false;                                                                                   222222222222222222222222");
 
         //  console.log("response: " + this.SensorsData.a0);
 
@@ -1215,6 +1366,7 @@ turnLedOff(led_position:number,robot_number:number){
        });
 
   }
+  else{this.can_autoreconnect = true;  /*console.log("this.can_autoreconnect = true;                                                                                   11111111111111111111111");*/}
 
 
 
