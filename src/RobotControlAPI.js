@@ -832,9 +832,18 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
       }
 
+
+
+      if  ( (typeof(this.SensorsData) == 'undefined') || (typeof(this.SensorsData[`a${sensor_id}`][3]) == 'undefined')){
+
+       return [-1,-1,-1];
+      }
+
       let red_channel      =  this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kr * 3;
       let green_channel    =  this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kg * 3 ;
       let blue_channel     =  this.SensorsData[`a${sensor_id}`][3] *  this.colorKoefs[sensor_id].Kb * 3;
+
+
 
       let sum = red_channel + green_channel + blue_channel;
 
@@ -900,6 +909,9 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
                   console.warn("red_low: " + red_low);
                   console.warn("red_high: " + red_high);
 
+                  console.warn("green_low: " + green_low);
+                  console.warn("green_high: " + green_high);
+
                   console.warn("blue_low: " + blue_low);
                   console.warn("blue_high: " + blue_high);
 
@@ -911,12 +923,13 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
                         return colors_arr[color];
 
-                  }else return [-1,-1,-1];
+                  }
 
           }
 
         }
 
+         return [-1,-1,-1];
 
 
     }
