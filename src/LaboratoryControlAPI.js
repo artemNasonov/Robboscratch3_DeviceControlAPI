@@ -115,7 +115,7 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
     //Автопереподключение при потере связи с устройсвом
      auto_reconnect(){
 
-     //  console.log(`auto reconnect`);
+       console.log(`auto reconnect`);
 
          //  this.autoReconnectInterval = setInterval(function(){
 
@@ -136,7 +136,7 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
                  connectedDevices = getConnectedDevices();
 
                  devices.forEach(function(device,device_index){
-
+                   console.log("device_index state: " + (device_index <= (connectedDevices.length - 1) ) )
                    if (device_index <= (connectedDevices.length - 1) ){
 
 
@@ -147,6 +147,8 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
 
 
                        //Проверяем, что имена уже сохранённого порта и просматриваемого порта совпадают  //Проверяем, что имеем дело с лабораторией.
+                      // console.log("proverka eblivaya: " + (device.path == connectedDevices[device_index].getPortName()) + " " +(connectedDevices[device_index].getDeviceID() == 2))
+                        console.log("hochu: device.path"+device.path + "poluchau: " +connectedDevices[device_index].getPortName());
                      if ( (device.path == connectedDevices[device_index].getPortName()) &&  (connectedDevices[device_index].getDeviceID() == 2) ){
 
 
@@ -169,13 +171,21 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
                          Определяем, что устройство переехало пуём сравнения длины массива уже подключённых устройств и вновь полученного массива устройств.
 
                  */
-
+                   devices.forEach(function(device,device_index)
+                   {
+                     console.log("D " + device.path);
+                   });
+                   connectedDevices.forEach(function(device,device_index)
+                   {
+                     console.log("C "+device.path);
+                   });
+                   console.log(devices.length+ ">"+ connectedDevices.length);
                  if (devices.length > connectedDevices.length){
 
                          console.log(`Device maybe moved to the new port: ${devices[connectedDevices.length].path} Trying to reconnect.`);
                        let d = new InterfaceDevice(devices[connectedDevices.length]); // TODO: Не совсем корректно : connectedDevices.length. Нужно по-другому
                        pushConnectedDevices(d);
-                       this.searchRobotDevices();
+                       this.searchLaboratoryDevices();
                        this.searching_in_progress = true;
 
                  } else this.searching_in_progress = false;
@@ -399,11 +409,9 @@ isLaboratoryConnected(robot_number:number):boolean{
           is_connected =  false;
 
     }
-
-    if ((this.previousState == true) && (this.previousState != is_connected) && (!this.searching_in_progress) && (this.can_autoreconnect)){
-
+  //  console.log((this.previousState == true) + " " + (this.previousState != is_connected) + " " + (!this.searching_in_progress) + " " + (this.can_autoreconnect));
+    if (false && (this.previousState == true) && (this.previousState != is_connected) && (!this.searching_in_progress) && (this.can_autoreconnect)){
           this.auto_reconnect();
-
     }else{
 
           this.previousState  = is_connected;
@@ -955,11 +963,12 @@ getSensorData(sensor_name:string):number{
 runDataRecieveCommand(device:InterfaceDevice){
 
 
-  console.log("runDataRecieveCommand laboratory");
+
 
   if (device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
-
-
+  console.log("runDataRecieveCommand laboratory");
+  setTimeout(()=>{this.can_autoreconnect = true;},1000);
+//this.can_autoreconnect = false;
     device.command(DEVICES[this.ConnectedLaboratories[0].getDeviceID()].commands.check, [], (response) => {
 
 
@@ -968,14 +977,14 @@ runDataRecieveCommand(device:InterfaceDevice){
             this.dataRecieveTime = Date.now();
 
             this.searching_in_progress = false;
-
+//this.can_autoreconnect = false;
           //  console.log("laboratory_response: " + this.SensorsData);
 
 
          });
 
   }
-
+//else{this.can_autoreconnect = true;}
 
 
 

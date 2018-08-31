@@ -468,7 +468,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
         }
       //  console.log("searching_progress: " + this.searching_in_progress);
-        if ((this.previousState == true) && (this.previousState != is_connected) && (!this.searching_in_progress) && (this.can_autoreconnect)){
+        if ( (false) && (this.previousState == true) && (this.previousState != is_connected) && (!this.searching_in_progress) && (this.can_autoreconnect)){
 
               this.auto_reconnect();
 
