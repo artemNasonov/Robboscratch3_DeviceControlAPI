@@ -622,14 +622,14 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
 
 
-  console.warn(`colorAutoCorection: sensor_id: ${sensor_id} red: ${red} green: ${green} blue: ${blue}`);
-  console.warn(`colorAutoCorection: sensor_id: ${sensor_id} Kr: ${Kr} Kg: ${Kg} Kb: ${Kb}`);
-
-  console.warn(`red_corrected: ${red_corrected} green_corrected: ${green_corrected} blue_corrected: ${blue_corrected}`);
-
- console.warn(`Kr_in_percent: ${Kr_in_percent} Kg_in_percent: ${Kg_in_percent} Kb_in_percent: ${Kb_in_percent}`);
-
- console.warn(`percent_sum: ${percent_sum} `);
+ //  console.warn(`colorAutoCorection: sensor_id: ${sensor_id} red: ${red} green: ${green} blue: ${blue}`);
+ //  console.warn(`colorAutoCorection: sensor_id: ${sensor_id} Kr: ${Kr} Kg: ${Kg} Kb: ${Kb}`);
+ //
+ //  console.warn(`red_corrected: ${red_corrected} green_corrected: ${green_corrected} blue_corrected: ${blue_corrected}`);
+ //
+ // console.warn(`Kr_in_percent: ${Kr_in_percent} Kg_in_percent: ${Kg_in_percent} Kb_in_percent: ${Kb_in_percent}`);
+ //
+ // console.warn(`percent_sum: ${percent_sum} `);
 
   this.colorKoefs[sensor_id].Kr = Kr;
   this.colorKoefs[sensor_id].Kg = Kg;
@@ -668,7 +668,7 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
       if (percent_sum > 300){ //приводим сумму к 300. Если сумма  больше отнимаем от каналов по одному проценту в зависимости от дельты. Если 										меньше, прибавляем.
 
-			console.warn(` getColorKoefs percent_sum > 300 `);
+	//		console.warn(` getColorKoefs percent_sum > 300 `);
 
             delta = percent_sum - 300;
 
@@ -707,13 +707,13 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
       }else if (percent_sum < 300){
 
-			console.warn(` getColorKoefs percent_sum < 300 `);
+		//	console.warn(` getColorKoefs percent_sum < 300 `);
 
           delta = 300 - percent_sum;
 
 
 
-		console.warn(`getColorKoefs delta: ${delta}`);
+	//	console.warn(`getColorKoefs delta: ${delta}`);
 
 			  switch (delta) {
 
@@ -847,7 +847,7 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
       let sum = red_channel + green_channel + blue_channel;
 
-    console.warn("sum: " + sum);
+  //  console.warn("sum: " + sum);
 
       let red_channel_percent       = red_channel     / sum * 100;
       let green_channel_percent     = green_channel  / sum  * 100;
@@ -901,22 +901,22 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
                   let bright_high  =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].Bright,"high") * 1000);
 
 
-                  console.warn("red: " + red);
-                  console.warn("green: " + green);
-                  console.warn("blue: " + blue);
-                  console.warn("bright: " + bright);
-
-                  console.warn("red_low: " + red_low);
-                  console.warn("red_high: " + red_high);
-
-                  console.warn("green_low: " + green_low);
-                  console.warn("green_high: " + green_high);
-
-                  console.warn("blue_low: " + blue_low);
-                  console.warn("blue_high: " + blue_high);
-
-                  console.warn("bright_low: " + bright_low);
-                  console.warn("bright_high: " + bright_high);
+                  // console.warn("red: " + red);
+                  // console.warn("green: " + green);
+                  // console.warn("blue: " + blue);
+                  // console.warn("bright: " + bright);
+                  //
+                  // console.warn("red_low: " + red_low);
+                  // console.warn("red_high: " + red_high);
+                  //
+                  // console.warn("green_low: " + green_low);
+                  // console.warn("green_high: " + green_high);
+                  //
+                  // console.warn("blue_low: " + blue_low);
+                  // console.warn("blue_high: " + blue_high);
+                  //
+                  // console.warn("bright_low: " + bright_low);
+                  // console.warn("bright_high: " + bright_high);
 
 
                   if ( (red > red_low) && (red < red_high) && (green > green_low)  && (green < green_high)  && (blue > blue_low) && (blue < blue_high) && (bright > bright_low)  && (bright < bright_high)){
@@ -1400,7 +1400,7 @@ this.can_autoreconnect = false;
 
                   this.RobotSensorsDataRecievingState == SensorsDataRecievingStates.STARTED;
 
-                this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,robot),25);
+                this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,robot),1);
 
                 }
 

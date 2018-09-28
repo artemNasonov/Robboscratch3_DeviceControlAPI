@@ -1,3 +1,6 @@
+
+
+
 const DEVICE_SERIAL_NUMBER_PROBE_INTERVAL = 100;
 const DEVICE_SERIAL_NUMBER_LENGTH = 52;
 const DEVICE_HANDLE_TIMEOUT = 1 * 60 * 1000;
@@ -392,6 +395,10 @@ function InterfaceDevice(port){
    var    time_delta = 0;
    var    time2 = Date.now();
 
+   var recieve_time1 =  Date.now();
+   var recieve_time_delta = 0;
+   var recieve_time2 =  Date.now();
+
    var command_try_send_time1 = Date.now();
    var command_try_send_time2 = null;
 
@@ -538,6 +545,11 @@ function InterfaceDevice(port){
 
             iWaiting = 0;
             callback(response);
+
+            recieve_time1 = Date.now();
+            recieve_time_delta = recieve_time1 - recieve_time2;
+            console.log("time delta recieve: " + recieve_time_delta);
+             recieve_time2 = Date.now();
          }
 
              console.log(LOG + "wait_for_sync after: " + wait_for_sync);
@@ -1217,30 +1229,64 @@ function InterfaceDevice(port){
     var command_local = command;
     var params_local  = params;
 
+    var should_kill_command = false;
+
     command_try_send_time2 = Date.now();
 
-     if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT){
-       console.log(command_try_send_time2 + " looool " + command_try_send_time1);
-         if (command == DEVICES[iDeviceID].commands.check){
-                 console.log(`OSHIBKA!`);
-                 commandToRun = null;
-                 wait_for_sync = true;
-         }
-     }
-
+     // if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT){
+     //   console.log(command_try_send_time2 + " looool " + command_try_send_time1);
+     //     if (command == DEVICES[iDeviceID].commands.check){
+     //             console.log(`OSHIBKA!`);
+     //             commandToRun = null;
+     //             wait_for_sync = true;
+     //     }
+     // }
+     //
       if(commandToRun != null){
 
         if ((command != DEVICES[iDeviceID].commands.check) ){
 
-             console.log(`buffering commands1... buffer length: ${commands_stack.length}`);
+            if (commands_stack.length > 0){
 
-            commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
+              let cmd_obj = commands_stack[commands_stack.length - 1];
 
-              commands_stack.forEach(function(command_object,command_object_index){
+          if ( (cmd_obj.command.code == command.code) ) {
 
-                  console.log(`After push: ${command_object.command.code} command_object_index1: ${command_object_index}`);
 
-              } );
+                for (let i = 0; i<cmd_obj.params.length;i++){
+
+                  should_kill_command = (cmd_obj.params[i]==params[i])?true:false;
+
+                }
+
+
+
+          }
+
+
+
+            }
+
+          if (!should_kill_command){
+
+            console.log(`buffering commands1... buffer length: ${commands_stack.length}`);
+
+           commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
+
+              console.warn(`survive ${command.code} command`);
+
+             // commands_stack.forEach(function(command_object,command_object_index){
+             //
+             //     console.log(`After push: ${command_object.command.code} command_object_index1: ${command_object_index}`);
+             //
+             // } );
+
+          }else{
+
+                  console.warn(`kill ${command.code} command`);
+          }
+
+
 
         }
 
@@ -1259,20 +1305,7 @@ function InterfaceDevice(port){
       if (commands_stack.length > 0){
 
 
-        if ( (command != DEVICES[iDeviceID].commands.check) ){
 
-          console.log(`buffering commands2... buffer length: ${commands_stack.length}`);
-
-          commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
-
-
-          commands_stack.forEach(function(command_object,command_object_index){
-
-              console.log(`Before shift: ${command_object.command.code} command_object_index2: ${command_object_index}`);
-
-          } );
-
-        }
 
 
 
@@ -1283,11 +1316,65 @@ function InterfaceDevice(port){
           params_local                = command_object.params; //Surprise!!!
           fCallback                   = command_object.fCallback;
 
-          commands_stack.forEach(function(command_object,command_object_index){
+          if ( (command != DEVICES[iDeviceID].commands.check) ){
 
-              console.log(`After shift: ${command_object.command.code} command_object_index3: ${command_object_index}`);
 
-          } );
+            if ( (command_object.command.code == command.code) ) {
+
+
+                  for (let i = 0; i<command_object.params.length;i++){
+
+                    should_kill_command = (command_object.params[i]==params[i])?true:false;
+
+                  }
+
+
+
+            }
+
+
+            if (!should_kill_command){
+
+              console.log(`buffering commands2... buffer length: ${commands_stack.length}`);
+              commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
+              console.warn(`survive ${command.code} command`);
+
+            }else{
+
+                    console.warn(`kill ${command.code} command`);
+            }
+
+
+
+        // if((command_object.command.code != command.code)&&((command_object.params[0]!=params[0])||(command_object.params[1]!=params[1])))
+        //       {
+        //
+        //
+        //       console.log(`buffering commands2... buffer length: ${commands_stack.length}`);
+        //     commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
+        //       console.warn(`survive ${command.code} command`);
+        //
+        //       }
+        // else
+        // {
+        //
+        //
+        //   console.warn(`kill ${command.code} command`);
+        //
+        // }
+          //   commands_stack.forEach(function(command_object,command_object_index){
+          //
+          // //      console.log(`Before shift: ${command_object.command.code} command_object_index2: ${command_object_index}`);
+          //
+          //   } );
+
+          }
+
+          // commands_stack.forEach(function(command_object,command_object_index){
+          //
+          //     console.log(`After shift: ${command_object.command.code} command_object_index3: ${command_object_index}`);
+          //
+          // } );
 
 
       }else{
@@ -1296,7 +1383,7 @@ function InterfaceDevice(port){
           command_local = command;
           params_local  = params;
 
-      }
+       }
 
       // setTimeout(function(){
       //
