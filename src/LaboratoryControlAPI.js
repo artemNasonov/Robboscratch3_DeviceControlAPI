@@ -80,6 +80,7 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
 
     this.init_all();
 
+   this.lab_status_change_callback = null;
 
     this.stopSearchProcess();
     this.stopDataRecievingProcess();
@@ -107,6 +108,9 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
       this.lab_sensor_types = [];
 
       this.dataRecieveTime = 0;
+
+      this.previousLabState = DEVICE_STATES["INITED"];
+      this.currentLabState =  DEVICE_STATES["INITED"];
 
 
     }
@@ -211,6 +215,11 @@ searchLaboratoryDevices(){
 
   this.searching_in_progress = true;
 
+  if (this.lab_status_change_callback !== null){
+
+        this.lab_status_change_callback(this.currentLabState,this.searching_in_progress);
+
+  }
 
 //  searchDevices();
 
@@ -243,6 +252,11 @@ searchLaboratoryDevices(){
          clearInterval(self.handleConnectedDevicesInterval);
          self.searching_in_progress = false;
 
+         if (self.lab_status_change_callback !== null){
+
+               self.lab_status_change_callback(self.currentLabState,self.searching_in_progress);
+
+         }
 
      }  ,DEVICE_HANDLE_TIMEOUT,this);
 
@@ -960,28 +974,89 @@ getSensorData(sensor_name:string):number{
 
 }
 
+registerLabStatusChangeCallback(lab_status_change_cb:any){
+
+
+      this.lab_status_change_callback = lab_status_change_cb;
+
+      this.runLabStatusChangeLoop();
+
+}
+
+proxy_func_LabStatusChange(){
+
+  if (typeof(this.ConnectedLaboratories[0]) != 'undefined'){
+
+    this.currentLabState = this.ConnectedLaboratories[0].getState();
+
+    if ((this.currentLabState != this.previousLabState)){
+
+
+        // if (this.currentRobotState == DEVICES["DEVICE_IS_READY"]){
+        //
+        //
+        //
+        // }else{
+        //
+        //
+        //
+        // }
+
+
+
+        this.lab_status_change_callback(this.currentLabState,this.searching_in_progress);
+
+       this.previousLabState =   this.currentLabState;
+    }
+
+
+  }
+
+
+
+
+}
+
+
+runLabStatusChangeLoop(){
+
+
+  this.LabStatusChangeLoopInterval = setInterval(this.proxy_func_LabStatusChange.bind(this),300);
+
+}
+
 runDataRecieveCommand(device:InterfaceDevice){
 
 
 
 
   if (device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
-  console.log("runDataRecieveCommand laboratory");
-  setTimeout(()=>{this.can_autoreconnect = true;},1000);
-//this.can_autoreconnect = false;
-    device.command(DEVICES[this.ConnectedLaboratories[0].getDeviceID()].commands.check, [], (response) => {
+
+      if (this.ConnectedLaboratories[0].isReadyToSendCommand()){
 
 
-            this.SensorsData = response;
-
-            this.dataRecieveTime = Date.now();
-
-            this.searching_in_progress = false;
-//this.can_autoreconnect = false;
-          //  console.log("laboratory_response: " + this.SensorsData);
+        console.log("runDataRecieveCommand laboratory");
+        //setTimeout(()=>{this.can_autoreconnect = true;},1000);
+      //this.can_autoreconnect = false;
+          device.command(DEVICES[this.ConnectedLaboratories[0].getDeviceID()].commands.check, [], (response) => {
 
 
-         });
+                  this.SensorsData = response;
+
+                  this.dataRecieveTime = Date.now();
+
+                  this.searching_in_progress = false;
+      //this.can_autoreconnect = false;
+                //  console.log("laboratory_response: " + this.SensorsData);
+
+
+               });
+
+
+      }
+
+
+
 
   }
 //else{this.can_autoreconnect = true;}

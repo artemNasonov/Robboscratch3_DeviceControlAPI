@@ -41,6 +41,8 @@ const SensorsDataRecievingStates = {
 
 };
 
+
+
 type SensorsDataRecievingState = $Keys<typeof SensorsDataRecievingStates>;
 
 
@@ -80,7 +82,10 @@ export default class RobotControlAPI extends DeviceControlAPI {
       this.init_all();
 
       this.searching_in_progress = false;
-      this.previousState = null;
+
+
+
+      this.robot_status_change_callback = null;
 
       this.stopSearchProcess();
       this.stopDataRecievingProcess();
@@ -184,6 +189,9 @@ export default class RobotControlAPI extends DeviceControlAPI {
     this.colorFilterTable = [{},{},{},{},{}];
 
     this.dataRecieveTime = 0;
+
+    this.previousRobotState = DEVICE_STATES["INITED"];
+    this.currentRobotState =  DEVICE_STATES["INITED"];
 
   let i = 0;
 
@@ -309,6 +317,13 @@ export default class RobotControlAPI extends DeviceControlAPI {
       console.log("searching_in_progress = true i can autorecconect toje !!!!!!!!!!!!!!!!!JOAP!!!!!!!" + this.searching_in_progress);
       this.can_autoreconnect = true;
 
+      if (this.robot_status_change_callback !== null){
+
+            this.robot_status_change_callback(this.currentRobotState,this.searching_in_progress);
+
+      }
+
+
 
   //    searchDevices();
 
@@ -340,6 +355,13 @@ export default class RobotControlAPI extends DeviceControlAPI {
              console.log("Stop devices handle process.");
              clearInterval(self.handleConnectedDevicesInterval);
              self.searching_in_progress = false;
+
+             if (self.robot_status_change_callback !== null){
+
+                self.robot_status_change_callback(self.currentRobotState,self.searching_in_progress);
+
+             }
+
 
 
 
@@ -818,7 +840,7 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
 
 
-    colorFilter(sensor_id:number){
+    colorFilter(sensor_id:number,need_to_return_color_name:boolean){
 
       const getColorFilterTableValue = function(value:string,type:string){
 
@@ -919,7 +941,12 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
                   // console.warn("bright_high: " + bright_high);
 
 
-                  if ( (red > red_low) && (red < red_high) && (green > green_low)  && (green < green_high)  && (blue > blue_low) && (blue < blue_high) && (bright > bright_low)  && (bright < bright_high)){
+                  if ( (red > red_low) && (red < red_high) && (green > green_low)  && (green < green_high)  && (blue > blue_low) && (blue < blue_high) && (bright > bright_low)  && (bright < bright_high) && (need_to_return_color_name)){
+
+                        return color;
+
+                  }else if ( (red > red_low) && (red < red_high) && (green > green_low)  && (green < green_high)  && (blue > blue_low) && (blue < blue_high) && (bright > bright_low)  && (bright < bright_high) ){
+
 
                         return colors_arr[color];
 
@@ -1352,31 +1379,93 @@ turnLedOff(led_position:number,robot_number:number){
 
   }
 
+  registerRobotStatusChangeCallback(robot_status_change_cb:any){
+
+
+        this.robot_status_change_callback = robot_status_change_cb;
+
+        this.runRobotStatusChangeLoop();
+
+  }
+
+  proxy_func_RobotStatusChange(){
+
+    if (typeof(this.ConnectedRobots[0]) != 'undefined'){
+
+      this.currentRobotState = this.ConnectedRobots[0].getState();
+
+      if ((this.currentRobotState != this.previousRobotState)){
+
+
+          // if (this.currentRobotState == DEVICES["DEVICE_IS_READY"]){
+          //
+          //
+          //
+          // }else{
+          //
+          //
+          //
+          // }
+
+
+
+          this.robot_status_change_callback(this.currentRobotState,this.searching_in_progress);
+
+         this.previousRobotState =   this.currentRobotState;
+      }
+
+
+    }
+
+
+
+
+  }
+
+
+  runRobotStatusChangeLoop(){
+
+
+    this.RobotStatusChangeLoopInterval = setInterval(this.proxy_func_RobotStatusChange.bind(this),300);
+
+  }
+
 
   runDataRecieveCommand(device:InterfaceDevice){
 
   if (this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-this.can_autoreconnect = false;
-//  console.log("this.can_autoreconnect = false;                                                                                   11111111111111111111111");
-    console.log("runDataRecieveCommand");
-//      this.searching_in_progress = false;
 
-this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.check, [], (response) => {
+    if (this.ConnectedRobots[0].isReadyToSendCommand()){
 
 
-          this.SensorsData = response;
+       console.log("runDataRecieveCommand");
 
-            this.dataRecieveTime = Date.now();
+      this.can_autoreconnect = false;
+      //  console.log("this.can_autoreconnect = false;                                                                                   11111111111111111111111");
 
-            this.searching_in_progress = false;
-this.can_autoreconnect = false;
-//  console.log("this.can_autoreconnect = false;                                                                                   222222222222222222222222");
+       //      this.searching_in_progress = false;
 
-        //  console.log("response: " + this.SensorsData.a0);
+       this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.check, [], (response) => {
 
 
-       });
+           this.SensorsData = response;
+
+             this.dataRecieveTime = Date.now();
+
+           this.searching_in_progress = false;
+          this.can_autoreconnect = false;
+          //  console.log("this.can_autoreconnect = false;                                                                                   222222222222222222222222");
+
+         //  console.log("response: " + this.SensorsData.a0);
+
+
+        });
+
+
+    }
+
+
 
   }
   else{this.can_autoreconnect = true;  /*console.log("this.can_autoreconnect = true;                                                                                   11111111111111111111111");*/}
@@ -1400,7 +1489,7 @@ this.can_autoreconnect = false;
 
                   this.RobotSensorsDataRecievingState == SensorsDataRecievingStates.STARTED;
 
-                this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,robot),1);
+                this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,robot),5);
 
                 }
 

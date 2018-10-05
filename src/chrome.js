@@ -32,7 +32,8 @@ const DEVICE_STATES = Object.freeze({
    "SERIAL_FOUND": 5,
    "PURGING": 6,
    "DEVICE_IS_READY": 7,
-   "DEVICE_ERROR":8
+   "DEVICE_ERROR":8,
+   "TIMEOUT":9
 });
 
 const commands_list_robot = {
@@ -549,6 +550,13 @@ function InterfaceDevice(port){
             recieve_time1 = Date.now();
             recieve_time_delta = recieve_time1 - recieve_time2;
             console.log("time delta recieve: " + recieve_time_delta);
+
+            if (recieve_time_delta > 5000){
+
+                state = DEVICE_STATES["TIMEOUT"];
+
+            }
+
              recieve_time2 = Date.now();
          }
 
@@ -941,7 +949,7 @@ function InterfaceDevice(port){
 
          }else{
 
-                  console.log(LOG + "Out of checkSerialNumber timeout." + "state: " + state);
+                  console.log(LOG + "Out of checkSerialNumber timeout. " + "State: " + state);
 
          }
       }
@@ -1217,6 +1225,18 @@ function InterfaceDevice(port){
 
 
       return iFirmwareVersion;
+   }
+
+   this.isDeviceReady = function (){
+
+      return (state ==  DEVICE_STATES["DEVICE_IS_READY"]);
+
+   }
+
+   this.isReadyToSendCommand = function (){
+
+      return (commandToRun == null);
+
    }
 
    this.command = function(command, params, fCallback){
