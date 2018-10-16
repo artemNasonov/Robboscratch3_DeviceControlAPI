@@ -23,6 +23,8 @@ console.log = function(string){
 
   }
 
+console.log("dev-5");  
+
 const DEVICE_STATES = Object.freeze({
    "INITED": 0,
    "OPENED": 1,
@@ -1289,11 +1291,11 @@ function InterfaceDevice(port){
 
           if (!should_kill_command){
 
-            console.log(`buffering commands1... buffer length: ${commands_stack.length}`);
+          //  console.log(`buffering commands1... buffer length: ${commands_stack.length}`);
 
            commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
 
-              console.warn(`survive ${command.code} command`);
+          //    console.warn(`survive ${command.code} command`);
 
              // commands_stack.forEach(function(command_object,command_object_index){
              //
@@ -1303,7 +1305,7 @@ function InterfaceDevice(port){
 
           }else{
 
-                  console.warn(`kill ${command.code} command`);
+              //    console.warn(`kill ${command.code} command`);
           }
 
 
@@ -1355,13 +1357,13 @@ function InterfaceDevice(port){
 
             if (!should_kill_command){
 
-              console.log(`buffering commands2... buffer length: ${commands_stack.length}`);
+            //  console.log(`buffering commands2... buffer length: ${commands_stack.length}`);
               commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
-              console.warn(`survive ${command.code} command`);
+          //    console.warn(`survive ${command.code} command`);
 
             }else{
 
-                    console.warn(`kill ${command.code} command`);
+            //        console.warn(`kill ${command.code} command`);
             }
 
 
@@ -1432,7 +1434,7 @@ function InterfaceDevice(port){
 
       chrome.serial.send(iConnectionId, buf, onSend);
 
-      console.log(`sending command: ${command_local.code}`)
+    //  console.log(`sending command: ${command_local.code}`)
 
       //for #
       var iWaitingNew = 1;
@@ -1457,7 +1459,7 @@ function InterfaceDevice(port){
 
       callback = fCallback;
 
-      console.log(LOG + "we wating for " + iWaitingNew + " bytes");
+    //  console.log(LOG + "we wating for " + iWaitingNew + " bytes");
       iWaiting = iWaitingNew;
    }
 

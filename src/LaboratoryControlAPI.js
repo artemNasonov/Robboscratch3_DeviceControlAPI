@@ -285,6 +285,8 @@ searchLaboratoryDevices(){
 
                      console.log("We have new ready laboratory!!!");
 
+                      self.lab_status_change_callback(self.currentLabState,self.searching_in_progress);
+
                      console.log("Laboratory serial: " + device.getSerialNumber());
 
                      self.startDataRecievingLoop(device);

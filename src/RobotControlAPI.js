@@ -83,7 +83,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       this.searching_in_progress = false;
 
-
+      this.sensors_array = [0,0,0,0,0];
 
       this.robot_status_change_callback = null;
 
@@ -181,7 +181,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
     this.ConnectedDevices = [];
     this.ConnectedRobots = [];
     this.ConnectedRobotsSerials = [];
-    this.sensors_array = [0,0,0,0,0];
+  //  this.sensors_array = [0,0,0,0,0];
     this.led_positions = [1,2,4,8,16];
     this.led_states = ['off','off','off','off','off'];
     this.led_bit_mask = 0;
@@ -392,6 +392,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
                          console.log("We have new ready robot!!!");
 
+                         self.robot_status_change_callback(self.currentRobotState,self.searching_in_progress);
+
                       //   self.searching_in_progress = false;
 
                          console.log("Robot serial: " + device.getSerialNumber());
@@ -399,6 +401,10 @@ export default class RobotControlAPI extends DeviceControlAPI {
                          self.startDataRecievingLoop(device);
                          self.ConnectedRobots.push(device);
                          self.ConnectedRobotsSerials.push(device.getSerialNumber());
+
+                         device.command(DEVICES[device.getDeviceID()].commands.sensors, this.sensors_array, function(response){
+
+                                    });
 
                        }
 
@@ -964,14 +970,14 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
   setRobotPower(leftMotorPower:number,rightMotorPower:number,robot_number:number):void{
 
 
- console.log(`setRobotPower leftMotorPower: ${leftMotorPower} rightMotorPower: ${rightMotorPower} `);
+ //console.log(`setRobotPower leftMotorPower: ${leftMotorPower} rightMotorPower: ${rightMotorPower} `);
 
  if ((this.ConnectedRobots.length - 1) >= robot_number ){
 
 
    if( [0,3].indexOf(this.ConnectedRobots[0].getDeviceID())!=-1  && this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-     console.log("setRobotPower send command");
+  //   console.log("setRobotPower send command");
 
      this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.power, [leftMotorPower, rightMotorPower], (response) => {
 
@@ -1439,7 +1445,7 @@ turnLedOff(led_position:number,robot_number:number){
     if (this.ConnectedRobots[0].isReadyToSendCommand()){
 
 
-       console.log("runDataRecieveCommand");
+    //   console.log("runDataRecieveCommand");
 
       this.can_autoreconnect = false;
       //  console.log("this.can_autoreconnect = false;                                                                                   11111111111111111111111");
