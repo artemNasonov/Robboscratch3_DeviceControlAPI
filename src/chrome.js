@@ -23,7 +23,7 @@ console.log = function(string){
 
   }
 
-console.log("dev-5");  
+console.log("dev-6");
 
 const DEVICE_STATES = Object.freeze({
    "INITED": 0,
@@ -569,7 +569,7 @@ function InterfaceDevice(port){
 
    var onErrorCallback = function (info){
 
-     console.log("onErrorCallback");
+     console.error("onErrorCallback: " + info.connectionId + " " + info.error);
 
       if (info.connectionId == iConnectionId){
 
@@ -1021,7 +1021,7 @@ function InterfaceDevice(port){
 
    }
 
-   this.stopCheckingSerialNumber = function(){
+   this.stopCheckingSerialNumber = function(cb){
 
      if (!isStopCheckingSerialNumber){
 
@@ -1031,17 +1031,24 @@ function InterfaceDevice(port){
 
        clearTimeout(automaticStopCheckingSerialNumberTimeout);
 
-       if ( (state != DEVICE_STATES["DEVICE_ERROR"]) && (  iConnectionId != null) ) {
+      // if ( (state != DEVICE_STATES["DEVICE_ERROR"]) && (  iConnectionId != null) ) {
 
 
-         chrome.serial.disconnect(iConnectionId, function(result){
+         chrome.serial.disconnect(iConnectionId, (result)=>{
 
                 console.log("Connection closed: " + result);
 
                 iConnectionId = null;
+
+              if (cb){
+
+                  cb();
+
+              }
+
          });
 
-       }
+    //   }
 
 
 
@@ -1493,29 +1500,54 @@ const searchDevices = function(){
 
 //  arrDevices = [];
 
+    var onGetDevices = function(ports) {
+      for (var i=0; i<ports.length; i++) {
+        console.log(ports[i].path);
+        var device = new InterfaceDevice(ports[i]);
+         arrDevices.push(device);
+      }
+    }
+
     if (arrDevices.length > 0){
 
 
-        arrDevices.forEach(function(device,index){
+        // arrDevices.forEach(function(device,index){
+        //
+        //       arrDevices[index].stopCheckingSerialNumber();
+        //       arrDevices[index] = null;
+        //
+        // });
 
-              arrDevices[index].stopCheckingSerialNumber();
-              arrDevices[index] = null;
 
-        });
+        for (let index = 0; index < arrDevices.length; index++){
+
+              arrDevices[index].stopCheckingSerialNumber(() => {
+
+                    arrDevices[index] = null;
+
+                    if (index == (arrDevices.length - 1)){
+
+                             arrDevices = [];
+
+                            chrome.serial.getDevices(onGetDevices);
+                    }
+
+              });
+
+
+        }
+
+    }else{
+
+        chrome.serial.getDevices(onGetDevices);
 
     }
 
-     arrDevices = [];
 
-  var onGetDevices = function(ports) {
-    for (var i=0; i<ports.length; i++) {
-      console.log(ports[i].path);
-      var device = new InterfaceDevice(ports[i]);
-       arrDevices.push(device);
-    }
-  }
 
-    chrome.serial.getDevices(onGetDevices);
+
+
+  //  chrome.serial.getDevices(onGetDevices);
 
 };
 

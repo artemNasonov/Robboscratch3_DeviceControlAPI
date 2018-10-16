@@ -392,6 +392,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
                          console.log("We have new ready robot!!!");
 
+                          self.searching_in_progress = false;
+
                          self.robot_status_change_callback(self.currentRobotState,self.searching_in_progress);
 
                       //   self.searching_in_progress = false;
@@ -402,7 +404,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
                          self.ConnectedRobots.push(device);
                          self.ConnectedRobotsSerials.push(device.getSerialNumber());
 
-                         device.command(DEVICES[device.getDeviceID()].commands.sensors, this.sensors_array, function(response){
+                         device.command(DEVICES[device.getDeviceID()].commands.sensors, self.sensors_array, function(response){
 
                                     });
 
@@ -1459,7 +1461,7 @@ turnLedOff(led_position:number,robot_number:number){
 
              this.dataRecieveTime = Date.now();
 
-           this.searching_in_progress = false;
+        //   this.searching_in_progress = false;
           this.can_autoreconnect = false;
           //  console.log("this.can_autoreconnect = false;                                                                                   222222222222222222222222");
 

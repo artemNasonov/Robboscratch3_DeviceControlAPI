@@ -285,6 +285,8 @@ searchLaboratoryDevices(){
 
                      console.log("We have new ready laboratory!!!");
 
+
+                      self.searching_in_progress = false;
                       self.lab_status_change_callback(self.currentLabState,self.searching_in_progress);
 
                      console.log("Laboratory serial: " + device.getSerialNumber());
@@ -292,6 +294,10 @@ searchLaboratoryDevices(){
                      self.startDataRecievingLoop(device);
                      self.ConnectedLaboratories.push(device);
                      self.ConnectedLaboratoriesSerials.push(device.getSerialNumber());
+
+                     // device.command(DEVICES[device.getDeviceID()].commands.sensors, self.sensors_array, function(response){
+                     //
+                     //            });
 
                    }
 
@@ -1037,7 +1043,7 @@ runDataRecieveCommand(device:InterfaceDevice){
       if (this.ConnectedLaboratories[0].isReadyToSendCommand()){
 
 
-        console.log("runDataRecieveCommand laboratory");
+      //  console.log("runDataRecieveCommand laboratory");
         //setTimeout(()=>{this.can_autoreconnect = true;},1000);
       //this.can_autoreconnect = false;
           device.command(DEVICES[this.ConnectedLaboratories[0].getDeviceID()].commands.check, [], (response) => {
