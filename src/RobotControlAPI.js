@@ -87,6 +87,10 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       this.robot_status_change_callback = null;
 
+      this.robot_is_scratchduino_callbacks = [];
+
+      this.robot_is_robbo_callbacks = [];
+
       this.stopSearchProcess();
       this.stopDataRecievingProcess();
 
@@ -385,7 +389,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
                    function (device:InterfaceDevice){
 
 
-                     if (([0,3].indexOf(device.getDeviceID())!=-1 ) && (device.getState() == DEVICE_STATES["DEVICE_IS_READY"])){
+                     if ((device!=null)&&([0,3].indexOf(device.getDeviceID())!=-1 ) && (device.getState() == DEVICE_STATES["DEVICE_IS_READY"])){
 
 
                        if (self.ConnectedRobotsSerials.indexOf(device.getSerialNumber()) == -1 ){
@@ -394,7 +398,13 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
                           self.searching_in_progress = false;
 
-                         self.robot_status_change_callback(self.currentRobotState,self.searching_in_progress);
+                           if (self.robot_status_change_callback !== null){
+
+                              self.robot_status_change_callback(self.currentRobotState,self.searching_in_progress);
+
+                           }
+
+
 
                       //   self.searching_in_progress = false;
 
@@ -403,6 +413,45 @@ export default class RobotControlAPI extends DeviceControlAPI {
                          self.startDataRecievingLoop(device);
                          self.ConnectedRobots.push(device);
                          self.ConnectedRobotsSerials.push(device.getSerialNumber());
+
+                         if (device.getDeviceID() == 3){
+
+                           self.robot_is_scratchduino_callbacks.forEach((cb) => {
+
+                              if (cb){
+
+                                cb();
+                              }
+
+                           });
+
+                           // if    (self.robot_is_scratchduino_callback !== null){
+                           //
+                           //       self.robot_is_scratchduino_callback();
+                           //
+                           // }
+
+
+
+                         }else if (device.getDeviceID() == 0){
+
+                           // if    (self.robot_is_robbo_callback !== null){
+                           //
+                           //       self.robot_is_robbo_callback();
+                           //
+                           // }
+
+                           self.robot_is_robbo_callbacks.forEach((cb) => {
+
+                              if (cb){
+
+                                cb();
+                              }
+
+                           });
+
+                         }
+
 
                          device.command(DEVICES[device.getDeviceID()].commands.sensors, self.sensors_array, function(response){
 
@@ -1384,6 +1433,18 @@ turnLedOff(led_position:number,robot_number:number){
     }
 
   }
+
+  }
+
+  registerRobotIsScratchduinoCallback(robot_is_scratchduino_cb:any){
+
+    this.robot_is_scratchduino_callbacks.push(robot_is_scratchduino_cb);
+
+  }
+
+  registerRobotIsRobboCallback(robot_is_robbo_cb:any){
+
+    this.robot_is_robbo_callbacks.push(robot_is_robbo_cb);
 
   }
 

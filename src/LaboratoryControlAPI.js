@@ -80,7 +80,7 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
 
     this.init_all();
 
-   this.lab_status_change_callback = null;
+   this.lab_status_change_callback = () => {};
 
     this.stopSearchProcess();
     this.stopDataRecievingProcess();
@@ -278,7 +278,7 @@ searchLaboratoryDevices(){
                function (device:InterfaceDevice){
 
 
-                 if([1,2,4].indexOf(device.getDeviceID())!=-1 && device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+                 if((device!=null)&&[1,2,4].indexOf(device.getDeviceID())!=-1 && device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
 
                    if (self.ConnectedLaboratoriesSerials.indexOf(device.getSerialNumber()) == -1 ){

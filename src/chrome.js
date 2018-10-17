@@ -1031,7 +1031,7 @@ function InterfaceDevice(port){
 
        clearTimeout(automaticStopCheckingSerialNumberTimeout);
 
-      // if ( (state != DEVICE_STATES["DEVICE_ERROR"]) && (  iConnectionId != null) ) {
+       if ( /*(state != DEVICE_STATES["DEVICE_ERROR"]) &&*/ (  iConnectionId != null) ) {
 
 
          chrome.serial.disconnect(iConnectionId, (result)=>{
@@ -1048,7 +1048,7 @@ function InterfaceDevice(port){
 
          });
 
-    //   }
+      }
 
 
 
@@ -1499,7 +1499,7 @@ function InterfaceDevice(port){
 const searchDevices = function(){
 
 //  arrDevices = [];
-
+var disconected_devices=0;
     var onGetDevices = function(ports) {
       for (var i=0; i<ports.length; i++) {
         console.log(ports[i].path);
@@ -1524,8 +1524,8 @@ const searchDevices = function(){
               arrDevices[index].stopCheckingSerialNumber(() => {
 
                     arrDevices[index] = null;
-
-                    if (index == (arrDevices.length - 1)){
+                      disconected_devices++;
+                    if (disconected_devices == (arrDevices.length)){
 
                              arrDevices = [];
 
