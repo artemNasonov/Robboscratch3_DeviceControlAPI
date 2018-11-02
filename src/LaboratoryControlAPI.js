@@ -378,6 +378,11 @@ stopDataRecievingProcess(){
 
 }
 
+discon()
+{  if(typeof(this.ConnectedLaboratories[0])!='undefined')
+    this.ConnectedLaboratories[0].disco();
+}
+
 checkLabByPort(port,callback){
 
     var result = {};

@@ -628,6 +628,14 @@ export default class RobotControlAPI extends DeviceControlAPI {
        console.log("this.can_autoreconnect = false;                                                                                   stopDatarecieving lol");
     }
 
+
+    discon()
+   {
+     if(typeof(this.ConnectedRobots[0])!='undefined')
+     this.ConnectedRobots[0].disco();
+   }
+
+
     colorAutoCorection(sensor_id:number){
 
       if ( typeof(this.SensorsData) != 'undefined' ){
@@ -714,8 +722,9 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
   this.colorKoefs[sensor_id].Kg = Kg;
   this.colorKoefs[sensor_id].Kb = Kb;
 
-  this.color_P_initial  = red * Kr * 3 + green * Kg * 3 + blue * Kb * 3;
+//  this.color_P_initial  = red * Kr * 3 + green * Kg * 3 + blue * Kb * 3;
 
+    this.color_P_initial  = rgb_sum;
 
 }
 
@@ -867,9 +876,9 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
       if ( typeof(this.SensorsData) != 'undefined' ){
 
-        rgb_arr[0] = this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kr * 3; //red
-        rgb_arr[1] = this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kg * 3; //green
-        rgb_arr[2] = this.SensorsData[`a${sensor_id}`][3] *  this.colorKoefs[sensor_id].Kb * 3; //blue
+        rgb_arr[0] = Math.round(this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kr * 3); //red
+        rgb_arr[1] = Math.round(this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kg * 3); //green
+        rgb_arr[2] = Math.round(this.SensorsData[`a${sensor_id}`][3] *  this.colorKoefs[sensor_id].Kb * 3); //blue
 
 
 
@@ -933,10 +942,10 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
       let blue_channel_percent      = blue_channel  /  sum  * 100;
 
 
-      if (sum > this.color_P_initial){
-
-          this.color_P_initial = sum;
-      }
+      // if (sum > this.color_P_initial){
+      //
+      //     this.color_P_initial = sum;
+      // }
 
 
 
@@ -965,7 +974,7 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
                   let red     =  Math.floor(red_channel_percent * 1000);
                   let green   =  Math.floor(green_channel_percent * 1000);
                   let blue    =  Math.floor(blue_channel_percent * 1000);
-                  let bright  =  Math.floor(sum / this.color_P_initial * 100 * 1000);
+                  let bright  =  Math.floor(sum / this.color_P_initial  * 100  * 1000);
 
                   let red_low   =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"low") * 1000);
                   let red_high  =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"high") * 1000);
