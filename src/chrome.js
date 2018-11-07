@@ -12,7 +12,7 @@ console.log = function(string){
         log(string);
   }
 }
-console.log("dev-228");
+console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.0-stable");
 
 const DEVICE_STATES = Object.freeze({
    "INITED": 0,

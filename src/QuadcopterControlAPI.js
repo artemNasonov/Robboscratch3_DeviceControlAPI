@@ -21,6 +21,10 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
       this.rotation = Number(0);
       this.z_distance = Number(0);
 
+      this.quadcopter_status_change_cb = () => {};
+
+      this.dataRecieveTimeout = null;
+
 
    }
 
@@ -48,9 +52,19 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   //  }
 
+  if (this.quadcopter_status_change_cb){
+
+    this.quadcopter_status_change_cb(this.radioState,this.searching_in_progress);
+  }
 
 
      if (this.radioState === "disconnected") {
+
+       // if (this.quadcopter_status_change_cb){
+       //
+       //   this.quadcopter_status_change_cb(this.radioState,this.searching_in_progress);
+       // }
+
      Crazyradio.open((state) => {
        console.log("Crazyradio opened: " + state);
        if (state === true) {
@@ -62,10 +76,10 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
                this.data_check_time = Date.now();
 
 
-
+                 // TODO:  recconect after STOP block; check older versions
                   setTimeout(()=> {
 
-                     if ((this.data_check_time - this.data_recieve_time) > 1000){
+                     if ((this.data_check_time - this.data_recieve_time) > 1500){
 
                       this.startDataRecieving();
 
@@ -91,6 +105,11 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
        }else{
 
           this.searching_in_progress = false;
+
+          if (this.quadcopter_status_change_cb){
+
+            this.quadcopter_status_change_cb(this.radioState,this.searching_in_progress);
+          }
 
        }
      });
@@ -133,6 +152,12 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
 
       return is_connected;
+
+  }
+
+  registerQuadcopterStatusChangeCallback(cb){
+
+      this.quadcopter_status_change_cb = cb;
 
   }
 
@@ -812,7 +837,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
       */
 
-    this.data_recieve_time = Date.now();
+    // this.data_recieve_time = Date.now();
 
 
     this.telemetryDataRaw[data[1]] = data;
@@ -884,6 +909,21 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
     this.radioState = "connected";
     this.searching_in_progress = false;
 
+    if (this.quadcopter_status_change_cb){
+
+      this.quadcopter_status_change_cb(this.radioState,this.searching_in_progress);
+
+      // this.dataRecieveTimeout = setTimeout(()=>{
+      //
+      //   this.radioState = "disconnected";
+      //   this.searching_in_progress = false;
+      //
+      //   this.quadcopter_status_change_cb(this.radioState,this.searching_in_progress);
+      //
+      // },1000);
+
+    }
+
     this.getDataInterval =  setInterval(()=>{
 
 
@@ -907,12 +947,39 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
                   if ( ([0x50,0x54,0x56,0x5C,0x52].indexOf(result.data[0]) != -1 ) ){
 
                     //    console.log(`Quadcopter get data: ${result.data} `);
+                     this.data_recieve_time = Date.now();
+
+                     if (this.radioState == "disconnected"){
+
+                       this.radioState = "connected";
+                       this.searching_in_progress = false;
+
+                       if (this.quadcopter_status_change_cb){
+
+                           this.quadcopter_status_change_cb(this.radioState,this.searching_in_progress);
+                       }
+
+                     }
 
 
 
-                          this.PROCESS_TELEMETRY_DATA(result.data);
+                     if (this.quadcopter_status_change_cb){
 
+                       clearTimeout(this.dataRecieveTimeout);
 
+                       // TODO:  recconect after STOP block; check older versions
+                       this.dataRecieveTimeout = setTimeout(()=>{
+
+                         this.radioState = "disconnected";
+                         this.searching_in_progress = false;
+
+                         this.quadcopter_status_change_cb(this.radioState,this.searching_in_progress);
+
+                       },1000);
+
+                     }
+
+                     this.PROCESS_TELEMETRY_DATA(result.data);
                   }
 
 
