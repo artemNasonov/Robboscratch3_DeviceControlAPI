@@ -631,11 +631,25 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
     discon()
    {
-     if(typeof(this.ConnectedRobots[0])!='undefined')
-     this.ConnectedRobots[0].disco();
+     if(typeof(this.ConnectedRobots[0])!='undefined'){
+
+         this.ConnectedRobots[0].disco();
+
+     }
+      else{
+
+          let devices = getConnectedDevices();
+
+          devices.forEach((device,device_index) => {
+
+              console.log(`Close device: ${device.getPortName()}`);
+              device.disco();
+
+          });
+
    }
 
-
+}
     colorAutoCorection(sensor_id:number){
 
       if ( typeof(this.SensorsData) != 'undefined' ){

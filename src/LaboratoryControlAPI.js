@@ -642,7 +642,7 @@ if ((this.ConnectedLaboratories.length - 1) >= laboratory_number ){
   if(led_color== 'red' && this.led_color_states[0] == "off"){
    this.led_color_bit_mask = this.led_color_bit_mask | 4;
 
-   this.ConnectedDevices[0].command(DEVICES[this.ConnectedLaboratories[0].getDeviceID()].commands.lab_color_lamps, [this.led_color_bit_mask], function(response){
+   this.ConnectedLaboratories[0].command(DEVICES[this.ConnectedLaboratories[0].getDeviceID()].commands.lab_color_lamps, [this.led_color_bit_mask], function(response){
 
 
 

@@ -13,10 +13,8 @@ setOptionsON.rts=true;
 setOptionsON.brk=false;
 setOptionsON.cts=false;
 setOptionsON.dsr=false;
-var pls_no_nano=false;
-
+var THEEND = false;
 const flash_firmware = function(port_path,print_status,config){
-  var THEEND = false;
   console.warn("START_FLASHING!");
   var  iConnectionId = null;
   var buffer;
@@ -25,7 +23,6 @@ const flash_firmware = function(port_path,print_status,config){
   var qport;
   var seq = 1;
   var UNO=false;
-  var Oh_NO;
   var stilluno = false;
   var unotime;
   var DDOS=1;
@@ -123,8 +120,7 @@ var onConnect = function(){
                    if(config.device.device_id !== -1 && !isNaN(config.device.device_id)){
                      console.log(LOG+"defined ass:"+config.device.device_id);
                      hexfileascii = firmwares["device_id_" + config.device.device_id]["max_version"];
-                     if((config.device.device_id==3)||(config.device.device_id==4)){
-
+                     if((iDeviceID==3)||(iDeviceID==4)){
                           options.baudRate = 115200;
                           qport.update(options, () =>{
                          console.log(LOG +  "Baud for connection set back to your anus(115200)");
@@ -223,17 +219,13 @@ function stk500_program() {
     print_status("DTR on Error:" + result);
   setTimeout(function(){
       qport.set(setOptionsOFF,function(result) {
-          if(result!=null){
+          if(result!=null)
           print_status("DTR on Error:" + result);
-          console.log(LOG +  "Bad END");
-          qport.close(()=>{print_status(LOG + "Error! PLS reload RS and try again");});
-        }
-          else
           setTimeout(function() {
               stk500_upload(hexfile);
-          },400);
+          },200);
       });
-    }, 200);
+    }, 100);
   });
 }
 
@@ -257,13 +249,8 @@ function stk500_upload(heximage) {
       if (stilluno)
       {
        stilluno=false;
-       pls_no_nano=true;
        options.baudRate = 38400;
        qport.update(options, success => {
-        Oh_NO = setTimeout(()=>{
-          console.log(LOG +  "Bad END");
-          qport.close(()=>{print_status(LOG + "Error! PLS reload RS and try again");});
-        },10000);
        console.log(LOG +  "Baud for connection set back to your anus(38400) becourse still uno");
        print_status(LOG + "Waiting for DeviceID on (38400)");
        });
@@ -271,13 +258,6 @@ function stk500_upload(heximage) {
        qport.on("data",onReceiveCallback);
      }
      else{
-       if(THEEND){
-
-                    console.log(LOG +  "END");
-                    qport.close(()=>{print_status(LOG + "END. Port closed");});
-                    //     setTimeout(function (){reset();},1000);
-                  }
-                  else{
         print_status(LOG + "Waiting for DeviceID on (115200)");//
         options.baudRate = 115200;
         qport.update(options, (success) =>{
@@ -285,8 +265,13 @@ function stk500_upload(heximage) {
         console.error("ERR: " + success);
         console.log(LOG +  "Baud for connection set back to your anus(115200)");
       //  print_status(LOG + "Baud for connection set  to 115200");
+        if(THEEND){
 
-    });}
+                     console.log(LOG +  "END");
+                     qport.close(()=>{print_status(LOG + "END. Port closed");});
+                     //     setTimeout(function (){reset();},1000);
+                   }
+     });
         if ((config.device.device_id == -1) && (iDeviceID == -1))
           {
             console.log("onReceiveCallback addded");
@@ -395,13 +380,6 @@ function reset() {
     });
 }*/
 
-function isN(n) {
-   return (!isNaN(parseFloat(n)) && isFinite(n));
-   // Метод isNaN пытается преобразовать переданный параметр в число.
-   // Если параметр не может быть преобразован, возвращает true, иначе возвращает false.
-   // isNaN("12") // false
-}
-
 var onReceiveCallback = function(info){
    if(DDOS)
    {
@@ -418,10 +396,8 @@ var onReceiveCallback = function(info){
       //  console.log(LOG + "Now we have: " + sIncomingData);
         iSerialNumberOffset = sIncomingData.indexOf("ROBBO");
         iDeviceID  = parseInt(sIncomingData.substring(iSerialNumberOffset + 6, iSerialNumberOffset + 11));
-        console.log(sIncomingData+" huuuuui "+iDeviceID + " ch " +sIncomingData[iSerialNumberOffset+5]+" tr " + sIncomingData[iSerialNumberOffset+6]+" tr " + sIncomingData[iSerialNumberOffset+10]);
-        if(sIncomingData.length > iSerialNumberOffset + 10)
-        if ((!isNaN(iDeviceID))&&(sIncomingData[iSerialNumberOffset+5]=='-')&&(isN(sIncomingData[iSerialNumberOffset+6]))&&(isN(sIncomingData[iSerialNumberOffset+10]))){
-          clearTimeout(Oh_NO);
+        console.log(+iDeviceID);
+        if (!isNaN(iDeviceID)){
           qport.removeListener('data',onReceiveCallback);
         print_status(LOG+"Device ID is:"+iDeviceID);
 
@@ -440,7 +416,27 @@ var onReceiveCallback = function(info){
               UNO    = false;
 	             clearTimeout(unotime);
                qport.flush((err)=>{qport.close(()=>{qport.open(onConnect);})});
+                /*
+     qport.flush(iConnectionId, () => {
 
+       //    setTimeout(() => {
+
+         qport.close(function(err){
+           if (!err)
+           {
+                console.log(LOG + "Connection closed");
+
+                 setTimeout(() => {
+
+                   console.log(LOG + "Trying to reconnect");
+
+                   print_status(LOG + "Connection closed" );
+                   print_status(LOG + "Trying to reconnect");
+
+                    chrome.serial.connect(port_path, {bitrate: 38400}, onConnect);
+                  }, 3000);}
+         });
+     });*/
    }
    else
    console.log(LOG + "Nan");
@@ -450,17 +446,8 @@ var onReceiveCallback = function(info){
     console.log(LOG + "hui tebe a ne seriinik");
   }
   }
-  else {
-  //  console.warn("shiiiiiii");
-    qport.flush((err)=>{
-  console.warn("AAAA MUSORA SOSAT'!");
-  bufIncomingData = new Uint8Array();
-  });
-
-  }
   //	 }
  }
-// console.log("DDOS!");
 }
 }
 

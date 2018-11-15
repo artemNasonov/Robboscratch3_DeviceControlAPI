@@ -12,7 +12,7 @@ console.log = function(string){
         log(string);
   }
 }
-console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.0-stable");
+console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.1-dev");
 
 const DEVICE_STATES = Object.freeze({
    "INITED": 0,
@@ -421,11 +421,16 @@ function InterfaceDevice(port){
            bufIncomingData = bufIncomingDataNew;
 
         //   console.log(LOG + "bufIncomingData: " + bufIncomingData);
+   if (state == DEVICE_STATES["DEVICE_IS_READY"]){
 
-        NO_RESPONSE = setTimeout(()=>{
-           console.error(LOG+"Ouuu...NO RESPONSE!");
-            state = DEVICE_STATES["TIMEOUT"];
-        },NO_RESPONSE_TIME);
+     NO_RESPONSE = setTimeout(()=>{
+        console.error(LOG+"Ouuu...NO RESPONSE!");
+         state = DEVICE_STATES["TIMEOUT"];
+     },NO_RESPONSE_TIME);
+
+   }
+
+
 
          if(commandToRun == null){ return};
          clearTimeout(NO_START);
@@ -782,8 +787,8 @@ function InterfaceDevice(port){
 
    this.getPortName = function(){
      console.warn("OU FUCK");
-     console.warn(qport.comName);
-      return qport.comName;
+     console.warn(this.port.comName);
+      return this.port.comName;
    }
 
    this.getSerialNumber = function(){
@@ -1122,7 +1127,8 @@ const searchDevices = function(){
  var disconected_devices=0;
     var onGetDevices = function(err,ports) {//NEW DEVICE SEARHING
       for (var i=0; i<ports.length; i++) {
-        if(typeof(ports[i].vendorId) !== 'undefined'){
+        //if(typeof(ports[i].vendorId) !== 'undefined'){
+        if(typeof(ports[i].manufacturer) !== 'undefined'){
         console.info(" NEW device name is "+ ports[i].comName);
         var device = new InterfaceDevice(ports[i]);
          arrDevices.push(device);
