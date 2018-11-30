@@ -395,7 +395,7 @@ checkLabByPort(port,callback){
 
     for (var i = 0; i < this.ConnectedLaboratories.length; i++) {
 
-          if (this.ConnectedLaboratories[i].getPortName() == port){
+          if ( (this.ConnectedLaboratories[i].getPortName() == port)  && (this.ConnectedLaboratories[i].getState() == DEVICE_STATES["DEVICE_IS_READY"]) ) {
 
             result.code = 0;
             result.device.id = this.ConnectedLaboratories[i].getDeviceID();

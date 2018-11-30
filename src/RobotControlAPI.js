@@ -506,7 +506,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
         for (var i = 0; i < this.ConnectedRobots.length; i++) {
 
-              if (this.ConnectedRobots[i].getPortName() == port){
+              if ((this.ConnectedRobots[i].getPortName() == port) && (this.ConnectedRobots[i].getState() == DEVICE_STATES["DEVICE_IS_READY"]) ){
 
                 result.code = 0;
                 result.device.id = this.ConnectedRobots[i].getDeviceID();
