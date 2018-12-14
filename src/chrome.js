@@ -1,10 +1,14 @@
 const DEVICE_SERIAL_NUMBER_PROBE_INTERVAL = 100;
 const DEVICE_SERIAL_NUMBER_LENGTH = 52;
-const DEVICE_HANDLE_TIMEOUT = 1 * 10 * 1000;
+
 const NULL_COMMAND_TIMEOUT = 1 * 5 * 1000;
 const CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT = 500;
-const NO_RESPONSE_TIME = 1000;
-const UNO_TIMEOUT = 3000;
+
+var DEVICE_HANDLE_TIMEOUT = 1 * 10 * 1000;
+var NO_RESPONSE_TIME = 3000;
+var NO_START_TIMEOUT = 1000;
+var UNO_TIMEOUT = 3000;
+
 const log = console.log;
 var can_log = true;
 console.log = function(string){
@@ -12,7 +16,46 @@ console.log = function(string){
         log(string);
   }
 }
-console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.1-dev");
+console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.3-dev");
+
+var import_settings = function(){
+
+  try {
+
+      const data = node_fs.readFileSync('settings.json')
+      console.log(data.toString());
+
+      try {
+
+          let json = JSON.parse(data);
+
+          if (typeof(json) !== 'undefined'){
+
+                NO_RESPONSE_TIME = Math.floor(Number(json.device_response_timeout))||3000;
+                NO_START_TIMEOUT = Math.floor(Number(json.device_no_start_timeout))||1000;
+                UNO_TIMEOUT      = Math.floor(Number(json.device_uno_timeout))||3000;
+
+                console.warn(`NO_RESPONSE_TIME: ${NO_RESPONSE_TIME}  NO_START_TIMEOUT: ${NO_START_TIMEOUT} UNO_TIMEOUT: ${UNO_TIMEOUT}`);
+          }
+
+
+
+      } catch (e) {
+
+          console.error(e)
+      }
+
+
+
+      } catch (err) {
+
+      console.error(err)
+
+      }
+
+}
+
+import_settings();
 
 const DEVICE_STATES = Object.freeze({
    "INITED": 0,
@@ -318,6 +361,8 @@ const commands_list_robot = {
 
 };
 
+const last_firmwares =[8,5,2,2,1,7,7,7];
+
 const DEVICES = Object.freeze({
    //Basic Robot
    0:{
@@ -326,7 +371,7 @@ const DEVICES = Object.freeze({
    },
    //Old Robot
    3:{
-      "firmware":7,
+      "firmware":2,
       "commands":commands_list_robot
    },
 
@@ -347,7 +392,7 @@ const DEVICES = Object.freeze({
    //Old lab
    4:{
 
-     "firmware":5,
+     "firmware":1,
      "commands": commands_list_laboratory
 
    }
@@ -403,7 +448,14 @@ function InterfaceDevice(port){
    var recieveListener;
    var bitrate = 115200;
    var uport;
+
+ //callbacks
+  var onErrorCb = () => {};
+  var onFirmwareVersionDiffersCb =   () => {};
+
   }
+
+
 
    var onReceiveCallback = function(data){//TODO TODO  TODO TODOOOOOOO TODODODO
 
@@ -425,6 +477,18 @@ function InterfaceDevice(port){
 
      NO_RESPONSE = setTimeout(()=>{
         console.error(LOG+"Ouuu...NO RESPONSE!");
+
+        if (onErrorCb){
+
+          var error  = {};
+
+             error.code = 1;
+             error.msg = LOG+"Ouuu...NO RESPONSE!";
+
+            onErrorCb(error);
+
+        }
+
          state = DEVICE_STATES["TIMEOUT"];
      },NO_RESPONSE_TIME);
 
@@ -495,7 +559,7 @@ function InterfaceDevice(port){
                 if ( (!isNaN(iDeviceID)) && (!isNaN(iFirmwareVersion)) && ( ( (sSerialNumber).startsWith("R") ) || ((sSerialNumber).startsWith("L")) ) ) {
                         console.info(LOG + "device is ready.");
                         state = DEVICE_STATES["DEVICE_IS_READY"];
-                        NO_START = setTimeout(()=>{qport.close(()=>{console.error(LOG+"FUCK, NO_START!");searchDevices()})},500);
+                        NO_START = setTimeout(()=>{qport.close(()=>{console.error(LOG+"FUCK, NO_START!");searchDevices()})},NO_START_TIMEOUT); //500
                         return;
                 }
                 else
@@ -603,6 +667,26 @@ function InterfaceDevice(port){
             iFirmwareVersion = parseInt(sIncomingData.substring(iSerialNumberOffset + 12, iSerialNumberOffset + 17));
             sSerialNumber    = sIncomingData.substring(iSerialNumberOffset + 18, iSerialNumberOffset + DEVICE_SERIAL_NUMBER_LENGTH);
             console.warn(LOG + "Device=" + iDeviceID + " Firmware=" + iFirmwareVersion + " Serial='" + sSerialNumber + "'");
+
+            if(last_firmwares[iDeviceID]!=iFirmwareVersion){
+
+              console.error("BAD FLASH MF!!!");
+              console.warn(last_firmwares[iDeviceID]+ "ot "+ iDeviceID + " = " + iFirmwareVersion + " lol");
+
+              if (onFirmwareVersionDiffersCb){
+
+                var result = {};
+
+                    result.need_firmware = last_firmwares[iDeviceID];
+                    result.current_device_firmware = iFirmwareVersion;
+
+                  onFirmwareVersionDiffersCb(result);
+
+              }
+
+            }
+
+
             purgePort();
            }
       }
@@ -689,7 +773,19 @@ function InterfaceDevice(port){
         options.baudRate=115200;
         qport.open(onConnect);//38400
         qport.on('error', function(err) {
-        console.error();('Error: '+err.message);
+        console.error('Error: '+err.message);
+
+        if (onErrorCb){
+
+          var error  = {};
+
+             error.code = 2;
+             error.msg = err.message;
+
+            onErrorCb(error);
+
+        }
+
         });
       }
       else {
@@ -708,7 +804,19 @@ function InterfaceDevice(port){
       qport = new _serialport(port.comName, options);
        qport.open(onConnect);//38400
        qport.on('error', function(err) {
-        console.error();('Error: '+err.message);
+        console.error('Error: '+err.message);
+
+        if (onErrorCb){
+
+          var error  = {};
+
+             error.code = 2;
+             error.msg = err.message;
+
+            onErrorCb(error);
+
+        }
+
         });
         });
       }
@@ -776,6 +884,28 @@ function InterfaceDevice(port){
 
    }
  */
+
+ this.registerFirmwareVersionDiffersCallback = function(cb){
+
+   if (typeof(cb) == 'function'){
+
+        onFirmwareVersionDiffersCb = cb;
+
+   }
+
+
+ }
+
+ this.registerErrorCallback = function(cb){
+
+   if (typeof(cb) == 'function'){
+
+        onErrorCb = cb;
+
+   }
+
+
+ }
 
    this.getState = function(){
       return state;
@@ -1122,7 +1252,7 @@ function InterfaceDevice(port){
    //   init;
 }
 
-const searchDevices = function(){
+const searchDevices = function(onDevicesFoundCb){
  //  arrDevices = [];
  var disconected_devices=0;
     var onGetDevices = function(err,ports) {//NEW DEVICE SEARHING
@@ -1134,6 +1264,13 @@ const searchDevices = function(){
          arrDevices.push(device);
       }
      }
+
+     if (typeof(onDevicesFoundCb) == 'function' ){
+
+        onDevicesFoundCb(arrDevices);
+
+     }
+
     }
 
    ////////////////////////////////////////////////////////////////////////////////////////////////////////////

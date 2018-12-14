@@ -9,14 +9,50 @@ export default  class DeviceControlAPI {
     constructor(){
 
 
-
+      this.onErrorCb = () => {};
+      this.onFirmwareVersionDiffersCb =   () => {};
 
     }
 
 
       searchAllDevices(){
 
-            searchDevices();
+        //var devices = [];
+
+            searchDevices((devices) => {
+
+              for (let index = 0; index < devices.length; index++){
+
+                  devices[index].registerFirmwareVersionDiffersCallback(this.onFirmwareVersionDiffersCb);
+                  devices[index].registerErrorCallback(this.onErrorCb);
+
+              }
+
+            });
+
+
+
+      }
+
+      registerFirmwareVersionDiffersCallback(cb){
+
+        if (typeof(cb) == 'function'){
+
+             this.onFirmwareVersionDiffersCb = cb;
+
+        }
+
+
+      }
+
+      registerErrorCallback(cb){
+
+        if (typeof(cb) == 'function'){
+
+             this.onErrorCb = cb;
+
+        }
+
 
       }
 
