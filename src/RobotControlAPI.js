@@ -91,6 +91,98 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       this.robot_is_robbo_callbacks = [];
 
+      this.colorFilterTable = [{},{},{},{},{}];
+
+      let i = 0;
+
+      for (i=0;i<5;i++){
+
+          this.colorFilterTable[i] = {
+
+               "red": {
+                "R": "51.00-64.00",
+                "G": "13.00-25.00",
+                "B": "20.00-27.00",
+                "Bright": "0-100"
+               },
+               "magenta": {
+                "R": "35.00-58.00",
+                "G": "13.00-25.00",
+                "B": "26.00-32.00",
+                "Bright": "0-100"
+               },
+               "yellow": {
+                "R": "40.00-47.00",
+                "G": "33.00-44.00",
+                "B": "17.00-23.00",
+                "Bright": "0-100"
+               },
+               "green": {
+                "R": "23.00-32.00",
+                "G": "38.00-49.00",
+                "B": "25.00-33.00",
+                "Bright": "0-100"
+               },
+               "blue": {
+                "R": "15.00-27.00",
+                "G": "24.00-34.00",
+                "B": "41.00-58.00",
+                "Bright": "0-100"
+               },
+               "cyan": {
+                "R": "24.00-32.00",
+                "G": "32.00-39.00",
+                "B": "32.00-40.00",
+                "Bright": "0-100"
+               },
+               "custom": {
+                "R": "28.00-34.00",
+                "G": "22.00-28.00",
+                "B": "41.00-47.00",
+                "Bright": "0-0"
+               },
+               "black": {
+                "R": "30.00-40.00",
+                "G": "30.00-40.00",
+                "B": "30.00-40.00",
+                "Bright": "0-20"
+               },
+               "gray": {
+                "R": "30.00-40.00",
+                "G": "30.00-40.00",
+                "B": "30.00-40.00",
+                "Bright": "20-80"
+               },
+               "white": {
+                "R": "30.00-40.00",
+                "G": "30.00-40.00",
+                "B": "30.00-40.00",
+                "Bright": "80-100"
+               }
+    };
+
+      }
+
+      let j = 0;
+
+      this.colorKoefs = [];
+
+
+      for (j=0;j<5;j++){
+
+          this.colorKoefs[j] = {
+
+                Kr:1,
+                Kg:1,
+                Kb:1
+
+          }
+
+      }
+
+      this.color_P_initial = 0;
+
+
       this.stopSearchProcess();
       this.stopDataRecievingProcess();
 
@@ -190,85 +282,16 @@ export default class RobotControlAPI extends DeviceControlAPI {
     this.led_states = ['off','off','off','off','off'];
     this.led_bit_mask = 0;
 
-    this.colorFilterTable = [{},{},{},{},{}];
+  //  this.colorFilterTable = [{},{},{},{},{}];
 
     this.dataRecieveTime = 0;
 
     this.previousRobotState = DEVICE_STATES["INITED"];
     this.currentRobotState =  DEVICE_STATES["INITED"];
 
-  let i = 0;
-
-  for (i=0;i<5;i++){
-
-      this.colorFilterTable[i] = {
-
-           "red": {
-            "R": "51.00-64.00",
-            "G": "13.00-25.00",
-            "B": "20.00-27.00",
-            "Bright": "0-100"
-           },
-           "magenta": {
-            "R": "35.00-58.00",
-            "G": "13.00-25.00",
-            "B": "26.00-32.00",
-            "Bright": "0-100"
-           },
-           "yellow": {
-            "R": "40.00-47.00",
-            "G": "33.00-44.00",
-            "B": "17.00-23.00",
-            "Bright": "0-100"
-           },
-           "green": {
-            "R": "23.00-32.00",
-            "G": "38.00-49.00",
-            "B": "25.00-33.00",
-            "Bright": "0-100"
-           },
-           "blue": {
-            "R": "15.00-27.00",
-            "G": "24.00-34.00",
-            "B": "41.00-58.00",
-            "Bright": "0-100"
-           },
-           "cyan": {
-            "R": "24.00-32.00",
-            "G": "32.00-39.00",
-            "B": "32.00-40.00",
-            "Bright": "0-100"
-           },
-           "custom": {
-            "R": "28.00-34.00",
-            "G": "22.00-28.00",
-            "B": "41.00-47.00",
-            "Bright": "0-0"
-           },
-           "black": {
-            "R": "30.00-40.00",
-            "G": "30.00-40.00",
-            "B": "30.00-40.00",
-            "Bright": "0-20"
-           },
-           "gray": {
-            "R": "30.00-40.00",
-            "G": "30.00-40.00",
-            "B": "30.00-40.00",
-            "Bright": "20-80"
-           },
-           "white": {
-            "R": "30.00-40.00",
-            "G": "30.00-40.00",
-            "B": "30.00-40.00",
-            "Bright": "80-100"
-           }
-};
-
-  }
 
 
-    this.color_P_initial = 0;
+  //  this.color_P_initial = 0;
 
     this.path_left_buffer = 0;
     this.path_right_buffer = 0;
@@ -285,28 +308,10 @@ export default class RobotControlAPI extends DeviceControlAPI {
     this.rightPathMultiplier = 0;
     this.rightPathCorrection = 0;
 
-    this.colorKoefs = [];
+
 
     this.a_can_send = true;
 
-
-
-
-
-    let j = 0;
-
-
-    for (j=0;j<5;j++){
-
-        this.colorKoefs[j] = {
-
-              Kr:1,
-              Kg:1,
-              Kb:1
-
-        }
-
-    }
 
   }
 
@@ -1226,7 +1231,7 @@ turnLedOff(led_position:number,robot_number:number){
 
         this.leftPathNew =   this.path_left_buffer;
 
-        if (this.leftPathNew < this.leftPath){
+        if ((this.leftPathNew < this.leftPath) && (this.leftPathNew != 0)) {
 
               this.leftPathMultiplier++;
         }
@@ -1262,9 +1267,9 @@ turnLedOff(led_position:number,robot_number:number){
 
         this.rightPathNew =   this.path_right_buffer;
 
-        if (this.rightPathNew < this.rightPath){
+        if ((this.rightPathNew < this.rightPath) && (this.rightPathNew != 0)){
 
-              this.leftPathMultiplier++;
+              this.rightPathMultiplier++;
         }
 
         this.rightPath = this.rightPathNew;
