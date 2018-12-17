@@ -182,6 +182,18 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       this.color_P_initial = 0;
 
+      // this.leftPath     = 0;
+      // this.leftPathNew  = 0;
+      // this.leftPathCorrected = 0;
+      // this.leftPathMultiplier = 0;
+      // this.leftPathCorrection = 0;
+      //
+      // this.rightPath    = 0;
+      // this.rightPathNew = 0;
+      // this.rightPathCorrected = 0;
+      // this.rightPathMultiplier = 0;
+      // this.rightPathCorrection = 0;
+
 
       this.stopSearchProcess();
       this.stopDataRecievingProcess();
@@ -1216,7 +1228,7 @@ turnLedOff(led_position:number,robot_number:number){
 
     if ( typeof(this.SensorsData) != 'undefined' ){
 
-        if (!isNaN(this.SensorsData.path0)){
+        if ((!isNaN(this.SensorsData.path0))  /*&& (this.SensorsData.path0 != 0) */){
 
           this.path_left_buffer = this.SensorsData.path0;
 
@@ -1252,7 +1264,7 @@ turnLedOff(led_position:number,robot_number:number){
 
     if ( typeof(this.SensorsData) != 'undefined' ){
 
-        if (!isNaN(this.SensorsData.path0)){
+        if ((!isNaN(this.SensorsData.path1)) /*&& (this.SensorsData.path1 != 0)*/) {
 
           this.path_right_buffer = this.SensorsData.path1;
 
