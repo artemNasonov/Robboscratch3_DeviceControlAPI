@@ -16,7 +16,7 @@ console.log = function(string){
         log(string);
   }
 }
-console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.3-dev");
+console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.3");
 
 var import_settings = function(){
 
@@ -55,7 +55,7 @@ var import_settings = function(){
 
 }
 
-import_settings();
+//import_settings();
 
 const DEVICE_STATES = Object.freeze({
    "INITED": 0,
@@ -449,6 +449,8 @@ function InterfaceDevice(port){
    var bitrate = 115200;
    var uport;
 
+   var DEVICE_STATE_CHECK_INTERVAL;
+
  //callbacks
   var onErrorCb = () => {};
   var onFirmwareVersionDiffersCb =   () => {};
@@ -473,26 +475,59 @@ function InterfaceDevice(port){
            bufIncomingData = bufIncomingDataNew;
 
         //   console.log(LOG + "bufIncomingData: " + bufIncomingData);
-   if (state == DEVICE_STATES["DEVICE_IS_READY"]){
 
-     NO_RESPONSE = setTimeout(()=>{
-        console.error(LOG+"Ouuu...NO RESPONSE!");
 
-        if (onErrorCb){
+   //if (state == DEVICE_STATES["DEVICE_IS_READY"]){
 
-          var error  = {};
+     // NO_RESPONSE = setTimeout(()=>{
+     //    console.error(LOG+"Ouuu...NO RESPONSE!");
+     //
+     //    if (onErrorCb){
+     //
+     //      var error  = {};
+     //
+     //         error.code = 1;
+     //         error.msg = LOG+"Ouuu...NO RESPONSE!";
+     //
+     //        onErrorCb(error);
+     //
+     //    }
+     //
+     //     state = DEVICE_STATES["TIMEOUT"];
+     // },NO_RESPONSE_TIME);
 
-             error.code = 1;
-             error.msg = LOG+"Ouuu...NO RESPONSE!";
 
-            onErrorCb(error);
+      DEVICE_STATE_CHECK_INTERVAL =  setInterval(()=>{
 
-        }
+       if (state == DEVICE_STATES["DEVICE_IS_READY"]){
 
-         state = DEVICE_STATES["TIMEOUT"];
-     },NO_RESPONSE_TIME);
 
-   }
+         if(!qport.isOpen){
+
+           console.error(LOG+"Ouuu...NO RESPONSE!");
+
+             if (onErrorCb){
+
+               var error  = {};
+
+                  error.code = 1;
+                //  error.msg = LOG+"Ouuu...NO RESPONSE!";
+                 error.msg = LOG;
+
+                 onErrorCb(error);
+
+             }
+
+              state = DEVICE_STATES["TIMEOUT"];
+
+          }
+
+
+       }
+
+     },1000);
+
+   //} //if  DEVICE_STATES["DEVICE_IS_READY"]
 
 
 
@@ -500,7 +535,7 @@ function InterfaceDevice(port){
          clearTimeout(NO_START);
         clearTimeout(UNOTIME);                                                //#
          if ( (bufIncomingData.length >= iWaiting) /*&& ( bufIncomingData.indexOf(35) != -1 )*/ ){
-            console.log(LOG + "command '" + commandToRun.code + "' complete.");
+          //  console.log(LOG + "command '" + commandToRun.code + "' complete.");
             var iResponsePointer = /*(bufIncomingData.indexOf(35) + 1);*/ 1;
             Object.keys(commandToRun.response).forEach(function (sField){
                switch(commandToRun.response[sField]){
@@ -704,6 +739,18 @@ function InterfaceDevice(port){
    var onConnect = function(err) {
          if (err) {
            state = DEVICE_STATES["DEVICE_ERROR"];
+
+           if (onErrorCb){
+
+             var error  = {};
+
+                error.code = 2;
+                error.msg = LOG + err.message;
+
+               onErrorCb(error);
+
+           }
+
            return console.error(LOG + 'Error opening port: '+err.message);
          }
            console.log(LOG + "connected.");
@@ -727,6 +774,7 @@ function InterfaceDevice(port){
 
    this.stopCheckingSerialNumber = function(cb){
      clearTimeout(NO_RESPONSE);
+     clearInterval(DEVICE_STATE_CHECK_INTERVAL);
      state= DEVICE_STATES["CLOSING"];
      console.warn(LOG+" Device stopped");
      // if (!isStopCheckingSerialNumber){
@@ -916,7 +964,7 @@ function InterfaceDevice(port){
    }
 
    this.getPortName = function(){
-     console.warn("OU FUCK");
+     //console.warn("OU FUCK");
      console.warn(this.port.comName);
       return this.port.comName;
    }
@@ -1209,7 +1257,8 @@ function InterfaceDevice(port){
 
      //   command_string += '$'.toString(16);
 
-      console.log(LOG+" Sended: "+buf);
+    //  console.log(LOG+" Sended: "+buf);
+
     //  console.log(command_string);
       qport.write(buf);
       //      console.log("OTRAVLENO!");

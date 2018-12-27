@@ -283,13 +283,13 @@ searchLaboratoryDevices(){
 
                    if (self.ConnectedLaboratoriesSerials.indexOf(device.getSerialNumber()) == -1 ){
 
-                     console.log("We have new ready laboratory!!!");
+                     console.warn("We have new ready laboratory!!!");
 
 
                       self.searching_in_progress = false;
                       self.lab_status_change_callback(self.currentLabState,self.searching_in_progress);
 
-                     console.log("Laboratory serial: " + device.getSerialNumber());
+                     console.warn("Laboratory serial: " + device.getSerialNumber());
 
                      self.startDataRecievingLoop(device);
                      self.ConnectedLaboratories.push(device);
@@ -483,7 +483,7 @@ getStateNameByID(id:number):string{
 
       if([1,2,4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-            console.warn(`labPlayNote note ${lab_note}`);
+        //    console.warn(`labPlayNote note ${lab_note}`);
 
 
             this.ConnectedLaboratories[0].command(DEVICES[this.ConnectedLaboratories[0].getDeviceID()].commands.lab_sound, [lab_note], (response) => {
@@ -535,7 +535,7 @@ labDigitalPinState(laboratory_number:number, digital_pin:string):boolean{
 
     if([1,2,4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-          console.log(`labDigitalPinState digital_pin: ${digital_pin}`);
+        //  console.log(`labDigitalPinState digital_pin: ${digital_pin}`);
 
           var pin  = Number(digital_pin.replace("D","")) - 8;
 
@@ -564,7 +564,7 @@ turnLedOn(led_position:number,laboratory_number:number){
 
     if([1,2,4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-      console.log(`Lab turnLedOn led_position: ${led_position}`);
+  //    console.log(`Lab turnLedOn led_position: ${led_position}`);
 
 
    if (this.led_states[led_position] == 'off') {
@@ -573,7 +573,7 @@ turnLedOn(led_position:number,laboratory_number:number){
 
          this.led_bit_mask = this.led_bit_mask | (1 << led_position);
 
-         console.log(`led_bit_mask: ${this.led_bit_mask}`);
+      //   console.log(`led_bit_mask: ${this.led_bit_mask}`);
 
          this.led_states[led_position] = 'on';
 
@@ -602,7 +602,7 @@ turnLedOff(led_position:number,laboratory_number:number){
 
    if([1,2,4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-     console.log(`Lab turnLedOff led_position: ${led_position}`);
+  //   console.log(`Lab turnLedOff led_position: ${led_position}`);
 
    if (this.led_states[led_position] == 'on') {
 
@@ -637,7 +637,7 @@ if ((this.ConnectedLaboratories.length - 1) >= laboratory_number ){
 
     if([1,2,4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-      console.log(`Lab turnColorLedOn led_color: ${led_color}`);
+    //  console.log(`Lab turnColorLedOn led_color: ${led_color}`);
 
   if(led_color== 'red' && this.led_color_states[0] == "off"){
    this.led_color_bit_mask = this.led_color_bit_mask | 4;
@@ -690,7 +690,7 @@ turnColorLedOff(led_color:string,laboratory_number:number){
 
       if([1,2,4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-        console.log(`Lab turnColorLedOff led_color: ${led_color}`);
+      //  console.log(`Lab turnColorLedOff led_color: ${led_color}`);
 
     if(led_color== 'red' && this.led_color_states[0] == "on"){
      this.led_color_bit_mask = this.led_color_bit_mask & ~ 4;
@@ -741,7 +741,7 @@ setDigitalOnOff(digital_pin:string,digital_pin_state:string,laboratory_number:nu
 
       if([1,2,4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-          console.log(`Lab setDigitalOnOff digital_pin: ${digital_pin} digital_pin_state: ${digital_pin_state} `);
+        //  console.log(`Lab setDigitalOnOff digital_pin: ${digital_pin} digital_pin_state: ${digital_pin_state} `);
 
             var pin = Number(digital_pin.replace("D",""));
 
@@ -786,7 +786,7 @@ setDigitalPWM(digital_pin:string,pwm_value:number,laboratory_number:number){
 
       if([1,2,4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1 && this.ConnectedLaboratories[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-          console.log(`Lab setDigitalPWM digital_pin: ${digital_pin} pwm_value: ${pwm_value} `);
+      //    console.log(`Lab setDigitalPWM digital_pin: ${digital_pin} pwm_value: ${pwm_value} `);
 
 
             var pin = Number(digital_pin.replace("D",""));

@@ -411,7 +411,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
                        if (self.ConnectedRobotsSerials.indexOf(device.getSerialNumber()) == -1 ){
 
-                         console.log("We have new ready robot!!!");
+                         console.warn("We have new ready robot!!!");
 
                           self.searching_in_progress = false;
 
@@ -425,7 +425,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
                       //   self.searching_in_progress = false;
 
-                         console.log("Robot serial: " + device.getSerialNumber());
+                         console.warn("Robot serial: " + device.getSerialNumber());
 
                          self.startDataRecievingLoop(device);
                          self.ConnectedRobots.push(device);
@@ -1091,14 +1091,14 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
   setRobotPowerAndStepLimits(leftMotorPower:number,rightMotorPower:number,steps_limit:number,robot_number:number):void{
 
-      console.log(`setRobotPowerAndStepLimits leftMotorPower: ${leftMotorPower} rightMotorPower: ${rightMotorPower} steps_limit: ${steps_limit} `);
+    //  console.log(`setRobotPowerAndStepLimits leftMotorPower: ${leftMotorPower} rightMotorPower: ${rightMotorPower} steps_limit: ${steps_limit} `);
 
       if ((this.ConnectedRobots.length - 1) >= robot_number ){
 
 
         if([0,3].indexOf(this.ConnectedRobots[0].getDeviceID())!=-1 && this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-          console.log("setRobotPowerAndStepLimits send command");
+      //    console.log("setRobotPowerAndStepLimits send command");
 
           let steps_limit_low_byte:number  = steps_limit&0x00FF;
           let steps_limit_high_byte:number = steps_limit >> 8;
@@ -1128,7 +1128,7 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
      if([0,3].indexOf(this.ConnectedRobots[0].getDeviceID()) != -1 && this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-       console.log(`turnLedOn led_position: ${led_position}`);
+    //   console.log(`turnLedOn led_position: ${led_position}`);
 
 
     if (this.led_states[led_position] == 'off') {
@@ -1137,7 +1137,7 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
           this.led_bit_mask+=this.led_positions[led_position];
 
-          console.log(`led_bit_mask: ${this.led_bit_mask}`);
+      //    console.log(`led_bit_mask: ${this.led_bit_mask}`);
 
           this.led_states[led_position] = 'on';
 
@@ -1170,13 +1170,13 @@ turnLedOff(led_position:number,robot_number:number){
 
     if([0,3].indexOf(this.ConnectedRobots[0].getDeviceID()) != -1 && this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-      console.log(`turnLedOff led_position: ${led_position}`);
+    //  console.log(`turnLedOff led_position: ${led_position}`);
 
     if (this.led_states[led_position] == 'on') {
 
       this.led_bit_mask-=this.led_positions[led_position];
 
-      console.log(`led_bit_mask: ${this.led_bit_mask}`);
+    //  console.log(`led_bit_mask: ${this.led_bit_mask}`);
 
       this.led_states[led_position] = 'off';
 
@@ -1207,7 +1207,7 @@ turnLedOff(led_position:number,robot_number:number){
 
         if([0,3].indexOf(this.ConnectedRobots[0].getDeviceID()) != -1 && this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-          console.log(`setClawDegrees: ${degrees}`);
+      //    console.log(`setClawDegrees: ${degrees}`);
 
           this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.rob_claw, [degrees], (response) => {
 
@@ -1363,12 +1363,12 @@ turnLedOff(led_position:number,robot_number:number){
 
       if([0,3].indexOf(this.ConnectedRobots[0].getDeviceID()) != -1 && this.ConnectedRobots[robot_number].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-        console.log("setRobotSensor");
+      //  console.log("setRobotSensor");
 
       switch (sensor_name) {
         case "nosensor":
 
-        console.log("Sensor name: none");
+      //  console.log("Sensor name: none");
 
           this.sensors_array[sensor_id] = 0;
 
@@ -1382,7 +1382,7 @@ turnLedOff(led_position:number,robot_number:number){
 
         case "line":
 
-        console.log("Sensor name: line");
+      //  console.log("Sensor name: line");
 
           this.sensors_array[sensor_id] = 1;
 
@@ -1394,7 +1394,7 @@ turnLedOff(led_position:number,robot_number:number){
 
         case "led":
 
-        console.log("Sensor name: led");
+    //    console.log("Sensor name: led");
 
           this.sensors_array[sensor_id] = 2;
 
@@ -1406,7 +1406,7 @@ turnLedOff(led_position:number,robot_number:number){
 
         case "light":
 
-        console.log("Sensor name: light");
+    //    console.log("Sensor name: light");
 
         this.sensors_array[sensor_id] = 3;
 
@@ -1418,7 +1418,7 @@ turnLedOff(led_position:number,robot_number:number){
 
         case "touch":
 
-        console.log("Sensor name: touch");
+    //    console.log("Sensor name: touch");
 
           this.sensors_array[sensor_id] = 4;
 
@@ -1430,7 +1430,7 @@ turnLedOff(led_position:number,robot_number:number){
 
         case "proximity":
 
-        console.log("Sensor name: proximity");
+    //    console.log("Sensor name: proximity");
 
           this.sensors_array[sensor_id] = 5;
 
@@ -1442,7 +1442,7 @@ turnLedOff(led_position:number,robot_number:number){
 
         case "ultrasonic":
 
-        console.log("Sensor name: ultrasonic");
+      //  console.log("Sensor name: ultrasonic");
 
           this.sensors_array[sensor_id] = 6;
 
@@ -1454,7 +1454,7 @@ turnLedOff(led_position:number,robot_number:number){
 
         case "color":
 
-        console.log("Sensor name: color");
+    //    console.log("Sensor name: color");
 
           this.sensors_array[sensor_id] = 7;
 
