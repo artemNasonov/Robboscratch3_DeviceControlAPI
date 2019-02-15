@@ -872,9 +872,13 @@ getSensorData(sensor_name:string):number{
 
                       case "temperature":
 
-                        if ([1,2,4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1){
+                        if ([1,2].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1){
 
                               return Math.round((this.SensorsData[`a${pin*2}`] * 256 + this.SensorsData[`a${pin*2 + 1}`]) *  0.244379276637341153);
+
+                        }else if([4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1){
+
+                              return Math.round((this.SensorsData[`a${2}`] * 256 + this.SensorsData[`a${3}`]) *  0.244379276637341153);
 
                         }else{
 
@@ -886,9 +890,23 @@ getSensorData(sensor_name:string):number{
 
                       case "clamps":
 
+                      if ([1,2].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1){
+
+                              return   Math.round((this.SensorsData[`a${pin*2}`] * 256 + this.SensorsData[`a${pin*2 + 1}`]) / 1023 * 100);
+
+                      }else if([4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1){
+
+                              return   Math.round((this.SensorsData[`a${2}`] * 256 + this.SensorsData[`a${3}`]) / 1023 * 100);
+
+                      }else{
+
+                              return this.SensorsData[`a${pin*2}`] * 256 + this.SensorsData[`a${pin*2 + 1}`];
+
+                      }
 
 
-                        return   Math.round((this.SensorsData[`a${pin*2}`] * 256 + this.SensorsData[`a${pin*2 + 1}`]) / 1023 * 100);
+
+
 
                     //  break;
 

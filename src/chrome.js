@@ -16,7 +16,7 @@ console.log = function(string){
         log(string);
   }
 }
-console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.3");
+console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.4");
 
 var import_settings = function(){
 
@@ -68,6 +68,91 @@ const DEVICE_STATES = Object.freeze({
    "DEVICE_ERROR":7,
    "TIMEOUT":8
 });
+
+const commands_list_otto= {
+  "check":{
+    "code": "a",
+    "params": [],
+    "response": {
+                 "distance" : "ubyte",
+                 "hearing": "ubyte"
+                }
+  },
+  "be":{
+    "code": "b",
+    "params": ["ubyte","ubyte","ubyte"],
+    "response": {
+                 "distance" : "ubyte",
+                 "hearing": "ubyte"
+                }
+  },
+  "ce":{
+    "code": "c",
+    "params": ["ubyte","ubyte","ubyte"],
+    "response": {
+                 "distance" : "ubyte",
+                 "hearing": "ubyte"
+                }
+  },
+
+  "de":{//note
+    "code": "d",
+    "params": ["ubyte"],
+    "response": {
+                 "distance" : "ubyte",
+                 "hearing": "ubyte"
+                }
+  },
+  "ee":{//note
+    "code": "e",
+    "params": ["ubyte","ubyte","ubyte","ubyte","ubyte","ubyte","ubyte","ubyte"],
+    "response": {
+                 "distance" : "ubyte",
+                 "hearing": "ubyte"
+                }
+  },
+  "ge":{//note
+    "code": "g",
+    "params": ["ubyte","ubyte","ubyte"],
+    "response": {
+                 "distance" : "ubyte",
+                 "hearing": "ubyte"
+                }
+  },
+
+  "he":{//note
+    "code": "h",
+    "params": ["ubyte","ubyte"],
+    "response": {
+                 "distance" : "ubyte",
+                 "hearing": "ubyte"
+                }
+  },
+  "se":{
+    "code": "s",
+    "params": ["ubyte","ubyte"],
+    "response": {
+                 "distance" : "ubyte",
+                 "hearing": "ubyte"
+                }
+  },
+  "ye":{
+    "code": "y",
+    "params": ["ubyte","ubyte","ubyte"],
+    "response": {
+                 "distance" : "ubyte",
+                 "hearing": "ubyte"
+                }
+  },
+  "ze":{
+    "code": "z",
+    "params": ["ubyte","ubyte","ubyte","ubyte","ubyte"],
+    "response": {
+                 "distance" : "ubyte",
+                 "hearing": "ubyte"
+                }
+  }
+}
 
 const commands_list_robot = {
    "check":{
@@ -361,7 +446,7 @@ const commands_list_robot = {
 
 };
 
-const last_firmwares =[8,5,2,2,1,7,7,7];
+const last_firmwares =[8,5,2,2,1,2,7,7];
 
 const DEVICES = Object.freeze({
    //Basic Robot
@@ -395,7 +480,12 @@ const DEVICES = Object.freeze({
      "firmware":1,
      "commands": commands_list_laboratory
 
-   }
+   },
+    //Otto
+   5:{
+     "firmware":2,
+     "commands": commands_list_otto
+ }
 });
 
 var arrDevices = [];
@@ -477,57 +567,57 @@ function InterfaceDevice(port){
         //   console.log(LOG + "bufIncomingData: " + bufIncomingData);
 
 
-   //if (state == DEVICE_STATES["DEVICE_IS_READY"]){
+   if (state == DEVICE_STATES["DEVICE_IS_READY"]){
 
-     // NO_RESPONSE = setTimeout(()=>{
-     //    console.error(LOG+"Ouuu...NO RESPONSE!");
+     NO_RESPONSE = setTimeout(()=>{
+        console.error(LOG+"Ouuu...NO RESPONSE!");
+
+        // if (onErrorCb){
+        //
+        //   var error  = {};
+        //
+        //      error.code = 1;
+        //      error.msg = LOG+"Ouuu...NO RESPONSE!";
+        //
+        //     onErrorCb(error);
+        //
+        // }
+
+         state = DEVICE_STATES["TIMEOUT"];
+     },NO_RESPONSE_TIME);
+
+
+     //  DEVICE_STATE_CHECK_INTERVAL =  setInterval(()=>{
      //
-     //    if (onErrorCb){
+     //   if (state == DEVICE_STATES["DEVICE_IS_READY"]){
      //
-     //      var error  = {};
      //
-     //         error.code = 1;
-     //         error.msg = LOG+"Ouuu...NO RESPONSE!";
+     //     if(!qport.isOpen){
      //
-     //        onErrorCb(error);
+     //       console.error(LOG+"Ouuu...NO RESPONSE!");
      //
-     //    }
+     //         if (onErrorCb){
      //
-     //     state = DEVICE_STATES["TIMEOUT"];
-     // },NO_RESPONSE_TIME);
+     //           var error  = {};
+     //
+     //              error.code = 1;
+     //            //  error.msg = LOG+"Ouuu...NO RESPONSE!";
+     //             error.msg = LOG;
+     //
+     //             onErrorCb(error);
+     //
+     //         }
+     //
+     //          state = DEVICE_STATES["TIMEOUT"];
+     //
+     //      }
+     //
+     //
+     //   }
+     //
+     // },1000);
 
-
-      DEVICE_STATE_CHECK_INTERVAL =  setInterval(()=>{
-
-       if (state == DEVICE_STATES["DEVICE_IS_READY"]){
-
-
-         if(!qport.isOpen){
-
-           console.error(LOG+"Ouuu...NO RESPONSE!");
-
-             if (onErrorCb){
-
-               var error  = {};
-
-                  error.code = 1;
-                //  error.msg = LOG+"Ouuu...NO RESPONSE!";
-                 error.msg = LOG;
-
-                 onErrorCb(error);
-
-             }
-
-              state = DEVICE_STATES["TIMEOUT"];
-
-          }
-
-
-       }
-
-     },1000);
-
-   //} //if  DEVICE_STATES["DEVICE_IS_READY"]
+   } //if  DEVICE_STATES["DEVICE_IS_READY"]
 
 
 
@@ -591,7 +681,7 @@ function InterfaceDevice(port){
       }
       else{
           if ( (typeof(iDeviceID) != 'undefined') && (typeof(iFirmwareVersion) != 'undefined') && (typeof(sSerialNumber) != 'undefined') ){
-                if ( (!isNaN(iDeviceID)) && (!isNaN(iFirmwareVersion)) && ( ( (sSerialNumber).startsWith("R") ) || ((sSerialNumber).startsWith("L")) ) ) {
+                if ( (!isNaN(iDeviceID)) && (!isNaN(iFirmwareVersion)) && ( ( (sSerialNumber).startsWith("R") ) || ((sSerialNumber).startsWith("L")) ||((sSerialNumber).startsWith("O")) ) ) {
                         console.info(LOG + "device is ready.");
                         state = DEVICE_STATES["DEVICE_IS_READY"];
                         NO_START = setTimeout(()=>{qport.close(()=>{console.error(LOG+"FUCK, NO_START!");searchDevices()})},NO_START_TIMEOUT); //500
