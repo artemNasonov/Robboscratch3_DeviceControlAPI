@@ -52,7 +52,7 @@ searchOttoDevices(){
         if (this.otto_status_change_callback !== null){
               this.otto_status_change_callback(this.currentOttoState,this.searching_in_progress);
         }
-        
+
        this.handleConnectedDevicesInterval  =  setInterval(
            function (self){
               let devices:Array<InterfaceDevice> = getConnectedDevices();
@@ -192,6 +192,37 @@ stopSearchProcess(){
                 device.stopCheckingSerialNumber();
           });
     }
+}
+
+checkOttoByPort(port,callback){
+
+    var result = {};
+    result.device = {};
+
+    result.code = -1;
+    result.device.id = -1;
+    result.device.firmware_version = -1;
+    result.device.serial_number = -1;
+
+    for (var i = 0; i < this.ConnectedOttos.length; i++) {
+
+          if ((this.ConnectedOttos[i].getPortName() == port) && (this.ConnectedOttos[i].getState() == DEVICE_STATES["DEVICE_IS_READY"]) ){
+
+            result.code = 0;
+            result.device.id = this.ConnectedOttos[i].getDeviceID();
+            result.device.firmware_version = this.ConnectedOttos[i].getFirmwareVersion();
+            result.device.serial_number = this.ConnectedOttos[i].getShorterSerialNumber();
+
+            callback(result);
+
+            return;
+
+          }
+
+    }
+
+        callback(result);
+
 }
 
 
