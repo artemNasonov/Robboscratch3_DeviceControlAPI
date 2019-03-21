@@ -33,7 +33,7 @@ var import_settings = function(){
 
                 NO_RESPONSE_TIME = Math.floor(Number(json.device_response_timeout))||3000;
                 NO_START_TIMEOUT = Math.floor(Number(json.device_no_start_timeout))||1000;
-                UNO_TIMEOUT      = Math.floor(Number(json.device_uno_timeout))||3000;
+                UNO_TIMEOUT      = Math.floor(Number(json.device_uno_start_search_timeout))||3000;
 
                 console.warn(`NO_RESPONSE_TIME: ${NO_RESPONSE_TIME}  NO_START_TIMEOUT: ${NO_START_TIMEOUT} UNO_TIMEOUT: ${UNO_TIMEOUT}`);
           }
@@ -269,7 +269,7 @@ const commands_list_robot = {
    }
  };
 
- const commands_list_laboratory = {
+const commands_list_laboratory = {
     "check":{
        "code": "a",
        "params": [],
@@ -446,17 +446,17 @@ const commands_list_robot = {
 
 };
 
-const last_firmwares =[8,5,2,2,1,2,7,7];
+const last_firmwares =[8,5,2,3,1,2,7,7];
 
 const DEVICES = Object.freeze({
    //Basic Robot
    0:{
-      "firmware":7,
+      "firmware":8,
       "commands":commands_list_robot
    },
    //Old Robot
    3:{
-      "firmware":2,
+      "firmware":3,
       "commands":commands_list_robot
    },
 
@@ -1392,6 +1392,9 @@ function InterfaceDevice(port){
 }
 
 const searchDevices = function(onDevicesFoundCb){
+
+  import_settings();
+
  //  arrDevices = [];
  var disconected_devices=0;
     var onGetDevices = function(err,ports) {//NEW DEVICE SEARHING

@@ -48,11 +48,9 @@ searchOttoDevices(){
         this.init_all();
         this.stopDataRecievingProcess();
         this.searching_in_progress = true;
-
         if (this.otto_status_change_callback !== null){
               this.otto_status_change_callback(this.currentOttoState,this.searching_in_progress);
         }
-
        this.handleConnectedDevicesInterval  =  setInterval(
            function (self){
               let devices:Array<InterfaceDevice> = getConnectedDevices();
@@ -86,7 +84,7 @@ searchOttoDevices(){
                            self.startDataRecievingLoop(device);
                            self.ConnectedOttos.push(device);
                            self.ConnectedOttosSerials.push(device.getSerialNumber());
-                           device.command(DEVICES[device.getDeviceID()].commands.sensors, self.sensors_array, function(response){});
+                          // device.command(DEVICES[device.getDeviceID()].commands.sensors, self.sensors_array, function(response){});
                          }
                        }else{
                           //   console.log("Device ID: " + device.getDeviceID()  + " " + "State:  " + device.getState() + " " + "State name: " + self.getStateNameByID(device.getState())
@@ -99,6 +97,37 @@ searchOttoDevices(){
             }
            }
          }
+      }
+
+      checkOttoByPort(port,callback){
+
+          var result = {};
+          result.device = {};
+
+          result.code = -1;
+          result.device.id = -1;
+          result.device.firmware_version = -1;
+          result.device.serial_number = -1;
+
+          for (var i = 0; i < this.ConnectedOttos.length; i++) {
+
+                if ((this.ConnectedOttos[i].getPortName() == port) && (this.ConnectedOttos[i].getState() == DEVICE_STATES["DEVICE_IS_READY"]) ){
+
+                  result.code = 0;
+                  result.device.id = this.ConnectedOttos[i].getDeviceID();
+                  result.device.firmware_version = this.ConnectedOttos[i].getFirmwareVersion();
+                  result.device.serial_number = this.ConnectedOttos[i].getShorterSerialNumber();
+
+                  callback(result);
+
+                  return;
+
+                }
+
+          }
+
+              callback(result);
+
       }
 
 stopDataRecievingProcess(){
@@ -194,39 +223,11 @@ stopSearchProcess(){
     }
 }
 
-checkOttoByPort(port,callback){
-
-    var result = {};
-    result.device = {};
-
-    result.code = -1;
-    result.device.id = -1;
-    result.device.firmware_version = -1;
-    result.device.serial_number = -1;
-
-    for (var i = 0; i < this.ConnectedOttos.length; i++) {
-
-          if ((this.ConnectedOttos[i].getPortName() == port) && (this.ConnectedOttos[i].getState() == DEVICE_STATES["DEVICE_IS_READY"]) ){
-
-            result.code = 0;
-            result.device.id = this.ConnectedOttos[i].getDeviceID();
-            result.device.firmware_version = this.ConnectedOttos[i].getFirmwareVersion();
-            result.device.serial_number = this.ConnectedOttos[i].getShorterSerialNumber();
-
-            callback(result);
-
-            return;
-
-          }
-
-    }
-
-        callback(result);
-
-}
 
 
   move_servo_foot(ll,rl,lf,rf,speed){
+    rl=180-rl;
+    rf=180-rf;
     if((typeof(this.ConnectedOttos[0])!='undefined') &&[5].indexOf(this.ConnectedOttos[0].getDeviceID()) != -1 && this.ConnectedOttos[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
     this.ConnectedOttos[0].command(DEVICES[this.ConnectedOttos[0].getDeviceID()].commands.ze,[ll,rl,lf,rf,speed], (response) => {
       this.SensorsData = response;
@@ -235,6 +236,7 @@ checkOttoByPort(port,callback){
              }
   }
   move_servo_hand(left,right,speed){
+    right=180-right;
     if((typeof(this.ConnectedOttos[0])!='undefined') &&[5].indexOf(this.ConnectedOttos[0].getDeviceID()) != -1 && this.ConnectedOttos[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
     this.ConnectedOttos[0].command(DEVICES[this.ConnectedOttos[0].getDeviceID()].commands.ye,[left,right,speed], (response) => {
       this.SensorsData = response;
@@ -244,6 +246,8 @@ checkOttoByPort(port,callback){
   move_servo_one(serv_num,grad,speed){
     if((typeof(this.ConnectedOttos[0])!='undefined') &&[5].indexOf(this.ConnectedOttos[0].getDeviceID()) != -1 && this.ConnectedOttos[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
     let lol = serv_num+speed*8;
+    if((serv_num==1)||(serv_num==3)||(serv_num==5))
+    grad = 180 -grad;
     this.ConnectedOttos[0].command(DEVICES[this.ConnectedOttos[0].getDeviceID()].commands.se,[lol,grad], (response) => {
       this.SensorsData = response;
       this.dataRecieveTime = Date.now();

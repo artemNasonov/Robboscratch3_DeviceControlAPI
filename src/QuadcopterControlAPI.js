@@ -69,7 +69,8 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
        console.log("Crazyradio opened: " + state);
        if (state === true) {
          Crazyradio.setChannel(80, (state) => {
-           Crazyradio.setDatarate("250Kbps", (state) => {
+           //Crazyradio.setDatarate("250Kbps", (state) => {
+			Crazyradio.setDatarate("2Mbps", (state) => {
              if (state) {
 
 
@@ -301,7 +302,8 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
       var  packet = new ArrayBuffer(2);
       var  dv  = new DataView(packet);
       dv.setUint8(0,0x5C,true);
-      dv.setUint8(1,0x01,true);
+    //  dv.setUint8(1,0x01,true); //old Flow v1
+     dv.setUint8(1,0x03,true); //new Flow v2
 
 
       Crazyradio.sendPacket(packet).then(result => {
@@ -370,6 +372,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
       var  dv  = new DataView(packet);
       dv.setUint8(0,0x5C,true);
       dv.setUint8(1,0x00,true);
+     // dv.setUint8(1,0x02,true);
       dv.setUint8(2,Number(item_index),true);
 
 
@@ -1198,6 +1201,8 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
     console.log(`TOC_GET_ITEMS`);
 
+	
+
     return new Promise((resolve,reject)=>{
 
 
@@ -1205,180 +1210,180 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
           var telemetry_element_table = [];
           var prefered_telemetry_table = [];
 
-        //   var toc_item_index = 0;
-        //   var toc_item_recieved_answers = 0;
-        //   var toc_item_sent_queries = 0;
-        //   var telemetry_object = {};
-        //
-        //   var time_now = Date.now();
-        //   var toc_get_item_sent_time = Date.now();
-        //   var toc_get_item_time_delta = 250;
-        //
-        //   var telemetry_element_table = [];
-        //   var prefered_telemetry_table = [];
-        //
-        //   var telemetry_element_name;
-        //   var telemetry_element_group;
-        //
-        //
-        //   this.runningStep = "TOC_GET_ITEM";
-        //
-        //   var  TOC_GET_ITEM_INTERVAL =    setInterval(() => {
-        //
-        //
-        //     time_now = Date.now();
-        //     if ( (toc_item_sent_queries == toc_item_recieved_answers) || ( (time_now - toc_get_item_sent_time) > toc_get_item_time_delta )  ){
-        //
-        //
-        //                   toc_get_item_sent_time = Date.now();
-        //                   toc_item_sent_queries++;
-        //                   console.log(`TOC_GET_ITEM toc_item_sent_queries  ${toc_item_sent_queries} `);
-        //
-        //                   this.TOC_GET_ITEM(toc_item_index).then(data => {
-        //
-        //                         console.log(`TOC_GET_ITEM  data resolver`);
-        //
-        //                         if (toc_item_recieved_answers >= 243){
-        //
-        //                           this.global_toc_data_object = data;
-        //                         }
-        //
-        //
-        //                         if ( ([0x50,0x54,0x56,0x5C].indexOf(data[0]) != -1 ) ){   //проверяем, является ли ответ нужным нам.
-        //
-        //                             console.log(`TOC_GET_ITEM  correct answer`);
-        //
-        //                             //telemetry_object = this.PROCESS_TOC_GET_ITEM_RESULT(data,telemetry_element_table,prefered_telemetry_table);
-        //
-        //                             data = data.slice(2);
-        //
-        //                             while (data[0] == 0){
-        //
-        //                               data = data.slice(1);
-        //                             }
-        //
-        //                             telemetry_element_name  =  this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1));
-        //                             telemetry_element_group =  this.getStringFromTypedArray(data.slice(2,data.indexOf(0)));
-        //
-        //                               console.log(`TOC_GET_ITEM  telemetry_element_name ${telemetry_element_name}`);
-        //
-        //                             telemetry_element_table[data[0]] = {
-        //
-        //                                 telemetry_element_type: data[1],
-        //                                 telemetry_element_group_and_name: this.getStringFromTypedArray(data.slice(2)),
-        //                                 telemetry_element_group:  this.getStringFromTypedArray(data.slice(2,data.indexOf(0))),
-        //                                 telemetry_element_name:   this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1)),
-        //                                 telemetry_element_id:      data[0]
-        //
-        //                           }
-        //
-        //                           if ((telemetry_element_name == "yaw" ) && (telemetry_element_group == "controller")){
-        //
-        //                             prefered_telemetry_table.push(data[0]);
-        //
-        //                             console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
-        //
-        //                           }
-        //
-        //
-        //                           if ( (["vbat","x","y","z"].indexOf(telemetry_element_name) != -1) && (["stateEstimate","pm"].indexOf(telemetry_element_group) != -1) ){
-        //
-        //
-        //                               prefered_telemetry_table.push(data[0]);
-        //
-        //                               console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
-        //
-        //                           }
-        //
-        //                            console.log(`telemetry_element id: ${data[0]}  type: ${telemetry_element_table[data[0]].telemetry_element_type} group:  ${telemetry_element_table[data[0]].telemetry_element_group} name:  ${telemetry_element_table[data[0]].telemetry_element_name} `);
-        //
-        //                             toc_item_index++;
-        //                             toc_item_recieved_answers++;
-        //                             console.log(`TOC_GET_ITEM toc_item_recieved_answers  ${toc_item_recieved_answers} `);
-        //
-        //                             if ((toc_item_index == toc_log_len) ){
-        //
-        //
-        //                               telemetry_object.telemetry_element_table  = telemetry_element_table;
-        //                               telemetry_object.prefered_telemetry_table = prefered_telemetry_table;
-        //
-        //                                 clearInterval(TOC_GET_ITEM_INTERVAL);
-        //                                 resolve(telemetry_object);
-        //
-        //                             }
-        //
-        //
-        //                       }
-        //
-        //
-        //                   }).catch((error) => {
-        //
-        //
-        //
-        //                   });
-        //
-        //     }
-        //
-        //
-        // },100);
+         /* var toc_item_index = 0;
+          var toc_item_recieved_answers = 0;
+          var toc_item_sent_queries = 0;
+          var telemetry_object = {};
+
+          var time_now = Date.now();
+          var toc_get_item_sent_time = Date.now();
+          var toc_get_item_time_delta = 250;
+
+          var telemetry_element_table = [];
+          var prefered_telemetry_table = [];
+
+          var telemetry_element_name;
+          var telemetry_element_group;
 
 
-        telemetry_element_table[62] = {
+          this.runningStep = "TOC_GET_ITEM";
 
+          var  TOC_GET_ITEM_INTERVAL =    setInterval(() => {
+
+
+            time_now = Date.now();
+            if ( (toc_item_sent_queries == toc_item_recieved_answers) || ( (time_now - toc_get_item_sent_time) > toc_get_item_time_delta )  ){
+
+
+                          toc_get_item_sent_time = Date.now();
+                          toc_item_sent_queries++;
+                          console.log(`TOC_GET_ITEM toc_item_sent_queries  ${toc_item_sent_queries} `);
+
+                          this.TOC_GET_ITEM(toc_item_index).then(data => {
+
+                                console.log(`TOC_GET_ITEM  data resolver`);
+
+                                if (toc_item_recieved_answers >= 243){
+
+                                  this.global_toc_data_object = data;
+                                }
+
+
+                                if ( ([0x50,0x54,0x56,0x5C].indexOf(data[0]) != -1 ) ){   //проверяем, является ли ответ нужным нам.
+
+                                    console.log(`TOC_GET_ITEM  correct answer`);
+
+                                    //telemetry_object = this.PROCESS_TOC_GET_ITEM_RESULT(data,telemetry_element_table,prefered_telemetry_table);
+
+                                    data = data.slice(2);
+
+                                    while (data[0] == 0){
+
+                                      data = data.slice(1);
+                                    }
+
+                                    telemetry_element_name  =  this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1));
+                                    telemetry_element_group =  this.getStringFromTypedArray(data.slice(2,data.indexOf(0)));
+
+                                      console.log(`TOC_GET_ITEM  telemetry_element_name ${telemetry_element_name}`);
+
+                                    telemetry_element_table[data[0]] = {
+
+                                        telemetry_element_type: data[1],
+                                        telemetry_element_group_and_name: this.getStringFromTypedArray(data.slice(2)),
+                                        telemetry_element_group:  this.getStringFromTypedArray(data.slice(2,data.indexOf(0))),
+                                        telemetry_element_name:   this.getStringFromTypedArray(data.slice(data.indexOf(0) + 1, data.length - 1)),
+                                        telemetry_element_id:      data[0]
+
+                                  }
+
+                                  if ((telemetry_element_name == "yaw" ) && (telemetry_element_group == "controller")){
+
+                                    prefered_telemetry_table.push(data[0]);
+
+                                    console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
+
+                                  }
+
+
+                                  if ( (["vbat","x","y","z"].indexOf(telemetry_element_name) != -1) && (["stateEstimate","pm"].indexOf(telemetry_element_group) != -1) ){
+
+
+                                      prefered_telemetry_table.push(data[0]);
+
+                                      console.log(`TOC_GET_ITEM adding element to  prefered_telemetry_table  ${telemetry_element_name} ${prefered_telemetry_table}`);
+
+                                  }
+
+                                   console.log(`telemetry_element id: ${data[0]}  type: ${telemetry_element_table[data[0]].telemetry_element_type} group:  ${telemetry_element_table[data[0]].telemetry_element_group} name:  ${telemetry_element_table[data[0]].telemetry_element_name} `);
+
+                                    toc_item_index++;
+                                    toc_item_recieved_answers++;
+                                    console.log(`TOC_GET_ITEM toc_item_recieved_answers  ${toc_item_recieved_answers} `);
+
+                                    if ((toc_item_index == toc_log_len) ){
+
+
+                                      telemetry_object.telemetry_element_table  = telemetry_element_table;
+                                      telemetry_object.prefered_telemetry_table = prefered_telemetry_table;
+
+                                        clearInterval(TOC_GET_ITEM_INTERVAL);
+                                      //  resolve(telemetry_object);
+
+                                    }
+
+
+                              }
+
+
+                          }).catch((error) => {
+
+
+
+                          });
+
+            }
+
+
+        },100);*/
+
+
+        telemetry_element_table[92] = {
+        
                           telemetry_element_type: 0x07,
                           telemetry_element_group_and_name:"",
                           telemetry_element_group:  "stateEstimate",
                           telemetry_element_name:    "x",
-                          telemetry_element_id:     62
-
+                          telemetry_element_id:     92
+        
                                   }
-
-        telemetry_element_table[63] = {
-
+        
+        telemetry_element_table[93] = {
+        
                           telemetry_element_type: 0x07,
                           telemetry_element_group_and_name:"",
                           telemetry_element_group:  "stateEstimate",
                           telemetry_element_name:    "y",
-                          telemetry_element_id:     63
-
+                          telemetry_element_id:     93
+        
                                   }
-
-        telemetry_element_table[64] = {
-
+        
+        telemetry_element_table[94] = {
+        
                           telemetry_element_type: 0x07,
                           telemetry_element_group_and_name:"",
                           telemetry_element_group:  "stateEstimate",
                           telemetry_element_name:    "z",
-                          telemetry_element_id:     64
-
+                          telemetry_element_id:     94
+        
                                   }
-
-        telemetry_element_table[92] = {
-
+        
+        telemetry_element_table[122] = {
+        
                             telemetry_element_type: 0x07,
                             telemetry_element_group_and_name:"",
                             telemetry_element_group:  "controller",
                             telemetry_element_name:    "yaw",
-                            telemetry_element_id:     92
-
+                            telemetry_element_id:     122
+        
                                     }
-
-        telemetry_element_table[100] = {
-
+        
+        telemetry_element_table[13] = {
+        
                             telemetry_element_type: 0x07,
                             telemetry_element_group_and_name:"",
                             telemetry_element_group:  "pm",
                             telemetry_element_name:    "vbat",
-                            telemetry_element_id:     100
-
+                            telemetry_element_id:     13
+        
                                     }
-
-
-        prefered_telemetry_table = [62,63,64,92,100];
-
+        
+        
+        prefered_telemetry_table = [92,93,94,122,13];
+        
         telemetry_object.telemetry_element_table  = telemetry_element_table;
         telemetry_object.prefered_telemetry_table = prefered_telemetry_table;
-
+        
          resolve(telemetry_object);
 
     });
@@ -1469,6 +1474,9 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
                   dv.setFloat32(6,y_coord,true);
                   dv.setFloat32(10,height,true);
                   dv.setFloat32(14,yaw,true);
+
+                 //dv.setFloat32(10,yaw,true);
+                 //dv.setFloat32(14,height,true);
 
 
                 Crazyradio.sendPacket(packet).then(result => {

@@ -15,6 +15,44 @@ setOptionsON.cts=false;
 setOptionsON.dsr=false;
 var pls_no_nano=false;
 
+var UNO_FIRM_TIMEOUT = 3000;
+
+var import_firm_settings = function(){
+
+  try {
+
+      const data = node_fs.readFileSync('settings.json')
+      console.log(data.toString());
+
+      try {
+
+          let json = JSON.parse(data);
+
+          if (typeof(json) !== 'undefined'){
+
+
+              UNO_FIRM_TIMEOUT     = Math.floor(Number(json.firmware_flasher_nano_detect_timeout))||3000;
+
+                console.warn(` UNO_FLAHER_TIMEOUT: ${UNO_FIRM_TIMEOUT}`);
+          }
+
+
+
+      } catch (e) {
+
+          console.error(e)
+      }
+
+
+
+      } catch (err) {
+
+      console.error(err)
+
+      }
+
+}
+
 const flash_firmware = function(port_path,print_status,config){
   var THEEND = false;
   console.warn("START_FLASHING!");
@@ -194,6 +232,8 @@ var ROFL = function(err,ports){
   }
 }
 
+import_firm_settings();
+
 _serialport.list(ROFL);
 
   //   chrome.serial.connect(port_path, {bitrate: bitrate}, onConnect);
@@ -294,7 +334,7 @@ function stk500_upload(heximage) {
 						if(UNO)
 						{
             console.log("waiting for UNOTIME");
-						unotime = setTimeout(()=>{ print_status(LOG + "No DeviceID, its UNO");qport.close(()=>{qport.open(onConnect);});},3000);
+						unotime = setTimeout(()=>{ print_status(LOG + "No DeviceID, its UNO");qport.close(()=>{qport.open(onConnect);});},UNO_FIRM_TIMEOUT);
             }
           }
         }

@@ -80,6 +80,8 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
 
     this.init_all();
 
+    this.lab_sensor_types = [];
+
    this.lab_status_change_callback = () => {};
 
     this.stopSearchProcess();
@@ -105,7 +107,7 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
       this.digital_pins_states = ['off','off','off','off','off','off'];
       this.digital_pins_bit_mask = 0;
 
-      this.lab_sensor_types = [];
+      //this.lab_sensor_types = [];
 
       this.dataRecieveTime = 0;
 
@@ -872,15 +874,17 @@ getSensorData(sensor_name:string):number{
 
                       case "temperature":
 
-                        if ([1,2].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1){
+                        if ([1,2,4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1){
 
                               return Math.round((this.SensorsData[`a${pin*2}`] * 256 + this.SensorsData[`a${pin*2 + 1}`]) *  0.244379276637341153);
 
-                        }else if([4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1){
-
-                              return Math.round((this.SensorsData[`a${2}`] * 256 + this.SensorsData[`a${3}`]) *  0.244379276637341153);
-
-                        }else{
+                        }
+                        // else if([4].indexOf(this.ConnectedLaboratories[0].getDeviceID()) != -1){
+                        //
+                        //       return Math.round((this.SensorsData[`a${2}`] * 256 + this.SensorsData[`a${3}`]) *  0.244379276637341153);
+                        //
+                        // }
+                        else{
 
                                 return this.SensorsData[`a${pin*2}`] * 256 + this.SensorsData[`a${pin*2 + 1}`];
 
@@ -936,22 +940,22 @@ getSensorData(sensor_name:string):number{
 
                 var light_value;
 
-                  if (this.ConnectedLaboratories[0].getDeviceID() == 4){
+                if (this.ConnectedLaboratories[0].getDeviceID() == 4){
 
-
-                      light_value =    Math.abs(Math.round((this.SensorsData.a8*256 + this.SensorsData.a9 ) / 1023 * 100));
+                  light_value = Math.abs(Math.round((this.SensorsData.a8*256 + this.SensorsData.a9 ) / 1023 * 100));
 
                   }else{
 
-                      light_value =  Math.round(1.34 * this.SensorsData.a9);
-
+                  if((this.SensorsData.a8*256 + this.SensorsData.a9)>62)
+                  light_value = Math.round(Math.log(this.SensorsData.a8*256 + this.SensorsData.a9)*15);
+                  else light_value=this.SensorsData.a8*256 + this.SensorsData.a9;
                   }
 
-                  if(light_value> 100){
+                  if(light_value > 100){
 
-                     light_value = 100;
+                  light_value = 100;
 
-                   }
+                  }
 
                   return light_value;
 
