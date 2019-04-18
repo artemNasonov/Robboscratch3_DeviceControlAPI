@@ -324,6 +324,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
     this.a_can_send = true;
 
+    this.a_command_queue_blocked = false;
+
 
   }
 
@@ -721,6 +723,11 @@ export default class RobotControlAPI extends DeviceControlAPI {
   if(blue_corrected > red_corrected && blue_corrected > green_corrected){
      Kb -= 0.02
   }
+
+  /*
+      При цвет = 255, коэф = 0.33. Домножаем на 3, чтобы сохранить оригинальное значение. 
+
+  */
 
    red_corrected   = red * Kr * 3;
    green_corrected = green * Kg * 3;
@@ -1476,6 +1483,34 @@ turnLedOff(led_position:number,robot_number:number){
 
   }
 
+  block_A_CommandQueue(){
+
+    this.a_command_queue_blocked = true;
+
+  }
+
+  unblock_A_CommandQueue(){
+
+    this.a_command_queue_blocked = false;
+
+  }
+
+  isRobotReadyToSendCommand(){
+
+    if (typeof(this.ConnectedRobots[0]) !== 'undefined'){
+
+         return this.ConnectedRobots[0].isReadyToSendCommand();
+
+    }else{
+
+        return true;
+
+    }
+
+     
+
+  }
+
   registerRobotIsScratchduinoCallback(robot_is_scratchduino_cb:any){
 
     this.robot_is_scratchduino_callbacks.push(robot_is_scratchduino_cb);
@@ -1545,7 +1580,7 @@ turnLedOff(led_position:number,robot_number:number){
   if (this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
 
-    if (this.ConnectedRobots[0].isReadyToSendCommand()){
+    if ( (this.ConnectedRobots[0].isReadyToSendCommand()) && (!this.a_command_queue_blocked)  ) {
 
 
     //   console.log("runDataRecieveCommand");

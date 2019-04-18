@@ -25,6 +25,11 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
       this.dataRecieveTimeout = null;
 
+      this.need_to_init_telemetry_delta = false;
+
+      this.telemetry_x_delta = 0;
+      this.telemetry_y_delta = 0;
+
 
    }
 
@@ -32,6 +37,8 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
    searchQuadcopterDevices(){
 
      this.searching_in_progress = true;
+
+     this.need_to_init_telemetry_delta = true;
 
      //this.move_to_coords_interval  = null;
 
@@ -902,6 +909,14 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
  //console.log(`Quadcopter telemetry  data z: ${this.telemetryData.z} `);
 
+  if (this.need_to_init_telemetry_delta){
+
+      this.need_to_init_telemetry_delta = false;
+
+      this.telemetry_x_delta = Number(this.telemetryData.x.toFixed(7));
+      this.telemetry_y_delta = Number(this.telemetryData.y.toFixed(7));
+  }
+
 
   }
 
@@ -1545,6 +1560,161 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   }
 
+  get_x_telemetry_delta(){
+
+    return this.telemetry_x_delta;
+  }
+
+  get_y_telemetry_delta(){
+
+    return this.telemetry_y_delta;
+  }
+
+
+
+  telemetry_palette_get_coord(coord){
+
+    switch (coord) {
+
+      case "X":
+
+      let x_coord = 0;
+
+      if (typeof(this.telemetryData) != 'undefined'){
+
+        if (typeof(this.telemetryData.x) != 'undefined'){
+
+          if (this.telemetry_x_delta > 0){
+
+              if (this.telemetryData.x > 0){
+
+                 x_coord = this.telemetryData.x - this.telemetry_x_delta;
+
+              }else{
+
+                    x_coord = this.telemetryData.x - this.telemetry_x_delta;
+
+              }
+
+              
+
+          }
+          //   else{ //this.telemetry_x_delta < 0
+
+          //       if (this.telemetryData.x > 0){
+
+          //        x_coord = this.telemetryData.x + this.telemetry_x_delta;
+
+          //     }else{
+
+          //           x_coord = this.telemetryData.x - this.telemetry_x_delta;
+
+          //     }
+
+          // }
+           
+            x_coord = x_coord.toFixed(7);
+
+        }
+
+      }
+
+        return x_coord;
+
+        break;
+
+      case "Y":
+
+      let y_coord = 0;
+
+      if (typeof(this.telemetryData) != 'undefined'){
+
+        if (typeof(this.telemetryData.y) != 'undefined'){
+
+             if (this.telemetry_y_delta > 0){
+
+              if (this.telemetryData.y > 0){
+
+                 y_coord = this.telemetryData.y - this.telemetry_y_delta;
+
+              }else{
+
+                    y_coord = this.telemetryData.y - this.telemetry_y_delta;
+
+              }
+
+              
+
+          }
+          //   else{ //this.telemetry_y_delta < 0
+
+          //       if (this.telemetryData.y > 0){
+
+          //        y_coord = this.telemetryData.y + this.telemetry_y_delta;
+
+          //     }else{
+
+          //           y_coord = this.telemetryData.y - this.telemetry_y_delta;
+
+          //     }
+
+          // }
+          
+            y_coord = y_coord.toFixed(7);
+
+
+        }
+
+      }
+
+      return y_coord;
+
+          break;
+
+      case "Z":
+
+      let z_coord = 0;
+
+      if (typeof(this.telemetryData) != 'undefined'){
+
+        if (typeof(this.telemetryData.z) != 'undefined'){
+
+            z_coord = this.telemetryData.z.toFixed(7);
+
+        }
+
+      }
+
+      return z_coord;
+
+      case "W":
+
+      let yaw = 0;
+
+      if (typeof(this.telemetryData) != 'undefined'){
+
+        if (typeof(this.telemetryData.yaw) != 'undefined'){
+
+            yaw = this.telemetryData.yaw.toFixed(7);
+
+        }
+
+      }
+
+      return yaw;
+
+            break;
+
+      default:
+
+      return 0;
+
+    }
+
+
+  }
+
+
   /*
     X , Y, Z, W
 
@@ -1632,19 +1802,54 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
   }
 
-  get_battery_level(){
+   get_battery_level(){
 
   //  console.log(`Quadcopter get_battery_level()`);
 
 
     let bat_level = 0;
 
+    const max_bat_level_real = 4.2;
+    const min_bat_level = 2.2; //3.7
+
+    const max_bat_level_fake = max_bat_level_real - min_bat_level;
+
+    let current_bat_level = 0;
+
     if (typeof(this.telemetryData) != 'undefined'){
 
       if (typeof(this.telemetryData.vbat) != 'undefined'){
 
-          bat_level = this.telemetryData.vbat.toFixed(7);
+          //bat_level = this.telemetryData.vbat.toFixed(7); //вольты
 
+
+          current_bat_level =this.telemetryData.vbat;
+          bat_level = Math.round((current_bat_level - min_bat_level) / max_bat_level_fake * 100); //проценты от min до max
+
+          bat_level = (bat_level < 0)?0:bat_level;
+          bat_level = (bat_level > 100)?100:bat_level;
+
+      }
+
+    }
+        return bat_level;
+  }
+
+
+
+  get_battery_level_raw(){
+
+   //  console.log(`Quadcopter get_battery_level()`);
+
+    let bat_level = 0;
+
+   if (typeof(this.telemetryData) != 'undefined'){
+
+      if (typeof(this.telemetryData.vbat) != 'undefined'){
+
+          bat_level = this.telemetryData.vbat.toFixed(3);  //toFixed(7)
+
+         
       }
 
     }

@@ -16,6 +16,7 @@ setOptionsON.dsr=false;
 var pls_no_nano=false;
 
 var UNO_FIRM_TIMEOUT = 3000;
+var FIRMWARE_BLOCK_TRANSMIT_DELAY = 100;
 
 var import_firm_settings = function(){
 
@@ -31,9 +32,10 @@ var import_firm_settings = function(){
           if (typeof(json) !== 'undefined'){
 
 
-              UNO_FIRM_TIMEOUT     = Math.floor(Number(json.firmware_flasher_nano_detect_timeout))||3000;
+              UNO_FIRM_TIMEOUT                  = Math.floor(Number(json.firmware_flasher_nano_detect_timeout))||3000;
+              FIRMWARE_BLOCK_TRANSMIT_DELAY     = Math.floor(Number(json.firmware_block_transmit_delay))||100;
 
-                console.warn(` UNO_FLAHER_TIMEOUT: ${UNO_FIRM_TIMEOUT}`);
+                console.warn(`UNO_FLAHER_TIMEOUT: ${UNO_FIRM_TIMEOUT} FIRMWARE_BLOCK_TRANSMIT_DELAY: ${FIRMWARE_BLOCK_TRANSMIT_DELAY}`);
           }
 
 
@@ -133,6 +135,7 @@ var options={
  stopBits: 1,
  flowControl: false,
  autoOpen: false  };
+
  var oneshot = 0;
  var timer = 0;
  var two_dots = false;
@@ -143,6 +146,21 @@ var options={
  var iDeviceID = -1;
  var iFirmwareVersion;
  var wait_for_sync= false;
+
+var STEP_STATES =  {
+
+  "INITIAL":0,
+  "DIAGNOSTICS_STARTED":1,
+  "DIAGNOSTICS_FINISHED":2,
+  "FIRMWARE_STARTED":3,
+  "FIRMWARE_FINISHED":4,
+  "ALL_FINISHED_SUCCESS":5,
+  "ALL_FINISHED_ERROR":6
+
+}
+
+var step = STEP_STATES["INITIAL"];
+
   console.log(`flash_firmware ${port_path}`);
   const LOG = "[" + port_path + "] ";
 var dummy = function() {}
@@ -170,6 +188,7 @@ var onConnect = function(){
                          print_status(LOG+"Start downloading firmware for uno(115200)");
                          console.log(LOG+"Start downloading firmware for uno");
                          THEEND=true;
+                         step = STEP_STATES["FIRMWARE_STARTED"];
                          fixHex();
                        });
                      }
@@ -179,6 +198,7 @@ var onConnect = function(){
                        print_status(LOG+"Start downloading firmware for nano(57600)");
                        console.log(LOG+"Start downloading firmware for nano(57600)");
                        THEEND=true;
+                       step = STEP_STATES["FIRMWARE_STARTED"];
                        fixHex();
                       });
                      }
@@ -198,6 +218,7 @@ var onConnect = function(){
                      hexfileascii = firmwares["diagnoz"];
                      UNO = false;
                      stilluno = true;
+                     step = STEP_STATES["DIAGNOSTICS_STARTED"];
                      fixHex();
                    }
                    else{
@@ -209,6 +230,7 @@ var onConnect = function(){
                        console.log(LOG+"Start downloading diagnostic for nano");
                        print_status(LOG+"Start downloading diagnostic for nano(57600)");
                        hexfileascii = firmwares["diagnostics"];
+                       step = STEP_STATES["DIAGNOSTICS_STARTED"];
                        fixHex();
                      });
                    }
@@ -266,6 +288,7 @@ function stk500_program() {
           if(result!=null){
           print_status("DTR on Error:" + result);
           console.log(LOG +  "Bad END");
+          step = STEP_STATES["ALL_FINISHED_ERROR"];
           qport.close(()=>{print_status(LOG + "Error! PLS reload RS and try again");});
         }
           else
@@ -288,7 +311,7 @@ function stk500_upload(heximage) {
         var currentbyte = blocksize * b;
         var block = heximage.substr(currentbyte,blocksize);
         /* console.log("Block "+b+" starts at byte "+currentbyte+": "+block) */
-        stk500_prgpage(flashblock,block,100);//250
+        stk500_prgpage(flashblock,block,FIRMWARE_BLOCK_TRANSMIT_DELAY);//250 //100 
         flashblock = flashblock + 64;
     }
     ////////////////////////////////////////////////////////////////////////////////////////////baud
@@ -302,10 +325,12 @@ function stk500_upload(heximage) {
        qport.update(options, success => {
         Oh_NO = setTimeout(()=>{
           console.log(LOG +  "Bad END");
+          step = STEP_STATES["ALL_FINISHED_ERROR"];
           qport.close(()=>{print_status(LOG + "Error! PLS reload RS and try again");});
         },10000);
        console.log(LOG +  "Baud for connection set back to your anus(38400) becourse still uno");
        print_status(LOG + "Waiting for DeviceID on (38400)");
+       step = STEP_STATES["FIRMWARE_FINISHED"];
        });
        console.log("onReceiveCallback addded");
        qport.on("data",onReceiveCallback);
@@ -314,15 +339,20 @@ function stk500_upload(heximage) {
        if(THEEND){
 
                     console.log(LOG +  "END");
+                    step = STEP_STATES["ALL_FINISHED_SUCCESS"];
                     qport.close(()=>{print_status(LOG + "END. Port closed");});
                     //     setTimeout(function (){reset();},1000);
                   }
                   else{
         print_status(LOG + "Waiting for DeviceID on (115200)");//
         options.baudRate = 115200;
+        step = STEP_STATES["FIRMWARE_FINISHED"];
         qport.update(options, (success) =>{
-        if(success!=null)
-        console.error("ERR: " + success);
+        if(success!=null){
+          step = STEP_STATES["ALL_FINISHED_ERROR"];
+          console.error("ERR: " + success);
+        }
+        
         console.log(LOG +  "Baud for connection set back to your anus(115200)");
       //  print_status(LOG + "Baud for connection set  to 115200");
 
@@ -471,6 +501,8 @@ var onReceiveCallback = function(info){
 
         //  purgePort();
 
+    if ( (step != STEP_STATES["DIAGNOSTICS_STARTED"]) || (step != STEP_STATES["ALL_FINISHED_SUCCESS"]) || (step != STEP_STATES["ALL_FINISHED_ERROR"])  ) {
+
         if (typeof(iDeviceID) != 'undefined')
         {
           if (!isNaN(iDeviceID))
@@ -481,14 +513,18 @@ var onReceiveCallback = function(info){
 	             clearTimeout(unotime);
                qport.flush((err)=>{qport.close(()=>{qport.open(onConnect);})});
 
-   }
-   else
-   console.log(LOG + "Nan");
-   }
-  }
-  else {
-    console.log(LOG + "hui tebe a ne seriinik");
-  }
+            }
+            else {
+                console.log(LOG + "Nan");
+            }
+   
+          }
+        }
+        else {
+          console.log(LOG + "hui tebe a ne seriinik");
+        }
+
+    }  
   }
   else {
   //  console.warn("shiiiiiii");
