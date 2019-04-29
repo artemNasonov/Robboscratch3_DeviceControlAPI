@@ -1613,7 +1613,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
           // }
            
-            x_coord = x_coord.toFixed(7);
+            x_coord = x_coord.toFixed(2);
 
         }
 
@@ -1659,8 +1659,10 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
           //     }
 
           // }
+
+            y_coord = y_coord * (-1); //Invert y axis;
           
-            y_coord = y_coord.toFixed(7);
+            y_coord = y_coord.toFixed(2);
 
 
         }
@@ -1679,7 +1681,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
         if (typeof(this.telemetryData.z) != 'undefined'){
 
-            z_coord = this.telemetryData.z.toFixed(7);
+            z_coord = this.telemetryData.z.toFixed(2);
 
         }
 
@@ -1695,7 +1697,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
 
         if (typeof(this.telemetryData.yaw) != 'undefined'){
 
-            yaw = this.telemetryData.yaw.toFixed(7);
+            yaw = this.telemetryData.yaw.toFixed(2);
 
         }
 
@@ -1810,7 +1812,7 @@ export default class QuadcopterControlAPI extends DeviceControlAPI {
     let bat_level = 0;
 
     const max_bat_level_real = 4.2;
-    const min_bat_level = 2.2; //3.7
+    const min_bat_level = 2.9; //3.7 //2.2
 
     const max_bat_level_fake = max_bat_level_real - min_bat_level;
 

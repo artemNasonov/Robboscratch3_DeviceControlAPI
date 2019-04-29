@@ -180,7 +180,9 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       }
 
-      this.color_P_initial = 0;
+      //this.color_P_initial = 0;
+
+      this.color_P_initial_list = [0,0,0,0,0];
 
       // this.leftPath     = 0;
       // this.leftPathNew  = 0;
@@ -673,6 +675,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       if ( typeof(this.SensorsData) != 'undefined' ){
 
+        //console.warn(`colorAutoCorection sensor_id: ${sensor_id}`);
+
   let rgb_array = this.SensorsData[`a${sensor_id}`];
 
   let red    = rgb_array[1];
@@ -747,14 +751,14 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
 
 
- //  console.warn(`colorAutoCorection: sensor_id: ${sensor_id} red: ${red} green: ${green} blue: ${blue}`);
- //  console.warn(`colorAutoCorection: sensor_id: ${sensor_id} Kr: ${Kr} Kg: ${Kg} Kb: ${Kb}`);
- //
- //  console.warn(`red_corrected: ${red_corrected} green_corrected: ${green_corrected} blue_corrected: ${blue_corrected}`);
- //
- // console.warn(`Kr_in_percent: ${Kr_in_percent} Kg_in_percent: ${Kg_in_percent} Kb_in_percent: ${Kb_in_percent}`);
- //
- // console.warn(`percent_sum: ${percent_sum} `);
+//   console.warn(`colorAutoCorection: sensor_id: ${sensor_id} red: ${red} green: ${green} blue: ${blue}`);
+//   console.warn(`colorAutoCorection: sensor_id: ${sensor_id} Kr: ${Kr} Kg: ${Kg} Kb: ${Kb}`);
+ 
+//   console.warn(`red_corrected: ${red_corrected} green_corrected: ${green_corrected} blue_corrected: ${blue_corrected}`);
+ 
+//  console.warn(`Kr_in_percent: ${Kr_in_percent} Kg_in_percent: ${Kg_in_percent} Kb_in_percent: ${Kb_in_percent}`);
+ 
+//  console.warn(`percent_sum: ${percent_sum} `);
 
   this.colorKoefs[sensor_id].Kr = Kr;
   this.colorKoefs[sensor_id].Kg = Kg;
@@ -762,7 +766,9 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
 //  this.color_P_initial  = red * Kr * 3 + green * Kg * 3 + blue * Kb * 3;
 
-    this.color_P_initial  = rgb_sum;
+    this.color_P_initial_list[sensor_id] = rgb_sum;
+
+    //this.color_P_initial  = rgb_sum;
 
 }
 
@@ -1012,7 +1018,7 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
                   let red     =  Math.floor(red_channel_percent * 1000);
                   let green   =  Math.floor(green_channel_percent * 1000);
                   let blue    =  Math.floor(blue_channel_percent * 1000);
-                  let bright  =  Math.floor(sum / this.color_P_initial  * 100  * 1000);
+                  let bright  =  Math.floor(sum / this.color_P_initial_list[sensor_id]  * 100  * 1000);
 
                   let red_low   =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"low") * 1000);
                   let red_high  =   Math.floor(getColorFilterTableValue(this.colorFilterTable[sensor_id][color].R,"high") * 1000);
