@@ -195,7 +195,7 @@ registerOttoStatusChangeCallback(otto_status_change_cb:any){
 
 runDataRecieveCommand(device:InterfaceDevice){
   if ((typeof(this.ConnectedOttos[0])!='undefined') &&this.ConnectedOttos[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
-    if (this.ConnectedOttos[0].isReadyToSendCommand()){
+    if (this.ConnectedOttos[0].isReadyToAcceptCommand()){
        this.ConnectedOttos[0].command(DEVICES[this.ConnectedOttos[0].getDeviceID()].commands.check, [], (response) => {
            this.SensorsData = response;
              this.dataRecieveTime = Date.now();

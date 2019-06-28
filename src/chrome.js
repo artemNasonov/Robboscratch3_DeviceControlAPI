@@ -1584,7 +1584,7 @@ function InterfaceDevice(port){
 
    }
 
-   this.isReadyToSendCommand = function (){
+   this.isReadyToAcceptCommand = function (){
 
       return (commandToRun == null);
 

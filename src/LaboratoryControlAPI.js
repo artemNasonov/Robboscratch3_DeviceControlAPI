@@ -1067,7 +1067,7 @@ runDataRecieveCommand(device:InterfaceDevice){
 
   if (device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-      if (this.ConnectedLaboratories[0].isReadyToSendCommand()){
+      if (this.ConnectedLaboratories[0].isReadyToAcceptCommand()){
 
 
       //  console.log("runDataRecieveCommand laboratory");

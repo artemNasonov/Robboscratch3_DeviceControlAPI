@@ -184,7 +184,7 @@ registerArduinoStatusChangeCallback(arduino_status_change_cb:any){
 
 runDataRecieveCommand(device:InterfaceDevice){
   if ((typeof(this.ConnectedArduinos[0])!='undefined') &&this.ConnectedArduinos[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
-    if (this.ConnectedArduinos[0].isReadyToSendCommand()){
+    if (this.ConnectedArduinos[0].isReadyToAcceptCommand()){
        this.ConnectedArduinos[0].command(DEVICES[this.ConnectedArduinos[0].getDeviceID()].commands.check, [], (response) => {
            this.SensorsData = response;
              this.dataRecieveTime = Date.now();

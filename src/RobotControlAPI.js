@@ -1513,11 +1513,11 @@ turnLedOff(led_position:number,robot_number:number){
 
   }
 
-  isRobotReadyToSendCommand(){
+  isRobotReadyToAcceptCommand(){
 
     if (typeof(this.ConnectedRobots[0]) !== 'undefined'){
 
-         return this.ConnectedRobots[0].isReadyToSendCommand();
+         return this.ConnectedRobots[0].isReadyToAcceptCommand();
 
     }else{
 
@@ -1598,7 +1598,7 @@ turnLedOff(led_position:number,robot_number:number){
   if (this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
 
-    if ( (this.ConnectedRobots[0].isReadyToSendCommand()) && (!this.a_command_queue_blocked)  ) {
+    if ( (this.ConnectedRobots[0].isReadyToAcceptCommand()) && (!this.a_command_queue_blocked)  ) {
 
 
     //   console.log("runDataRecieveCommand");
