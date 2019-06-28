@@ -328,6 +328,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
     this.a_command_queue_blocked = false;
 
+    this.a_command_queue_restore_timeout = null;
+
 
   }
 
@@ -1074,7 +1076,7 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
   setRobotPower(leftMotorPower:number,rightMotorPower:number,robot_number:number):void{
 
 
- //console.log(`setRobotPower leftMotorPower: ${leftMotorPower} rightMotorPower: ${rightMotorPower} `);
+  //console.log(`setRobotPower leftMotorPower: ${leftMotorPower} rightMotorPower: ${rightMotorPower} `);
 
  if ((this.ConnectedRobots.length - 1) >= robot_number ){
 
@@ -1082,6 +1084,8 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
    if( [0,3].indexOf(this.ConnectedRobots[0].getDeviceID())!=-1  && this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
   //   console.log("setRobotPower send command");
+
+     clearTimeout(this.a_command_queue_restore_timeout);
 
      this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.power, [leftMotorPower, rightMotorPower], (response) => {
 
@@ -1492,6 +1496,14 @@ turnLedOff(led_position:number,robot_number:number){
   block_A_CommandQueue(){
 
     this.a_command_queue_blocked = true;
+
+    clearTimeout(this.a_command_queue_restore_timeout);
+
+    this.a_command_queue_restore_timeout = setTimeout(() => {
+
+         this.a_command_queue_blocked = false;
+
+    },1000);
 
   }
 

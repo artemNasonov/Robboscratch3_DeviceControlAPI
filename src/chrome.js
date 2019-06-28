@@ -982,6 +982,7 @@ function InterfaceDevice(port){
    var recieveListener;
    var bitrate = 115200;
    var uport;
+   var old_command = '';
 
    var DEVICE_STATE_CHECK_INTERVAL;
 
@@ -1100,7 +1101,7 @@ function InterfaceDevice(port){
             callback(response);
             recieve_time1 = Date.now();
             recieve_time_delta = recieve_time1 - recieve_time2;
-        //    console.log("time delta recieve: " + recieve_time_delta);
+            //console.warn("time delta recieve: " + recieve_time_delta);
 
             // NO_RESPONSE = setTimeout(()=>{
             //    console.error(LOG+"Ouuu...NO RESPONSE!");
@@ -1593,6 +1594,20 @@ function InterfaceDevice(port){
     //  if(commandToRun != null) return;
     //  commandToRun = command;
 
+  //  if (command.code == "c"){
+
+  //       // console.warn(`command func`);
+        
+
+  //     }
+
+   if ((command.code == "a") && (old_command == "c")){
+
+     // console.warn("skip redundant a command");
+      old_command = "a";
+      return;
+   }
+
 
     var fCallback = fCallback;
 
@@ -1626,6 +1641,8 @@ function InterfaceDevice(port){
                 for (let i = 0; i<cmd_obj.params.length;i++){
 
                   should_kill_command = (cmd_obj.params[i]==params[i])?true:false;
+
+                  if (!should_kill_command) break;
 
                 }
 
@@ -1695,6 +1712,8 @@ function InterfaceDevice(port){
                   for (let i = 0; i<command_object.params.length;i++){
 
                     should_kill_command = (command_object.params[i]==params[i])?true:false;
+                    
+                    if (!should_kill_command) break;
 
                   }
 
@@ -1799,7 +1818,20 @@ function InterfaceDevice(port){
 
     //  chrome.serial.send(iConnectionId, buf, onSend);
     //const _serialport = require('serialport');
-    //  console.log(`sending command: ${command_local.code}`)
+
+
+    old_command = command_local.code;
+
+     // time2 = Date.now();
+     
+     // if (command_local.code == "c"){
+
+       //  console.warn(`sending command: ${command_local.code} ${params_local[0]}`);
+       //  console.warn(`time delta: ${time2 - time1}`);
+
+   //   }
+     
+  //    time1 = Date.now();
 
       //for #
       var iWaitingNew = 1;
