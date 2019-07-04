@@ -884,12 +884,12 @@ const commands_list_arduino= {//modified_by_kpk
                     }
 }
 
-const last_firmwares =[9,5,2,3,1,2,0,7];
+const last_firmwares =[10,5,2,3,1,2,0,7];
 
 const DEVICES = Object.freeze({
    //Basic Robot
    0:{
-      "firmware":9,
+      "firmware":10,
       "commands":commands_list_robot
    },
    //Old Robot

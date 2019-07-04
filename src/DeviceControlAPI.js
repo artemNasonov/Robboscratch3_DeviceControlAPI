@@ -12,6 +12,8 @@ export default  class DeviceControlAPI {
       this.onErrorCb = () => {};
       this.onFirmwareVersionDiffersCb =   () => {};
 
+      this.onDevicesNotFoundCb = () => {};
+
     }
 
 
@@ -20,6 +22,11 @@ export default  class DeviceControlAPI {
         //var devices = [];
 
             searchDevices((devices) => {
+
+              if (devices.length == 0){
+
+                this.onDevicesNotFoundCb();
+              }
 
               for (let index = 0; index < devices.length; index++){
 
@@ -53,6 +60,16 @@ export default  class DeviceControlAPI {
 
         }
 
+
+      }
+
+      registerDevicesNotFoundCallback(cb){
+
+         if (typeof(cb) == 'function'){
+
+             this.onDevicesNotFoundCb = cb;
+
+        }
 
       }
 
