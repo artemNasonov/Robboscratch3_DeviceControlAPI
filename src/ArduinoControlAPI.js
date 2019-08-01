@@ -358,6 +358,21 @@ curse(str,stlb)
            });
          }
 }
+
+play_sound(note,dur,pin){
+
+   if((typeof(this.ConnectedArduinos[0])!='undefined') &&[6].indexOf(this.ConnectedArduinos[0].getDeviceID()) != -1 && this.ConnectedArduinos[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+    this.ConnectedArduinos[0].command(DEVICES[this.ConnectedArduinos[0].getDeviceID()].commands.he,[Number(note)%256, Number(Math.floor(Number(note)/256)*16)+Number(dur), Number(pin)], (response) => {
+      
+      this.SensorsData = response;
+      this.dataRecieveTime = Date.now();
+           
+    });
+         
+  }
+
+}
+
 set_text(str)
 {
   let a=0;

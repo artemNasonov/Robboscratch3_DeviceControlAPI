@@ -596,7 +596,7 @@ const commands_list_arduino= {//modified_by_kpk
             },
             "he":{
                   "code":"h",
-                  "params":[],
+                  "params":["ubyte","ubyte","ubyte"],
                   "response":{
                       "a0":"ubyte",
                       "a1":"ubyte",
@@ -999,6 +999,9 @@ function InterfaceDevice(port){
 
       if(data)
       {
+
+        //console.log("onRecieveCallback");
+
            clearTimeout(NO_RESPONSE);
          var buf = new Uint8Array(data);
       //   console.log(LOG + "CALLBACK!!! bytes recieved length <- " + buf.length);
@@ -1101,7 +1104,7 @@ function InterfaceDevice(port){
             callback(response);
             recieve_time1 = Date.now();
             recieve_time_delta = recieve_time1 - recieve_time2;
-            //console.warn("time delta recieve: " + recieve_time_delta);
+         //   console.log("time delta recieve: " + recieve_time_delta);
 
             // NO_RESPONSE = setTimeout(()=>{
             //    console.error(LOG+"Ouuu...NO RESPONSE!");
@@ -1296,6 +1299,15 @@ function InterfaceDevice(port){
              can_check_serial_after_flush = false;
        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       qport.on("data",onReceiveCallback);
+
+
+    // qport.on('readable', () => {
+    //     let chunk;
+    //     while (null !== (chunk = qport.read())) {
+    //       console.warn(`Received ${chunk.length} bytes of data.`);
+    //     }
+    //   });
+
       //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       state = DEVICE_STATES["DEVICE_CHECKING"];
       setTimeout(checkSerialNumber, 300);
@@ -1584,6 +1596,17 @@ function InterfaceDevice(port){
 
    }
 
+   this.read_sync = function(){
+
+     return qport.read();
+   }
+
+   this.commandToRunSetNull = function(){
+
+      commandToRun = null;
+
+   }
+
    this.isReadyToAcceptCommand = function (){
 
       return (commandToRun == null);
@@ -1824,14 +1847,16 @@ function InterfaceDevice(port){
 
      // time2 = Date.now();
      
-     // if (command_local.code == "c"){
+     //if (command_local.code == "h"){
 
-       //  console.warn(`sending command: ${command_local.code} ${params_local[0]}`);
-       //  console.warn(`time delta: ${time2 - time1}`);
+        //console.warn(`sending command: ${command_local.code} ${params_local[0]}  ${params_local[1]}  ${params_local[2]}`);
+        //console.warn(`time delta: ${time2 - time1}`);
 
-   //   }
+   //  }
      
   //    time1 = Date.now();
+
+     // console.warn(`sending command: ${command_local.code} ${params_local[0]}`);
 
       //for #
       var iWaitingNew = 1;

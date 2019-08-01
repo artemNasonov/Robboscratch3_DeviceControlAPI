@@ -330,6 +330,8 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
     this.a_command_queue_restore_timeout = null;
 
+    this.isPowerCommandBlocked = false;
+
 
   }
 
@@ -1083,6 +1085,11 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
    if( [0,3].indexOf(this.ConnectedRobots[0].getDeviceID())!=-1  && this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
+     if ((rightMotorPower > 0) && (leftMotorPower > 0) && (this.isPowerCommandBlocked)){
+
+      return;
+     }
+
   //   console.log("setRobotPower send command");
 
      clearTimeout(this.a_command_queue_restore_timeout);
@@ -1344,6 +1351,19 @@ turnLedOff(led_position:number,robot_number:number){
 
   getSensorData(sensor_index:number){
 
+  
+
+    //  var data  = this.ConnectedRobots[0].read_sync();
+     
+
+    //  if (data != null){
+
+    //     console.warn(`read_sync data: ${data}`);
+    //     this.ConnectedRobots[0].commandToRunSetNull();
+
+    //  }
+          
+
       switch (this.sensors_array[sensor_index]) {
 
         case 1: //line
@@ -1493,6 +1513,18 @@ turnLedOff(led_position:number,robot_number:number){
 
   }
 
+  blockPowerCommand(){
+
+     this.isPowerCommandBlocked = true;
+  }
+
+  unblockPowerCommand(){
+
+     this.isPowerCommandBlocked = false;
+  }
+
+
+
   block_A_CommandQueue(){
 
     this.a_command_queue_blocked = true;
@@ -1609,6 +1641,8 @@ turnLedOff(led_position:number,robot_number:number){
        //      this.searching_in_progress = false;
 
        this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.check, [], (response) => {
+
+     // this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.power, [0, 0], (response) => {
 
 
            this.SensorsData = response;
