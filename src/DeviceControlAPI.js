@@ -10,9 +10,15 @@ export default  class DeviceControlAPI {
 
 
       this.onErrorCb = () => {};
-      this.onFirmwareVersionDiffersCb =   () => {};
+      this.onFirmwareVersionDiffersCbMap = {};
 
       this.onDevicesNotFoundCb = () => {};
+
+      this.onDeviceStatusChangeCbMap = {};
+
+      this.onDeviceFoundCb = () => {};
+
+      this.deviceList = [];
 
     }
 
@@ -23,6 +29,8 @@ export default  class DeviceControlAPI {
 
             searchDevices((devices) => {
 
+              this.deviceList = devices;
+
               if (devices.length == 0){
 
                 this.onDevicesNotFoundCb();
@@ -30,8 +38,49 @@ export default  class DeviceControlAPI {
 
               for (let index = 0; index < devices.length; index++){
 
-                  devices[index].registerFirmwareVersionDiffersCallback(this.onFirmwareVersionDiffersCb);
+                  devices[index].registerFirmwareVersionDiffersCallback( (result) => {
+
+
+                    let cb =  this.onFirmwareVersionDiffersCbMap[devices[index].getPortName()];
+
+                     if (typeof(cb) == 'function'){
+
+                       cb(result);
+
+                    }
+
+                     
+
+                  });
+
                   devices[index].registerErrorCallback(this.onErrorCb);
+                
+                  devices[index].registerDeviceStatusChangeCallback((state) => {
+
+                    let cb =  this.onDeviceStatusChangeCbMap[devices[index].getPortName()];
+
+                     if (typeof(cb) == 'function'){
+
+                       cb(state);
+
+                    }
+
+                  
+
+                  });
+
+
+                  let device = {
+
+                     // deviceSerial: devices[index].getShorterSerialNumber(),
+                      devicePort: devices[index].getPortName(),
+                       deviceId: devices[index].getDeviceID() 
+                     // deviceFirmwareVersion: devices[index].getFirmwareVersion()
+                  }
+
+                    //  console.warn("onDeviceFound");
+
+                     this.onDeviceFoundCb(device);
 
               }
 
@@ -41,11 +90,11 @@ export default  class DeviceControlAPI {
 
       }
 
-      registerFirmwareVersionDiffersCallback(cb){
+      registerFirmwareVersionDiffersCallback(port_name,cb){
 
         if (typeof(cb) == 'function'){
 
-             this.onFirmwareVersionDiffersCb = cb;
+             this.onFirmwareVersionDiffersCbMap[port_name] = cb;
 
         }
 
@@ -73,6 +122,26 @@ export default  class DeviceControlAPI {
 
       }
 
+      registerDeviceFoundCallback(cb){
+
+        if (typeof(cb) == 'function'){
+
+             this.onDeviceFoundCb = cb;
+
+        }
+
+      }
+
+       registerDeviceStatusChangeCallback(port_name,cb){
+
+         if (typeof(cb) == 'function'){
+
+             this.onDeviceStatusChangeCbMap[port_name] = cb;
+
+        }
+
+      }
+
       triggerLogging(){
 
 
@@ -94,6 +163,12 @@ export default  class DeviceControlAPI {
 
             search_ports(callback);
 
+      }
+
+      getDevices(){
+
+
+          return this.deviceList;
       }
 
 

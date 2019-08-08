@@ -343,7 +343,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
       this.stopDataRecievingProcess();
 
       this.searching_in_progress = true;
-      console.log("searching_in_progress = true i can autorecconect toje !!!!!!!!!!!!!!!!!JOAP!!!!!!!" + this.searching_in_progress);
+      //console.log("searching_in_progress = true i can autorecconect toje !!!!!!!!!!!!!!!!!JOAP!!!!!!!" + this.searching_in_progress);
       this.can_autoreconnect = true;
 
       if (this.robot_status_change_callback !== null){

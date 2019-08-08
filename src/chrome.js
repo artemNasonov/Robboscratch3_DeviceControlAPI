@@ -16,7 +16,7 @@ console.log = function(string){
         log(string);
   }
 }
-console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.4");
+console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.5");
 
 var import_settings = function(){
 
@@ -989,6 +989,7 @@ function InterfaceDevice(port){
  //callbacks
   var onErrorCb = () => {};
   var onFirmwareVersionDiffersCb =   () => {};
+  var onDeviceStatusChangeCb = () => {};
 
   }
 
@@ -1132,6 +1133,21 @@ function InterfaceDevice(port){
                 if ( (!isNaN(iDeviceID)) && (!isNaN(iFirmwareVersion)) && ( ( (sSerialNumber).startsWith("R") ) || ((sSerialNumber).startsWith("L")) ||((sSerialNumber).startsWith("O")) ||((sSerialNumber).startsWith("A"))  ) ) {
                         console.info(LOG + "device is ready.");
                         state = DEVICE_STATES["DEVICE_IS_READY"];
+
+                         
+                        if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+                            let result = {
+
+                                state:state,
+                                deviceId: iDeviceID
+                            }
+
+                          onDeviceStatusChangeCb(result);
+
+                    }
+
+
                         NO_START = setTimeout(()=>{qport.close(()=>{console.error(LOG+"FUCK, NO_START!");searchDevices()})},NO_START_TIMEOUT); //500
                         return;
                 }
@@ -1293,6 +1309,21 @@ function InterfaceDevice(port){
          }
            console.log(LOG + "connected.");
            state = DEVICE_STATES["CONNECTED"];
+
+           if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+                let result = {
+
+                    state:state,
+                    deviceId: iDeviceID
+                }
+
+               onDeviceStatusChangeCb(result);
+
+           }
+
+           
+
              bufIncomingData = new Uint8Array();
              iWaiting = 0;
              commandToRun = null;
@@ -1310,6 +1341,19 @@ function InterfaceDevice(port){
 
       //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       state = DEVICE_STATES["DEVICE_CHECKING"];
+
+      if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+                let result = {
+
+                    state:state,
+                    deviceId: iDeviceID
+                }
+
+               onDeviceStatusChangeCb(result);
+
+        }
+
       setTimeout(checkSerialNumber, 300);
      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
           clearTimeout(automaticStopCheckingSerialNumberTimeout);
@@ -1496,6 +1540,17 @@ function InterfaceDevice(port){
    if (typeof(cb) == 'function'){
 
         onErrorCb = cb;
+
+   }
+
+
+ }
+
+ this.registerDeviceStatusChangeCallback = function(cb){
+
+   if (typeof(cb) == 'function'){
+
+        onDeviceStatusChangeCb = cb;
 
    }
 
