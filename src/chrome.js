@@ -4,7 +4,8 @@ const DEVICE_SERIAL_NUMBER_LENGTH = 52;
 const NULL_COMMAND_TIMEOUT = 1 * 5 * 1000;
 const CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT = 500;
 
-var DEVICE_HANDLE_TIMEOUT = 1 * 10 * 1000;
+//var DEVICE_HANDLE_TIMEOUT = 1 * 10 * 1000;
+var DEVICE_HANDLE_TIMEOUT = 1 * 4 * 1000;
 var NO_RESPONSE_TIME = 3000;
 var NO_START_TIMEOUT = 1000;
 var UNO_TIMEOUT = 3000;
@@ -956,7 +957,7 @@ function InterfaceDevice(port){
    var state = DEVICE_STATES["INITED"];
    var previous_state = state;
    var bufIncomingData = new Uint8Array();
-   var iDeviceID;
+   var iDeviceID = -1;
    var iFirmwareVersion;
    var sSerialNumber;
    var iSerialNumberOffset;
@@ -1357,9 +1358,34 @@ function InterfaceDevice(port){
       setTimeout(checkSerialNumber, 300);
      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
           clearTimeout(automaticStopCheckingSerialNumberTimeout);
-          automaticStopCheckingSerialNumberTimeout =  setTimeout(function(){
-          console.error();("Stop checking serial number.");
-               isStopCheckingSerialNumber = true;
+
+          automaticStopCheckingSerialNumberTimeout =  setTimeout(() => {
+
+          console.warn("Stop checking serial number.");
+          
+          isStopCheckingSerialNumber = true;
+
+          if ((state != DEVICE_STATES["DEVICE_IS_READY"] ) && (state != DEVICE_STATES["DEVICE_ERROR"]) ){
+
+            state = DEVICE_STATES["TIMEOUT"];
+
+            if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+                let result = {
+
+                    state:state,
+                    deviceId: iDeviceID
+                }
+
+               onDeviceStatusChangeCb(result);
+
+             }
+
+
+          }
+
+         
+
            }  ,DEVICE_HANDLE_TIMEOUT);
    }
 
@@ -2023,7 +2049,8 @@ export  {
   pushConnectedDevices,
   DEVICES,
   DEVICE_STATES,
-  trigger_logging
+  trigger_logging,
+  DEVICE_HANDLE_TIMEOUT
 
 
 };
