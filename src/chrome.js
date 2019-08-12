@@ -984,6 +984,7 @@ function InterfaceDevice(port){
    var bitrate = 115200;
    var uport;
    var old_command = '';
+   var firmwareVersionDiffers = false;
 
    var DEVICE_STATE_CHECK_INTERVAL;
 
@@ -1034,6 +1035,26 @@ function InterfaceDevice(port){
         // }
 
          state = DEVICE_STATES["TIMEOUT"];
+
+        if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+                let error  = {};
+
+                error.code = 1;
+                error.msg = "";
+
+                let result = {
+
+                    state:state,
+                    deviceId: iDeviceID,
+                    error: error
+                }
+
+               onDeviceStatusChangeCb(result);
+
+             }
+
+        
      },NO_RESPONSE_TIME);
 
 
@@ -1147,6 +1168,12 @@ function InterfaceDevice(port){
                           onDeviceStatusChangeCb(result);
 
                     }
+
+                         if(last_firmwares[iDeviceID]!=iFirmwareVersion){//We don't need NO_START in this case. Conflicts with flashing. 
+
+                              return;
+
+                         }
 
 
                         NO_START = setTimeout(()=>{qport.close(()=>{console.error(LOG+"FUCK, NO_START!");searchDevices()})},NO_START_TIMEOUT); //500
@@ -1263,6 +1290,10 @@ function InterfaceDevice(port){
               console.error("BAD FLASH MF!!!");
               console.warn(last_firmwares[iDeviceID]+ "ot "+ iDeviceID + " = " + iFirmwareVersion + " lol");
 
+              firmwareVersionDiffers = true;
+
+             // clearTimeout(NO_START);
+
               if (onFirmwareVersionDiffersCb){
 
                 var result = {};
@@ -1305,6 +1336,24 @@ function InterfaceDevice(port){
                onErrorCb(error);
 
            }
+
+           if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+                let error  = {};
+
+                error.code = 2;
+                error.msg = err.message;
+
+                let result = {
+
+                    state:state,
+                    deviceId: iDeviceID,
+                    error: error
+                }
+
+               onDeviceStatusChangeCb(result);
+
+             }
 
            return console.error(LOG + 'Error opening port: '+err.message);
          }
@@ -1371,10 +1420,15 @@ function InterfaceDevice(port){
 
             if (typeof(onDeviceStatusChangeCb) == 'function'){
 
+              let error = {};
+              error.code = -1;
+              error.msg = "";
+
                 let result = {
 
                     state:state,
-                    deviceId: iDeviceID
+                    deviceId: iDeviceID,
+                    error:error
                 }
 
                onDeviceStatusChangeCb(result);
@@ -1687,6 +1741,11 @@ function InterfaceDevice(port){
       commandToRun = null;
 
    }
+
+   this.isFirmwareVersionDiffers = function(){
+
+      return firmwareVersionDiffers;
+   } 
 
    this.isReadyToAcceptCommand = function (){
 
@@ -2050,7 +2109,8 @@ export  {
   DEVICES,
   DEVICE_STATES,
   trigger_logging,
-  DEVICE_HANDLE_TIMEOUT
+  DEVICE_HANDLE_TIMEOUT,
+  NO_RESPONSE_TIME
 
 
 };

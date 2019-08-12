@@ -6,7 +6,8 @@ import DeviceControlAPI from './DeviceControlAPI';
 import {InterfaceDevice,searchDevices,getConnectedDevices,pushConnectedDevices,DEVICES,DEVICE_STATES} from './chrome';
 
 
-const DEVICE_HANDLE_TIMEOUT:number = 1 * 60 * 1000;
+//const DEVICE_HANDLE_TIMEOUT:number = 1 * 60 * 1000;
+const DEVICE_HANDLE_TIMEOUT:number = 1 * 4 * 1000;
 
 type RobotSensorsData = {
 

@@ -1,6 +1,6 @@
 
 
-import {InterfaceDevice,searchDevices,getConnectedDevices,DEVICES,DEVICE_STATES,trigger_logging,DEVICE_HANDLE_TIMEOUT} from './chrome';
+import {InterfaceDevice,searchDevices,getConnectedDevices,DEVICES,DEVICE_STATES,trigger_logging,DEVICE_HANDLE_TIMEOUT,NO_RESPONSE_TIME} from './chrome';
 
 import {flash_firmware,search_ports} from './firmware_flasher_new';
 
@@ -180,7 +180,8 @@ export default  class DeviceControlAPI {
 
         return {
 
-          DEVICE_HANDLE_TIMEOUT: DEVICE_HANDLE_TIMEOUT
+          DEVICE_HANDLE_TIMEOUT: DEVICE_HANDLE_TIMEOUT,
+          NO_RESPONSE_TIMEOUT: NO_RESPONSE_TIME
 
         }
 
