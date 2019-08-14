@@ -1514,6 +1514,15 @@ turnLedOff(led_position:number,robot_number:number){
 
   }
 
+  getRecieveTimeDelta(){
+
+      if ( (typeof(this.ConnectedRobots) !== 'undefined') && (typeof(this.ConnectedRobots[0] !== 'undefined') ) ){
+
+        return this.ConnectedRobots[0].getRecieveTimeDelta();
+
+      }
+  }
+
   blockPowerCommand(){
 
      this.isPowerCommandBlocked = true;
@@ -1686,7 +1695,7 @@ turnLedOff(led_position:number,robot_number:number){
 
                   this.RobotSensorsDataRecievingState == SensorsDataRecievingStates.STARTED;
 
-                this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,robot),5);
+                this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,robot),0);
 
                 }
 

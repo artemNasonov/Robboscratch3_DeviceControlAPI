@@ -988,6 +988,8 @@ function InterfaceDevice(port){
 
    var DEVICE_STATE_CHECK_INTERVAL;
 
+   const performance = typeof window === 'object' && window.performance;
+
  //callbacks
   var onErrorCb = () => {};
   var onFirmwareVersionDiffersCb =   () => {};
@@ -1125,7 +1127,8 @@ function InterfaceDevice(port){
             commandToRun = null;
             iWaiting = 0;
             callback(response);
-            recieve_time1 = Date.now();
+           // recieve_time1 = Date.now();
+            recieve_time1 = performance.now();
             recieve_time_delta = recieve_time1 - recieve_time2;
          //   console.log("time delta recieve: " + recieve_time_delta);
 
@@ -1133,7 +1136,9 @@ function InterfaceDevice(port){
             //    console.error(LOG+"Ouuu...NO RESPONSE!");
             //     state = DEVICE_STATES["TIMEOUT"];
             // },NO_RESPONSE_TIME);
-             recieve_time2 = Date.now();
+
+             //recieve_time2 = Date.now();
+              recieve_time2 = performance.now();
          }
        }
        else {
@@ -1635,6 +1640,11 @@ function InterfaceDevice(port){
    }
 
 
+ }
+
+ this.getRecieveTimeDelta = function(){
+
+    return recieve_time_delta;
  }
 
    this.getState = function(){
