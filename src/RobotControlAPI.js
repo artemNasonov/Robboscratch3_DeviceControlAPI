@@ -5,6 +5,8 @@ import DeviceControlAPI from './DeviceControlAPI';
 //import RobotSensorsData from './RobotSensorsData';
 import {InterfaceDevice,searchDevices,getConnectedDevices,pushConnectedDevices,DEVICES,DEVICE_STATES} from './chrome';
 
+import {getConnectedBluetoothDevices} from './bluetooth-chrome';
+
 
 //const DEVICE_HANDLE_TIMEOUT:number = 1 * 60 * 1000;
 const DEVICE_HANDLE_TIMEOUT:number = 1 * 4 * 1000;

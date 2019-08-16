@@ -2,6 +2,8 @@
 
 import {InterfaceDevice,searchDevices,getConnectedDevices,DEVICES,DEVICE_STATES,trigger_logging,DEVICE_HANDLE_TIMEOUT,NO_RESPONSE_TIME} from './chrome';
 
+import {searchBluetoothDevices} from './bluetooth-chrome';
+
 import {flash_firmware,search_ports} from './firmware_flasher_new';
 
 export default  class DeviceControlAPI {
@@ -19,6 +21,7 @@ export default  class DeviceControlAPI {
       this.onDeviceFoundCb = () => {};
 
       this.deviceList = [];
+      this.bluetoothDevicesList = [];
 
     }
 
@@ -26,6 +29,8 @@ export default  class DeviceControlAPI {
       searchAllDevices(){
 
         //var devices = [];
+
+        
 
             searchDevices((devices) => {
 
@@ -86,6 +91,17 @@ export default  class DeviceControlAPI {
 
             });
 
+          
+            this.bluetoothDevicesList = [];
+
+            searchBluetoothDevices((device) => {
+
+
+
+            });
+
+
+              
 
 
       }
