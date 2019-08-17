@@ -8,8 +8,8 @@ import {InterfaceDevice,searchDevices,getConnectedDevices,pushConnectedDevices,D
 import {getConnectedBluetoothDevices} from './bluetooth-chrome';
 
 
-//const DEVICE_HANDLE_TIMEOUT:number = 1 * 60 * 1000;
-const DEVICE_HANDLE_TIMEOUT:number = 1 * 4 * 1000;
+const DEVICE_HANDLE_TIMEOUT:number = 1 * 60 * 1000;
+//const DEVICE_HANDLE_TIMEOUT:number = 1 * 4 * 1000;
 
 type RobotSensorsData = {
 
@@ -57,6 +57,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
   SensorsData:RobotSensorsData;
 
   ConnectedDevices: Array<InterfaceDevice>;
+ // ConnectedBluetoothDevices: Array<InterfaceDevice>;
   ConnectedRobots: Array<InterfaceDevice>;
 
   handleConnectedDevicesInterval:IntervalID;
@@ -292,6 +293,7 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
     this.RobotSensorsDataRecievingState = SensorsDataRecievingStates.STOPED;
     this.ConnectedDevices = [];
+    //this.ConnectedBluetoothDevices = [];
     this.ConnectedRobots = [];
     this.ConnectedRobotsSerials = [];
   //  this.sensors_array = [0,0,0,0,0];
@@ -366,10 +368,11 @@ export default class RobotControlAPI extends DeviceControlAPI {
 
       //     console.log("let's get devices from device finder");
             let devices:Array<InterfaceDevice> = getConnectedDevices();
+            let bluetooth_devices:Array<InterfaceDevice> = getConnectedBluetoothDevices();
 
             // if (self.ConnectedDevices.length != devices.length ){
             //
-                       self.ConnectedDevices = devices;
+                    self.ConnectedDevices = devices.concat(bluetooth_devices);
 
 
                     handleConnectedDevices(self.ConnectedDevices,self);

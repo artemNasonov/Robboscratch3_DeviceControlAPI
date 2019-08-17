@@ -12,8 +12,9 @@ const NULL_COMMAND_TIMEOUT = 1 * 5 * 1000;
 const CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT = 500;
 
 var DEVICE_HANDLE_TIMEOUT = 1 * 10 * 1000;
-var NO_RESPONSE_TIME = 3000;
-var NO_START_TIMEOUT = 1000;
+//var NO_RESPONSE_TIME = 3000;
+var NO_RESPONSE_TIME = 10000;
+var NO_START_TIMEOUT = 3000;
 var UNO_TIMEOUT = 3000;
 var uuid = '1101'; //'1101', '0x1101', '1105' 
 
@@ -946,7 +947,7 @@ var arrDevices = [];
 
 function InterfaceDevice(device) {
     { //PEREMENNIE
-	console.log("new InterfaceDevice");
+	console.log("new BluetoothInterfaceDevice");
 	//this.port = port;
 	var options={
 	    baudRate: 115200, 
@@ -960,8 +961,8 @@ function InterfaceDevice(device) {
 	var NO_START;
 	var UNOTIME;
 	//var LOG = "[" + port.comName + " random_object_identifier: " +  (Math.floor( Math.random() * 100) ) +  "] ";
-	var LOG = "[ random_object_identifier: " +  (Math.floor( Math.random() * 100) ) +  "] ";
-	console.log(LOG + "Trying to register a new device...");
+	var LOG = `[blue_${device.socketId} random_object_identifier: ` +  (Math.floor( Math.random() * 100) ) +  "] ";
+	console.log(LOG + "Trying to register a new bluetooth device...");
 	var state = DEVICE_STATES["INITED"];
 	var previous_state = state;
 	var bufIncomingData = new Uint8Array();
@@ -993,13 +994,15 @@ function InterfaceDevice(device) {
 	var old_command = '';
 	var old_params = [];
 	var socketId = null;
-	var isDeviceBluetooth = true;
+    var isDeviceBluetooth = true;
+    var firmwareVersionDiffers = false;
 
 	var DEVICE_STATE_CHECK_INTERVAL;
 
 	//callbacks
-	var onErrorCb = () => {};
-	var onFirmwareVersionDiffersCb =   () => {};
+    var onErrorCb = () => {};
+    var onFirmwareVersionDiffersCb =   () => {};
+    var onDeviceStatusChangeCb = () => {};
     }
 
     var onReceiveCallback = function(receiveInfo){//TODO TODO  TODO TODOOOOOOO TODODODO
@@ -1007,8 +1010,8 @@ function InterfaceDevice(device) {
 	{	    
             clearTimeout(NO_RESPONSE);
             var buf = new Uint8Array(receiveInfo.data);
-	    console.log(LOG + "CALLBACK!!! bytes recieved length <- " + buf.length);
-            console.log(LOG + "CALLBACK!!! bytes buf <- " + buf);
+	   // console.log(LOG + "CALLBACK!!! bytes recieved length <- " + buf.length);
+         //   console.log(LOG + "CALLBACK!!! bytes buf <- " + buf);
             var bufIncomingDataNew = null;
             bufIncomingDataNew = new Uint8Array(bufIncomingData.length + buf.length);
             bufIncomingDataNew.set(bufIncomingData);
@@ -1021,7 +1024,28 @@ function InterfaceDevice(device) {
 		NO_RESPONSE = setTimeout(()=>{
 		    console.error(LOG+"Ouuu...NO RESPONSE!");
 
-		    state = DEVICE_STATES["TIMEOUT"];
+            state = DEVICE_STATES["TIMEOUT"];
+            
+            if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+                let error  = {};
+
+                error.code = 1;
+                error.msg = "";
+
+                let result = {
+
+                    state:state,
+                    deviceId: iDeviceID,
+                    error: error
+                }
+
+               onDeviceStatusChangeCb(result);
+
+             }
+
+             onConnect();
+
 		},NO_RESPONSE_TIME);
 
 	    } //if  DEVICE_STATES["DEVICE_IS_READY"]
@@ -1067,7 +1091,7 @@ function InterfaceDevice(device) {
             }
 	}
 	else {
-            console.log(LOG + "CALLBACK!!! without data");
+         //   console.log(LOG + "CALLBACK!!! without data");
 	}
     }
 
@@ -1085,10 +1109,35 @@ function InterfaceDevice(device) {
                 if ( (!isNaN(iDeviceID)) && (!isNaN(iFirmwareVersion)) && ( ( (sSerialNumber).startsWith("R") ) || ((sSerialNumber).startsWith("L")) ||((sSerialNumber).startsWith("O")) ||((sSerialNumber).startsWith("A"))  ) ) {
                     console.info(LOG + "device is ready.");
                     state = DEVICE_STATES["DEVICE_IS_READY"];
-                    NO_START = setTimeout(()=>{
-			chrome.bluetoothSocket.disconnect(
-			    socketId, () =>{console.error(LOG+"FUCK, NO_START!");
-					    posearchBluetoothDevices()});		
+
+                    if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+                        let result = {
+
+                            state:state,
+                            deviceId: iDeviceID
+                        }
+
+                      onDeviceStatusChangeCb(result);
+
+                }
+
+                     if(last_firmwares[iDeviceID]!=iFirmwareVersion){//We don't need NO_START in this case. Conflicts with flashing. 
+
+                          return;
+
+                     }
+
+                   NO_START = setTimeout(()=>{
+
+			    // chrome.bluetoothSocket.disconnect(
+			    // socketId, () =>{console.error(LOG+"FUCK, NO_START!");
+                //         //searchBluetoothDevices()
+                //        });	
+
+                console.error(LOG+"FUCK, NO_START!");
+                onConnect();
+
 		    },NO_START_TIMEOUT);
 		    
                     return;
@@ -1120,7 +1169,7 @@ function InterfaceDevice(device) {
 	});
 
 	// ***Replace***
-	console.log(bum);
+//	console.log(bum);
 	//
 	// var  dv  = new DataView(packet);
 	// dv.setUint8(0,0x63,true);
@@ -1131,8 +1180,8 @@ function InterfaceDevice(device) {
 
     function isN(n) {
 	return (!isNaN(parseFloat(n)) && isFinite(n));
-	// §®§Ö§ä§à§Õ isNaN §á§í§ä§Ñ§Ö§ä§ã§ñ §á§â§Ö§à§Ò§â§Ñ§Ù§à§Ó§Ñ§ä§î §á§Ö§â§Ö§Õ§Ñ§ß§ß§í§Û §á§Ñ§â§Ñ§Þ§Ö§ä§â §Ó §é§Ú§ã§Ý§à.
-	// §¦§ã§Ý§Ú §á§Ñ§â§Ñ§Þ§Ö§ä§â §ß§Ö §Þ§à§Ø§Ö§ä §Ò§í§ä§î §á§â§Ö§à§Ò§â§Ñ§Ù§à§Ó§Ñ§ß, §Ó§à§Ù§Ó§â§Ñ§ë§Ñ§Ö§ä true, §Ú§ß§Ñ§é§Ö §Ó§à§Ù§Ó§â§Ñ§ë§Ñ§Ö§ä false.
+	// ï¿½ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ isNaN ï¿½ï¿½ï¿½ï¿½ï¿½Ñ§Ö§ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ö§ï¿½Ò§ï¿½Ñ§Ù§ï¿½Ó§Ñ§ï¿½ï¿½ ï¿½ï¿½Ö§ï¿½Ö§Õ§Ñ§ß§ß§ï¿½ï¿½ï¿½ ï¿½ï¿½Ñ§ï¿½Ñ§Þ§Ö§ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Ú§ï¿½Ý§ï¿½.
+	// ï¿½ï¿½ï¿½ï¿½Ý§ï¿½ ï¿½ï¿½Ñ§ï¿½Ñ§Þ§Ö§ï¿½ï¿½ ï¿½ß§ï¿½ ï¿½Þ§ï¿½Ø§Ö§ï¿½ ï¿½Ò§ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ö§ï¿½Ò§ï¿½Ñ§Ù§ï¿½Ó§Ñ§ï¿½, ï¿½Ó§ï¿½Ù§Ó§ï¿½Ñ§ï¿½Ñ§Ö§ï¿½ true, ï¿½Ú§ß§Ñ§ï¿½ï¿½ ï¿½Ó§ï¿½Ù§Ó§ï¿½Ñ§ï¿½Ñ§Ö§ï¿½ false.
 	// isNaN("12") // false
     }
 
@@ -1215,6 +1264,8 @@ function InterfaceDevice(device) {
 		    console.error("BAD FLASH MF!!!");
 		    console.warn(last_firmwares[iDeviceID]+ "ot "+ iDeviceID + " = " + iFirmwareVersion + " lol");
 
+            firmwareVersionDiffers = true;
+
 		    if (onFirmwareVersionDiffersCb){
 			var result = {};
 			result.need_firmware = last_firmwares[iDeviceID];
@@ -1240,11 +1291,43 @@ function InterfaceDevice(device) {
     var onConnect = function() { //err, connection
         if (chrome.runtime.lastError) {
             state = DEVICE_STATES["DEVICE_ERROR"];
-	    console.log("Connection failed: " + chrome.runtime.lastError.message);
+
+            if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+                let error  = {};
+
+                error.code = 2;
+                error.msg =  chrome.runtime.lastError.message;
+
+                let result = {
+
+                    state:state,
+                    deviceId: iDeviceID,
+                    error: error
+                }
+
+               onDeviceStatusChangeCb(result);
+
+             }
+            
+            return  console.error("Connection failed: " + chrome.runtime.lastError.message);
         }
 	else {
             console.log(LOG + "connected.");
             state = DEVICE_STATES["CONNECTED"];
+
+            if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+                let result = {
+
+                    state:state,
+                    deviceId: iDeviceID
+                }
+
+               onDeviceStatusChangeCb(result);
+
+           }
+
             bufIncomingData = new Uint8Array();
             iWaiting = 0;
             commandToRun = null;
@@ -1255,14 +1338,51 @@ function InterfaceDevice(device) {
 	    //connection.on("data", onReceiveCallback);
 	    chrome.bluetoothSocket.onReceive.addListener(onReceiveCallback);
 	    ////////////////////////////////////////////////////////////////////////////////////////////////
-	    state = DEVICE_STATES["DEVICE_CHECKING"];
+        state = DEVICE_STATES["DEVICE_CHECKING"];
+        
+        if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+            let result = {
+
+                state:state,
+                deviceId: iDeviceID
+            }
+
+           onDeviceStatusChangeCb(result);
+
+    }
+
 	    setTimeout(checkSerialNumber, 300);
 	    
 	    ////////////////////////////////////////////////////////////////////////////////////////////////
             clearTimeout(automaticStopCheckingSerialNumberTimeout);
-            automaticStopCheckingSerialNumberTimeout =  setTimeout(function() {
-		console.error();("Stop checking serial number.");
-		isStopCheckingSerialNumber = true;
+            automaticStopCheckingSerialNumberTimeout =  setTimeout(() => {
+		console.warn("Stop checking serial number.");
+        isStopCheckingSerialNumber = true;
+
+        if ((state != DEVICE_STATES["DEVICE_IS_READY"] ) && (state != DEVICE_STATES["DEVICE_ERROR"]) ){
+
+          state = DEVICE_STATES["TIMEOUT"];
+
+          if (typeof(onDeviceStatusChangeCb) == 'function'){
+
+            let error = {};
+            error.code = -1;
+            error.msg = "";
+
+              let result = {
+
+                  state:state,
+                  deviceId: iDeviceID,
+                  error:error
+              }
+
+             onDeviceStatusChangeCb(result);
+
+           }
+
+
+        }
             }  ,DEVICE_HANDLE_TIMEOUT);
 	}
     }
@@ -1354,6 +1474,17 @@ function InterfaceDevice(device) {
             onErrorCb = cb;
 	}
     }
+
+    this.registerDeviceStatusChangeCallback = function(cb){
+
+        if (typeof(cb) == 'function'){
+     
+             onDeviceStatusChangeCb = cb;
+     
+        }
+     
+     
+      }
     
     this.getState = function(){
 	return state;
@@ -1364,9 +1495,9 @@ function InterfaceDevice(device) {
     }
 
     this.getPortName = function(){
-	//console.warn("OU FUCK");
-	console.warn(this.port.comName);
-	return this.port.comName;
+	console.warn("Bluetooth port");
+	console.warn(`blue_${device.name}`);
+	return `blue_${device.name}`;
     }
 
     this.getSerialNumber = function(){
@@ -1437,6 +1568,11 @@ function InterfaceDevice(device) {
 	return (state ==  DEVICE_STATES["DEVICE_IS_READY"]);
 
     }
+
+    this.isFirmwareVersionDiffers = function(){
+
+        return firmwareVersionDiffers;
+     } 
 
     this.isReadyToAcceptCommand = function (){
 
@@ -1520,16 +1656,17 @@ function InterfaceDevice(device) {
 	//
 	// },500)
 
-	if ( (old_command == command_local.code) ) {
+	// if ( (old_command == command_local.code) ) {
 
 
-            for (let i = 0; i<command_local.params.length;i++){
-		console.log(`command_local.params: ${params_local[i]} old_params: ${old_params[i]}`);
-		should_kill_command = (params_local[i]==old_params[i])?true:false;
-		if (!should_kill_command) { break; }
-            } 
-	    if (should_kill_command) { console.log("killing block"); commandToRun = null; return; }
-	}
+    //         for (let i = 0; i<command_local.params.length;i++){
+	// 	console.log(`command_local.params: ${params_local[i]} old_params: ${old_params[i]}`);
+	// 	should_kill_command = (params_local[i]==old_params[i])?true:false;
+	// 	if (!should_kill_command) { break; }
+    //         } 
+	//     if (should_kill_command) { console.log("killing block"); commandToRun = null; return; }
+    // }
+    
 	command_try_send_time1 = Date.now();
 
 	bufIncomingData = new Uint8Array();
@@ -1582,9 +1719,9 @@ function InterfaceDevice(device) {
 	//BT LOCATION
 	chrome.bluetoothSocket.send(socketId, buf, function(bytes_sent) {
 	    if (chrome.runtime.lastError) {
-		console.log("Send failed: " + chrome.runtime.lastError.message);
+	//	console.log("Send failed: " + chrome.runtime.lastError.message);
 	    } else {
-		console.log("Sent " + bytes_sent + " bytes");
+	//	console.log("Sent " + bytes_sent + " bytes");
 	    }
 	});
 	
@@ -1596,12 +1733,12 @@ function InterfaceDevice(device) {
 
 	// time2 = Date.now();
 	
-	if (command_local.code == "c"){
+	//if (command_local.code == "c"){
 
-            console.warn(`sending command: ${command_local.code} ${params_local[0]} ${params_local[1]}`);
+          //  console.warn(`sending command: ${command_local.code} ${params_local[0]} ${params_local[1]}`);
 	    //         console.warn(`time delta: ${time2 - time1}`);
 
-	}
+	//}
 	
 	//    time1 = Date.now();
 
@@ -1644,7 +1781,7 @@ function ab2str(buf) {
 }
 
 const searchBluetoothDevices = function (onDevicesFoundCb) {
-    import_settings();
+    //import_settings();
     console.log("Searching bluetooth devices...");
 
     var device_names = {};
@@ -1667,8 +1804,14 @@ const searchBluetoothDevices = function (onDevicesFoundCb) {
     };
     
     var updateDeviceName = function(device) {
-	let bluetoothDevice = new InterfaceDevice(device);
-	arrDevices.push(bluetoothDevice);	
+        let bluetoothDevice = new InterfaceDevice(device);
+        arrDevices.push(bluetoothDevice);
+        
+        if (typeof(onDevicesFoundCb) == 'function'){
+
+            onDevicesFoundCb(bluetoothDevice);
+        }
+    
     };
     var removeDeviceName = function(device) {
 	delete device_names[device.address];
@@ -1677,18 +1820,18 @@ const searchBluetoothDevices = function (onDevicesFoundCb) {
     // Add listeners to receive newly found devices and updates
     // to the previously known devices.
     chrome.bluetooth.onDeviceAdded.addListener(updateDeviceName);
-    chrome.bluetooth.onDeviceChanged.addListener(updateDeviceName);
+   // chrome.bluetooth.onDeviceChanged.addListener(updateDeviceName);
     chrome.bluetooth.onDeviceRemoved.addListener(removeDeviceName);
 
     // With the listeners in place, get the list of devices found in
     // previous discovery sessions, or any currently active ones,
     // along with paired devices.
 
-    chrome.bluetooth.getDevices(function(devices) {
-	for (var i = 0; i < devices.length; i++) {
-	    updateDeviceName(devices[i]);
-	}
-    });
+    // chrome.bluetooth.getDevices(function(devices) {
+	// for (var i = 0; i < devices.length; i++) {
+	//     updateDeviceName(devices[i]);
+	// }
+    // });
 
     // Now begin the discovery process.
     chrome.bluetooth.startDiscovery(function() {

@@ -96,6 +96,50 @@ export default  class DeviceControlAPI {
 
             searchBluetoothDevices((device) => {
 
+              device.registerFirmwareVersionDiffersCallback( (result) => {
+
+
+                let cb =  this.onFirmwareVersionDiffersCbMap[device.getPortName()];
+
+                 if (typeof(cb) == 'function'){
+
+                   cb(result);
+
+                }
+
+                 
+
+              });
+
+              //device.registerErrorCallback(this.onErrorCb);
+            
+              device.registerDeviceStatusChangeCallback((state) => {
+
+                let cb =  this.onDeviceStatusChangeCbMap[device.getPortName()];
+
+                 if (typeof(cb) == 'function'){
+
+                   cb(state);
+
+                }
+
+              
+
+              });
+
+              this.bluetoothDevicesList.push(device);
+
+              let bluetooth_device = {
+
+                
+                 devicePort: device.getPortName(),
+                 deviceId: device.getDeviceID() 
+                
+             }
+
+               //  console.warn("onDeviceFound");
+
+                this.onDeviceFoundCb(bluetooth_device);
 
 
             });
@@ -184,7 +228,7 @@ export default  class DeviceControlAPI {
       getDevices(){
 
 
-          return this.deviceList;
+          return this.deviceList.concat(this.bluetoothDevicesList);
       }
 
       getDeviceStates(){
