@@ -961,7 +961,7 @@ function InterfaceDevice(device) {
 	var NO_START;
 	var UNOTIME;
 	//var LOG = "[" + port.comName + " random_object_identifier: " +  (Math.floor( Math.random() * 100) ) +  "] ";
-	var LOG = `[blue_${device.socketId} random_object_identifier: ` +  (Math.floor( Math.random() * 100) ) +  "] ";
+	var LOG = `[bluetooth_${device.name} random_object_identifier: ` +  (Math.floor( Math.random() * 100) ) +  "] ";
 	console.log(LOG + "Trying to register a new bluetooth device...");
 	var state = DEVICE_STATES["INITED"];
 	var previous_state = state;
@@ -994,7 +994,7 @@ function InterfaceDevice(device) {
 	var old_command = '';
 	var old_params = [];
 	var socketId = null;
-    var isDeviceBluetooth = true;
+    var isBluetoothDevice = true;
     var firmwareVersionDiffers = false;
 
 	var DEVICE_STATE_CHECK_INTERVAL;
@@ -1044,7 +1044,7 @@ function InterfaceDevice(device) {
 
              }
 
-             onConnect();
+            // onConnect();
 
 		},NO_RESPONSE_TIME);
 
@@ -1054,7 +1054,7 @@ function InterfaceDevice(device) {
             clearTimeout(NO_START);
             clearTimeout(UNOTIME);                                                //#
             if ( (bufIncomingData.length >= iWaiting) /*&& ( bufIncomingData.indexOf(35) != -1 )*/ ) {
-		console.log(LOG + "command '" + commandToRun.code + "' complete.");
+	//	console.log(LOG + "command '" + commandToRun.code + "' complete.");
 		var iResponsePointer = /*(bufIncomingData.indexOf(35) + 1);*/ 1;
 		Object.keys(commandToRun.response).forEach(function (sField){
 		    switch(commandToRun.response[sField]){
@@ -1310,7 +1310,7 @@ function InterfaceDevice(device) {
 
              }
             
-            return  console.error("Connection failed: " + chrome.runtime.lastError.message);
+            return  console.error(LOG + " Connection failed: " + chrome.runtime.lastError.message);
         }
 	else {
             console.log(LOG + "connected.");
@@ -1391,7 +1391,7 @@ function InterfaceDevice(device) {
 	clearTimeout(NO_RESPONSE);
 	clearInterval(DEVICE_STATE_CHECK_INTERVAL);
 	state= DEVICE_STATES["CLOSING"];
-	console.warn(LOG+" Device stopped");
+	
 	// if (!isStopCheckingSerialNumber) {
 	//   isStopCheckingSerialNumber = true;
 
@@ -1400,7 +1400,8 @@ function InterfaceDevice(device) {
 	    socketId, (error) => {
 		if (error != null) {
 		    console.error("disconnect error: " + error);
-		}
+        }
+        console.warn(LOG+" Device stopped");
 		clearTimeout(automaticStopCheckingSerialNumberTimeout);
 		if (cb) {
 		    cb();
@@ -1453,7 +1454,7 @@ function InterfaceDevice(device) {
 
 	chrome.bluetoothSocket.onReceiveError.addListener(function(errorInfo) {
 	    // Cause is in errorInfo.error.
-	    console.error(errorInfo.errorMessage);
+	    console.error(LOG + errorInfo.errorMessage);
 	});
 	
 	socketId = createInfo.socketId;
@@ -1496,8 +1497,8 @@ function InterfaceDevice(device) {
 
     this.getPortName = function(){
 	console.warn("Bluetooth port");
-	console.warn(`blue_${device.name}`);
-	return `blue_${device.name}`;
+	console.warn(`bluetooth_${device.name}`);
+	return `bluetooth_${device.name}`;
     }
 
     this.getSerialNumber = function(){
@@ -1568,6 +1569,11 @@ function InterfaceDevice(device) {
 	return (state ==  DEVICE_STATES["DEVICE_IS_READY"]);
 
     }
+
+    this.isBluetoothDevice = function(){
+
+        return isBluetoothDevice;
+     }
 
     this.isFirmwareVersionDiffers = function(){
 
@@ -1780,11 +1786,13 @@ function ab2str(buf) {
     return String.fromCharCode.apply(null, new Uint16Array(buf));
 }
 
-const searchBluetoothDevices = function (onDevicesFoundCb) {
+const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) {
     //import_settings();
     console.log("Searching bluetooth devices...");
 
-    var device_names = {};
+    var device_names = [];
+    var disconected_devices=0;
+    var discovery_started = false;
 
     var onConnectedCallback = function(socketId) {
 	if (chrome.runtime.lastError) {
@@ -1804,6 +1812,12 @@ const searchBluetoothDevices = function (onDevicesFoundCb) {
     };
     
     var updateDeviceName = function(device) {
+
+        console.warn(`Bluetooth device name: ${device.name}`);
+
+        if (device_names.indexOf(device.name) == -1){
+
+        device_names.push(device.name);   
         let bluetoothDevice = new InterfaceDevice(device);
         arrDevices.push(bluetoothDevice);
         
@@ -1811,6 +1825,10 @@ const searchBluetoothDevices = function (onDevicesFoundCb) {
 
             onDevicesFoundCb(bluetoothDevice);
         }
+
+        }
+
+        
     
     };
     var removeDeviceName = function(device) {
@@ -1821,7 +1839,7 @@ const searchBluetoothDevices = function (onDevicesFoundCb) {
     // to the previously known devices.
     chrome.bluetooth.onDeviceAdded.addListener(updateDeviceName);
    // chrome.bluetooth.onDeviceChanged.addListener(updateDeviceName);
-    chrome.bluetooth.onDeviceRemoved.addListener(removeDeviceName);
+   // chrome.bluetooth.onDeviceRemoved.addListener(removeDeviceName);
 
     // With the listeners in place, get the list of devices found in
     // previous discovery sessions, or any currently active ones,
@@ -1833,14 +1851,79 @@ const searchBluetoothDevices = function (onDevicesFoundCb) {
 	// }
     // });
 
+
+    if (arrDevices.length > 0){
+        console.log(arrDevices.length + ">>>>0");
+          for (let index = 0; index < arrDevices.length; index++){
+            console.log("STOPPPP CHECKING BLUE");
+                arrDevices[index].stopCheckingSerialNumber(() => {
+                      arrDevices[index] = null;
+                        disconected_devices++;
+                        console.log("Blue device was sucessfully disconnected. Count:  "+disconected_devices);
+                      if (disconected_devices == (arrDevices.length)){
+                               arrDevices = [];
+                               console.log(arrDevices.length);
+
+                               if (discovery_started) return;
+
+                               chrome.bluetooth.startDiscovery( () => {
+                                console.log("start discovery");
+                                discovery_started = true;
+                                // Stop discovery after 30 seconds.
+                                setTimeout(() => {
+                                    chrome.bluetooth.stopDiscovery(() => {
+
+                                        discovery_started = false;
+
+                                            if (typeof(onDevicesNotFoundCb) == 'function'){
+
+                                                if (arrDevices.length == 0){
+
+                                                    onDevicesNotFoundCb();
+                                                }
+                                            }
+                                    });
+                                }, 30000);
+                                });
+                              
+                      }
+                });
+          }
+      }
+      else{
+        console.log("No coonected bluetooth devices");
+        
+        if (discovery_started) return;
+
+        chrome.bluetooth.startDiscovery(() => {
+            console.log("start discovery");
+            // Stop discovery after 30 seconds.
+            discovery_started = true;
+            setTimeout(() =>{
+                chrome.bluetooth.stopDiscovery(() => {
+                    discovery_started = false;
+
+                    if (typeof(onDevicesNotFoundCb) == 'function'){
+
+                        if (arrDevices.length == 0){
+
+                            onDevicesNotFoundCb();
+                        }
+                    }
+                });
+            }, /*3000*/30000);
+            });
+  
+      }
+
     // Now begin the discovery process.
-    chrome.bluetooth.startDiscovery(function() {
-	console.log("start discovery");
-	// Stop discovery after 30 seconds.
-	setTimeout(function() {
-	    chrome.bluetooth.stopDiscovery(function() {});
-	}, 30000);
-    });
+    // chrome.bluetooth.startDiscovery(function() {
+	// console.log("start discovery");
+	// // Stop discovery after 30 seconds.
+	// setTimeout(function() {
+	//     chrome.bluetooth.stopDiscovery(function() {});
+	// }, 30000);
+    // });
 
 }
 

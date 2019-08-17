@@ -985,6 +985,7 @@ function InterfaceDevice(port){
    var uport;
    var old_command = '';
    var firmwareVersionDiffers = false;
+   var isBluetoothDevice = false;
 
    var DEVICE_STATE_CHECK_INTERVAL;
 
@@ -1465,30 +1466,13 @@ function InterfaceDevice(port){
             }
           });
 
-          //   if ( /*(state != DEVICE_STATES["DEVICE_ERROR"]) &&*/ (  iConnectionId != null) ) {
+          
 
-          /*
-         chrome.serial.disconnect(iConnectionId, (result)=>{
+   }
 
-                console.log("Connection closed: " + result);
+   if( (typeof(port.vendorId) == 'undefined')  && (node_process.platform === "win32") ){
 
-                iConnectionId = null;
-
-              if (cb){
-
-                  cb();
-
-              }
-
-         });*/
-
-         //  }
-
-
-
-          //   }
-    //else console.warn("WAITING isStopCheckingSerialNumber");
-
+      isBluetoothDevice = true;
    }
 
 
@@ -1640,6 +1624,11 @@ function InterfaceDevice(port){
    }
 
 
+ }
+
+ this.isBluetoothDevice = function(){
+
+    return isBluetoothDevice;
  }
 
  this.getRecieveTimeDelta = function(){

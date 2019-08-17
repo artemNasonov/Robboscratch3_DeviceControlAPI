@@ -20,6 +20,10 @@ export default  class DeviceControlAPI {
 
       this.onDeviceFoundCb = () => {};
 
+      this.onDevicesStartSearchingCb = () => {};
+
+      this.onBluetoothDevicesFoundCb = () => {};
+
       this.deviceList = [];
       this.bluetoothDevicesList = [];
 
@@ -33,6 +37,8 @@ export default  class DeviceControlAPI {
         
 
             searchDevices((devices) => {
+
+              this.onDevicesStartSearchingCb();
 
               this.deviceList = devices;
 
@@ -91,10 +97,13 @@ export default  class DeviceControlAPI {
 
             });
 
+            if (node_process.platform !== "win32") return;
           
             this.bluetoothDevicesList = [];
 
-            searchBluetoothDevices((device) => {
+            searchBluetoothDevices(this.onBluetoothDevicesNotFoundCb,(device) => {
+
+              this.onBluetoothDevicesFoundCb();
 
               device.registerFirmwareVersionDiffersCallback( (result) => {
 
@@ -192,6 +201,16 @@ export default  class DeviceControlAPI {
 
       }
 
+      registerBluetoothDevicesNotFoundCallback(cb){
+
+        if (typeof(cb) == 'function'){
+
+          this.onBluetoothDevicesNotFoundCb = cb;
+
+     }
+
+      }
+
        registerDeviceStatusChangeCallback(port_name,cb){
 
          if (typeof(cb) == 'function'){
@@ -199,6 +218,29 @@ export default  class DeviceControlAPI {
              this.onDeviceStatusChangeCbMap[port_name] = cb;
 
         }
+
+      }
+
+      registerDevicesStartSearchingCallback(cb){
+
+        if (typeof(cb) == 'function'){
+
+          this.onDevicesStartSearchingCb = cb;
+
+     }
+
+     
+     
+
+      }
+
+      registerBluetoothDevicesFoundCallback(cb){
+
+        if (typeof(cb) == 'function'){
+
+          this.onBluetoothDevicesFoundCb = cb;
+
+     }
 
       }
 
