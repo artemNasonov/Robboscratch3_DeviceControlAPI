@@ -1616,6 +1616,11 @@ turnLedOff(led_position:number,robot_number:number){
           //
           // }
 
+          if ((this.currentRobotState ==  DEVICE_STATES["TIMEOUT"]) || (this.currentRobotState ==  DEVICE_STATES["INITED"])){
+
+            this.searching_in_progress = false;
+
+          }  
 
 
           this.robot_status_change_callback(this.currentRobotState,this.searching_in_progress);

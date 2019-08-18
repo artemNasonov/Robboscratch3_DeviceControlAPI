@@ -48,8 +48,8 @@ searchOttoDevices(){
         this.init_all();
         this.stopDataRecievingProcess();
         this.searching_in_progress = true;
-        if (this.otto_status_change_callback !== null){
-              this.otto_status_change_callback(this.currentOttoState,this.searching_in_progress);
+        if (typeof(this.otto_status_change_cb) === 'function'){
+              this.otto_status_change_cb(this.currentOttoState,this.searching_in_progress);
         }
        this.handleConnectedDevicesInterval  =  setInterval(
            function (self){
@@ -62,9 +62,9 @@ searchOttoDevices(){
                console.log("Stop devices handle process.");
                clearInterval(self.handleConnectedDevicesInterval);
                self.searching_in_progress = false;
-               if (self.otto_status_change_callback !== null){
-                  self.otto_status_change_callback(self.currentOttoState,self.searching_in_progress);
-               }
+               if (typeof(this.otto_status_change_cb) === 'function'){
+                 this.otto_status_change_cb(this.currentOttoState,this.searching_in_progress);
+              }
            }  ,DEVICE_HANDLE_TIMEOUT,this);
            var handleConnectedDevices = function (Devices,self:OttoControlAPI){
              //     console.log("Handle connected devices.")
@@ -178,7 +178,7 @@ proxy_func_OttoStatusChange(){
     if (typeof(this.ConnectedOttos[0]) != 'undefined'){
       this.currentOttoState = this.ConnectedOttos[0].getState();
       if ((this.currentOttoState != this.previousOttoState)){
-        this.otto_status_change_callback(this.currentOttoState,this.searching_in_progress);
+        this.otto_status_change_cb(this.currentOttoState,this.searching_in_progress);
          this.previousOttoState =   this.currentOttoState;
       }
     }
@@ -189,7 +189,7 @@ runOttoStatusChangeLoop(){
 }
 
 registerOttoStatusChangeCallback(otto_status_change_cb:any){
-        this.otto_status_change_callback = otto_status_change_cb;
+        this.otto_status_change_cb = otto_status_change_cb;
         this.runOttoStatusChangeLoop();
 }
 

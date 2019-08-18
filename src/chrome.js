@@ -885,7 +885,7 @@ const commands_list_arduino= {//modified_by_kpk
                     }
 }
 
-const last_firmwares =[10,5,2,3,1,2,0,7];
+const last_firmwares =[10,5,2,3,1,2,1];
 
 const DEVICES = Object.freeze({
    //Basic Robot
@@ -928,7 +928,7 @@ const DEVICES = Object.freeze({
   //arduino
    6:
    {
-     "firmware":0,
+     "firmware":1,
      "commands":commands_list_arduino
    }
 });
@@ -1159,7 +1159,7 @@ function InterfaceDevice(port){
       else{
           if ( (typeof(iDeviceID) != 'undefined') && (typeof(iFirmwareVersion) != 'undefined') && (typeof(sSerialNumber) != 'undefined') ){
                 if ( (!isNaN(iDeviceID)) && (!isNaN(iFirmwareVersion)) && ( ( (sSerialNumber).startsWith("R") ) || ((sSerialNumber).startsWith("L")) ||((sSerialNumber).startsWith("O")) ||((sSerialNumber).startsWith("A"))  ) ) {
-                        console.info(LOG + "device is ready.");
+                        console.warn(LOG + "device is ready.");
                         state = DEVICE_STATES["DEVICE_IS_READY"];
 
                          
