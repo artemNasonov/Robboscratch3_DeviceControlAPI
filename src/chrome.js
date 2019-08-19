@@ -2039,6 +2039,8 @@ function InterfaceDevice(port){
           }
  
         }else{
+
+
  
          onClosedCb();
         }
@@ -2049,7 +2051,11 @@ function InterfaceDevice(port){
 
     }else{
 
-      onClosedCb();
+     if (this.port.comName == device_port){
+ 
+           onClosedCb();
+           
+          }
 
     }
 
