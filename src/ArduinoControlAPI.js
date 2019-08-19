@@ -135,17 +135,17 @@ stopDataRecievingProcess(){
          console.log("this.can_autoreconnect = false;                                                                                   stopDatarecieving lol");
       }
 
-discon(){
+discon(onDisconnectedCb){
            if(typeof(this.ConnectedArduinos[0])!='undefined'){
-               this.ConnectedArduinos[0].disco();
+               this.ConnectedArduinos[0].disco(onDisconnectedCb);
            }
-            else{
-                let devices = getConnectedDevices();
-                devices.forEach((device,device_index) => {
-                    console.log(`Close device: ${device.getPortName()}`);
-                    device.disco();
-                });
-         }
+        //     else{
+        //         let devices = getConnectedDevices();
+        //         devices.forEach((device,device_index) => {
+        //             console.log(`Close device: ${device.getPortName()}`);
+        //             device.disco(onDisconnectedCb);
+        //         });
+        //  }
 }
 
 getSensorData(sensor_index:number){

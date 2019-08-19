@@ -380,9 +380,9 @@ stopDataRecievingProcess(){
 
 }
 
-discon()
+discon(onDisconnectedCb)
 {  if(typeof(this.ConnectedLaboratories[0])!='undefined')
-    this.ConnectedLaboratories[0].disco();
+    this.ConnectedLaboratories[0].disco(onDisconnectedCb);
 }
 
 checkLabByPort(port,callback){

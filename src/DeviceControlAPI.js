@@ -244,6 +244,22 @@ export default  class DeviceControlAPI {
 
       }
 
+      discon(device_port,onDisconnectedCb)
+      {
+    
+            let devices = this.deviceList;
+   
+             devices.forEach((device,device_index) => {
+   
+                 console.log(`Close device: ${device.getPortName()}`);
+                 device.disco(onDisconnectedCb,device_port);
+   
+             });
+   
+      
+   
+   }
+
       triggerLogging(){
 
 

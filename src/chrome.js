@@ -2024,8 +2024,36 @@ function InterfaceDevice(port){
       iWaiting = iWaitingNew;
    }
 
-   this.disco = function(){
-     qport.close(()=>{console.log(LOG+"port closed");});
+   this.disco = function(onClosedCb,device_port){
+
+    if (qport.isOpen){
+
+      qport.close(()=>{
+        console.log(LOG+"port closed");
+ 
+        if (typeof(device_port) !== 'undefined'){
+ 
+         if (this.port.comName == device_port){
+ 
+           onClosedCb();
+          }
+ 
+        }else{
+ 
+         onClosedCb();
+        }
+        
+        
+       
+       });
+
+    }else{
+
+      onClosedCb();
+
+    }
+
+     
    }
 
    //   init;

@@ -144,17 +144,17 @@ stopDataRecievingProcess(){
          console.log("this.can_autoreconnect = false;                                                                                   stopDatarecieving lol");
       }
 
-discon(){
+discon(onDisconnectedCb){
            if(typeof(this.ConnectedOttos[0])!='undefined'){
-               this.ConnectedOttos[0].disco();
+               this.ConnectedOttos[0].disco(onDisconnectedCb);
            }
-            else{
-                let devices = getConnectedDevices();
-                devices.forEach((device,device_index) => {
-                    console.log(`Close device: ${device.getPortName()}`);
-                    device.disco();
-                });
-         }
+        //     else{
+        //         let devices = getConnectedDevices();
+        //         devices.forEach((device,device_index) => {
+        //             console.log(`Close device: ${device.getPortName()}`);
+        //             device.disco();
+        //         });
+        //  }
 }
 
 getSensorData(sensor_index:number){
