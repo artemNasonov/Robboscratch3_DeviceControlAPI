@@ -179,7 +179,7 @@ var onConnect = function(){
                    if(config.device.device_id !== -1 && !isNaN(config.device.device_id)){
                      console.log(LOG+"defined ass:"+config.device.device_id);
                      hexfileascii = firmwares["device_id_" + config.device.device_id]["max_version"];
-                     if((config.device.device_id==3)||(config.device.device_id==4)){
+                     if((config.device.device_id==3)||(config.device.device_id==4) ||(config.device.device_id==6)){
 
                           options.baudRate = 115200;
                           qport.update(options, () =>{

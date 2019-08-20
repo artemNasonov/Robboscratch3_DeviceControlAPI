@@ -1521,7 +1521,7 @@ turnLedOff(led_position:number,robot_number:number){
 
   getRecieveTimeDelta(){
 
-      if ( (typeof(this.ConnectedRobots) !== 'undefined') && (typeof(this.ConnectedRobots[0] !== 'undefined') ) ){
+      if ( (typeof(this.ConnectedRobots) !== 'undefined') && (typeof(this.ConnectedRobots[0]) !== 'undefined')  ){
 
         return this.ConnectedRobots[0].getRecieveTimeDelta();
 

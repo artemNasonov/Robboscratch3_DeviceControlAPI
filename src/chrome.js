@@ -17,7 +17,7 @@ console.log = function(string){
         log(string);
   }
 }
-console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.5");
+console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.6");
 
 var import_settings = function(){
 
@@ -2074,7 +2074,7 @@ const searchDevices = function(onDevicesFoundCb){
     var onGetDevices = function(err,ports) {//NEW DEVICE SEARHING
       for (var i=0; i<ports.length; i++) {
         //if(typeof(ports[i].vendorId) !== 'undefined'){
-        if(typeof(ports[i].manufacturer) !== 'undefined'){
+        if((typeof(ports[i].manufacturer) !== 'undefined') && (ports[i].comName !== 'com1') ){
         console.info(" NEW device name is "+ ports[i].comName);
         var device = new InterfaceDevice(ports[i]);
          arrDevices.push(device);
