@@ -260,6 +260,19 @@ export default  class DeviceControlAPI {
    
    }
 
+   getRecieveTimeDelta(){
+
+      if (this.deviceList.length > 0){
+
+        return this.deviceList[0].getRecieveTimeDelta();
+
+      }else{
+
+        return 0;
+      }
+
+   }
+
       triggerLogging(){
 
 
