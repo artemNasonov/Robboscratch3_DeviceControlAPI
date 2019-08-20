@@ -1115,7 +1115,7 @@ startDataRecievingLoop(laboratory:InterfaceDevice):void{
 
                 this.LaboratorySensorsDataRecievingState == SensorsDataRecievingStates.STARTED;
 
-              this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,laboratory),25);
+              this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,laboratory),0);
 
               }
 

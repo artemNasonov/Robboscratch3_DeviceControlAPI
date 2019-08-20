@@ -198,7 +198,7 @@ startDataRecievingLoop(arduino:InterfaceDevice){
         console.log("startDataRecievingLoop");
               // if (this.ArduinoSensorsDataRecievingState == SensorsDataRecievingStates.STOPED ){
               //     this.ArduinoSensorsDataRecievingState == SensorsDataRecievingStates.STARTED;
-                  this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,arduino),5);
+                  this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,arduino),0);
               //  }
 }
 
