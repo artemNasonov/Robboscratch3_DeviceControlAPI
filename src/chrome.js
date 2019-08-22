@@ -1182,7 +1182,15 @@ function InterfaceDevice(port){
                          }
 
 
-                        NO_START = setTimeout(()=>{qport.close(()=>{console.error(LOG+"FUCK, NO_START!");searchDevices()})},NO_START_TIMEOUT); //500
+                       // NO_START = setTimeout(()=>{qport.close(()=>{console.error(LOG+"FUCK, NO_START!");searchDevices()})},NO_START_TIMEOUT); //500
+                       NO_START = setTimeout(()=>{
+
+                        console.error(LOG+"FUCK, NO_START!");
+                        onConnect();
+
+                        
+                        },NO_START_TIMEOUT);
+
                         return;
                 }
                 else

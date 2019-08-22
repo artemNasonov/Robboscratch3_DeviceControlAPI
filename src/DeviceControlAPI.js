@@ -49,6 +49,8 @@ export default  class DeviceControlAPI {
 
               for (let index = 0; index < devices.length; index++){
 
+                  if (devices[index] == null) return;
+
                   devices[index].registerFirmwareVersionDiffersCallback( (result) => {
 
 
@@ -262,14 +264,25 @@ export default  class DeviceControlAPI {
 
    getRecieveTimeDelta(){
 
-      if (this.deviceList.length > 0){
+     for (let index = 0; index <this.deviceList.length; index++){
+
+       if (/*(this.deviceList.length > 0) && */(this.deviceList[index] != null)){
 
         return this.deviceList[0].getRecieveTimeDelta();
 
-      }else{
-
-        return 0;
       }
+      // else{
+
+      //   return 0;
+      // }
+
+     }
+
+     return 0;
+
+
+
+     
 
    }
 
