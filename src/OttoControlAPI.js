@@ -207,7 +207,7 @@ startDataRecievingLoop(otto:InterfaceDevice){
         console.log("startDataRecievingLoop");
               // if (this.OttoSensorsDataRecievingState == SensorsDataRecievingStates.STOPED ){
               //     this.OttoSensorsDataRecievingState == SensorsDataRecievingStates.STARTED;
-                  this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,otto),5);
+                  this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,otto),0);
               //  }
 }
 

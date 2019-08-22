@@ -16,7 +16,10 @@ var DEVICE_HANDLE_TIMEOUT = 1 * 10 * 1000;
 var NO_RESPONSE_TIME = 10000;
 var NO_START_TIMEOUT = 3000;
 var UNO_TIMEOUT = 3000;
+
 var uuid = '1101'; //'1101', '0x1101', '1105' 
+
+ var discovery_started = false;
 
 const log = console.log;
 var can_log = true;
@@ -1792,7 +1795,7 @@ const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) 
 
     var device_names = [];
     var disconected_devices=0;
-    var discovery_started = false;
+   
 
     var onConnectedCallback = function(socketId) {
 	if (chrome.runtime.lastError) {
@@ -1815,7 +1818,7 @@ const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) 
 
         console.warn(`Bluetooth device name: ${device.name}`);
 
-        if ( (device_names.indexOf(device.name) == -1) && ( (device.name.indexOf("ROB") != -1) || (device.name.indexOf("RNBT") != -1) ) ){
+        if ( (device_names.indexOf(device.name) == -1)/* && ( (device.name.indexOf("ROB") != -1) || (device.name.indexOf("RNBT") != -1) ) */){
 
         device_names.push(device.name);   
         let bluetoothDevice = new InterfaceDevice(device);

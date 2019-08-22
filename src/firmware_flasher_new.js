@@ -351,6 +351,7 @@ function stk500_upload(heximage) {
         if(success!=null){
           step = STEP_STATES["ALL_FINISHED_ERROR"];
           console.error("ERR: " + success);
+          print_status(LOG + "Error! PLS reload RS and try again");
         }
         
         console.log(LOG +  "Baud for connection set back to your anus(115200)");
