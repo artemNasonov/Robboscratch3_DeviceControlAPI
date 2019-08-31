@@ -1130,6 +1130,14 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
 
       //    console.log("setRobotPowerAndStepLimits send command");
 
+      if ((rightMotorPower > 0) && (leftMotorPower > 0) && (this.isPowerCommandBlocked)){
+
+       return;
+     }
+
+      clearTimeout(this.a_command_queue_restore_timeout);
+
+
           let steps_limit_low_byte:number  = steps_limit&0x00FF;
           let steps_limit_high_byte:number = steps_limit >> 8;
 
