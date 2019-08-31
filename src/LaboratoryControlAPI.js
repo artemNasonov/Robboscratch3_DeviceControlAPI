@@ -610,7 +610,7 @@ turnLedOff(led_position:number,laboratory_number:number){
 
      this.led_bit_mask = this.led_bit_mask & ~(1 << led_position);
 
-     console.log(`led_bit_mask: ${this.led_bit_mask}`);
+     //console.log(`led_bit_mask: ${this.led_bit_mask}`);
 
      this.led_states[led_position] = 'off';
 

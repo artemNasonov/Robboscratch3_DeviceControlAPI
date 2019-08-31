@@ -285,7 +285,7 @@ checkArduinoByPort(port,callback){
   }
   servo(pin,angle)
   {
-    console.warn("SERVO_TEST: "+pin+" ang" + Math.abs(angle));
+  //  console.warn("SERVO_TEST: "+pin+" ang" + Math.abs(angle));
     let newangle = Math.abs(angle);
     if((typeof(this.ConnectedArduinos[0])!='undefined') &&[6].indexOf(this.ConnectedArduinos[0].getDeviceID()) != -1 && this.ConnectedArduinos[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
       this.ConnectedArduinos[0].command(DEVICES[this.ConnectedArduinos[0].getDeviceID()].commands.se,[pin,newangle], (response) => {

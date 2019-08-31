@@ -105,6 +105,8 @@ export default  class DeviceControlAPI {
 
             searchBluetoothDevices(this.onBluetoothDevicesNotFoundCb,(device) => {
 
+               if (device == null) return;
+
               this.onBluetoothDevicesFoundCb();
 
               device.registerFirmwareVersionDiffersCallback( (result) => {
