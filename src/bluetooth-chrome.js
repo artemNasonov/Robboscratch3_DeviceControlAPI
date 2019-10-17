@@ -1818,7 +1818,7 @@ const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) 
 
         console.warn(`Bluetooth device name: ${device.name}`);
 
-        if ( (device_names.indexOf(device.name) == -1) && ( (device.name.indexOf("ROB") != -1) || (device.name.indexOf("RNBT") != -1) ) ){
+        if ( (device_names.indexOf(device.name) == -1) /*&& ( (device.name.indexOf("ROB") != -1) || (device.name.indexOf("RNBT") != -1) ) */){
 
         device_names.push(device.name);   
         let bluetoothDevice = new InterfaceDevice(device);

@@ -62,8 +62,8 @@ searchOttoDevices(){
                console.log("Stop devices handle process.");
                clearInterval(self.handleConnectedDevicesInterval);
                self.searching_in_progress = false;
-               if (typeof(this.otto_status_change_cb) === 'function'){
-                 this.otto_status_change_cb(this.currentOttoState,this.searching_in_progress);
+               if (typeof(self.otto_status_change_cb) === 'function'){
+                 self.otto_status_change_cb(self.currentOttoState,self.searching_in_progress);
               }
            }  ,DEVICE_HANDLE_TIMEOUT,this);
            var handleConnectedDevices = function (Devices,self:OttoControlAPI){
@@ -76,8 +76,8 @@ searchOttoDevices(){
                          if (self.ConnectedOttosSerials.indexOf(device.getSerialNumber()) == -1 ){
                            console.warn("We have new ready OTTTO!!!");
                             self.searching_in_progress = false;
-                             if (self.otto_status_change_callback !== null){
-                                self.otto_status_change_callback(self.currentOttoState,self.searching_in_progress);
+                             if (typeof(self.otto_status_change_cb) === 'function'){
+                                self.otto_status_change_cb(self.currentOttoState,self.searching_in_progress);
                              }
                         //   self.searching_in_progress = false;
                            console.warn("Otto serial: " + device.getSerialNumber());
