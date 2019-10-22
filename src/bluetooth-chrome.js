@@ -1818,7 +1818,7 @@ const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) 
 
         console.warn(`Bluetooth device name: ${device.name}`);
 
-        if ( (device_names.indexOf(device.name) == -1) /*&& ( (device.name.indexOf("ROB") != -1) || (device.name.indexOf("RNBT") != -1) ) */){
+        if ( (device_names.indexOf(device.name) == -1) && ( (device.name.indexOf("ROB") != -1) || (device.name.indexOf("RNBT") != -1) ) ){
 
         device_names.push(device.name);   
         let bluetoothDevice = new InterfaceDevice(device);
@@ -1855,6 +1855,32 @@ const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) 
     // });
 
 
+    var init_discovery = function(){
+
+
+    chrome.bluetooth.startDiscovery( () => {
+                        console.log("start discovery");
+                        discovery_started = true;
+                        // Stop discovery after 30 seconds.
+                        setTimeout(() => {
+                            chrome.bluetooth.stopDiscovery(() => {
+
+                                discovery_started = false;
+
+                                    if (typeof(onDevicesNotFoundCb) == 'function'){
+
+                                        if (arrDevices.length == 0){
+
+                                            onDevicesNotFoundCb();
+                                        }
+                                    }
+                            });
+                        }, 30000);
+                        });
+
+    }
+
+
     if (arrDevices.length > 0){
         console.log(arrDevices.length + ">>>>0");
           for (let index = 0; index < arrDevices.length; index++){
@@ -1869,25 +1895,39 @@ const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) 
 
                                if (discovery_started) return;
 
-                               chrome.bluetooth.startDiscovery( () => {
-                                console.log("start discovery");
-                                discovery_started = true;
-                                // Stop discovery after 30 seconds.
-                                setTimeout(() => {
-                                    chrome.bluetooth.stopDiscovery(() => {
+                             chrome.bluetooth.getDevices((devices) => {
 
-                                        discovery_started = false;
 
-                                            if (typeof(onDevicesNotFoundCb) == 'function'){
+                                if (devices.length == 0){
 
-                                                if (arrDevices.length == 0){
+                                    init_discovery();
 
-                                                    onDevicesNotFoundCb();
-                                                }
-                                            }
-                                    });
-                                }, 30000);
-                                });
+                                }else
+                                  for (var i = 0; i < devices.length; i++) {
+                                     updateDeviceName(devices[i]);
+                                  }
+                                 });
+
+
+                            //    chrome.bluetooth.startDiscovery( () => {
+                            //     console.log("start discovery");
+                            //     discovery_started = true;
+                            //     // Stop discovery after 30 seconds.
+                            //     setTimeout(() => {
+                            //         chrome.bluetooth.stopDiscovery(() => {
+
+                            //             discovery_started = false;
+
+                            //                 if (typeof(onDevicesNotFoundCb) == 'function'){
+
+                            //                     if (arrDevices.length == 0){
+
+                            //                         onDevicesNotFoundCb();
+                            //                     }
+                            //                 }
+                            //         });
+                            //     }, 30000);
+                            //     });
                               
                       }
                 });
@@ -1898,24 +1938,39 @@ const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) 
         
         if (discovery_started) return;
 
-        chrome.bluetooth.startDiscovery(() => {
-            console.log("start discovery");
-            // Stop discovery after 30 seconds.
-            discovery_started = true;
-            setTimeout(() =>{
-                chrome.bluetooth.stopDiscovery(() => {
-                    discovery_started = false;
+        
+        chrome.bluetooth.getDevices((devices) => {
 
-                    if (typeof(onDevicesNotFoundCb) == 'function'){
 
-                        if (arrDevices.length == 0){
+        if (devices.length == 0){
 
-                            onDevicesNotFoundCb();
-                        }
-                    }
-                });
-            }, /*3000*/30000);
+            init_discovery();
+
+        }else
+            for (var i = 0; i < devices.length; i++) {
+                updateDeviceName(devices[i]);
+            }
             });
+        
+
+        // chrome.bluetooth.startDiscovery(() => {
+        //     console.log("start discovery");
+        //     // Stop discovery after 30 seconds.
+        //     discovery_started = true;
+        //     setTimeout(() =>{
+        //         chrome.bluetooth.stopDiscovery(() => {
+        //             discovery_started = false;
+
+        //             if (typeof(onDevicesNotFoundCb) == 'function'){
+
+        //                 if (arrDevices.length == 0){
+
+        //                     onDevicesNotFoundCb();
+        //                 }
+        //             }
+        //         });
+        //     }, /*3000*/30000);
+        //     });
   
       }
 
