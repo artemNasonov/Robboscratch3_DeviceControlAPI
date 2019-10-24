@@ -1900,7 +1900,7 @@ const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) 
 
                                 if (devices.length == 0){
 
-                                    init_discovery();
+                                  //  init_discovery();
 
                                 }else
                                   for (var i = 0; i < devices.length; i++) {
@@ -1944,7 +1944,7 @@ const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) 
 
         if (devices.length == 0){
 
-            init_discovery();
+       //     init_discovery();
 
         }else
             for (var i = 0; i < devices.length; i++) {
