@@ -225,7 +225,7 @@ stopSearchProcess(){
 
 
 
-  move_servo_foot(ll,rl,lf,rf,speed){
+  move_servo_foot(lf,rf,ll,rl,speed){
     rl=180-rl;
     rf=180-rf;
     if((typeof(this.ConnectedOttos[0])!='undefined') &&[5].indexOf(this.ConnectedOttos[0].getDeviceID()) != -1 && this.ConnectedOttos[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){

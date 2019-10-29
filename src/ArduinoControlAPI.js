@@ -387,7 +387,7 @@ for(a=0;a<16;a++)
     }
 }
 else {
-    res[a]=32;
+    res[a]=127;
   }
   console.warn(res[a]);
 }
