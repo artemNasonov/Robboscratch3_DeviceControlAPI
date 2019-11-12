@@ -1902,6 +1902,8 @@ const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) 
 
                                   //  init_discovery();
 
+                                  onDevicesNotFoundCb();
+
                                 }else
                                   for (var i = 0; i < devices.length; i++) {
                                      updateDeviceName(devices[i]);
@@ -1945,6 +1947,8 @@ const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) 
         if (devices.length == 0){
 
        //     init_discovery();
+
+       onDevicesNotFoundCb();
 
         }else
             for (var i = 0; i < devices.length; i++) {

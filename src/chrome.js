@@ -1008,10 +1008,12 @@ function InterfaceDevice(port){
 
         //console.log("onRecieveCallback");
 
+        // console.warn(LOG + "CALLBACK!!! data <- " + data);
+
            clearTimeout(NO_RESPONSE);
          var buf = new Uint8Array(data);
       //   console.log(LOG + "CALLBACK!!! bytes recieved length <- " + buf.length);
-        // console.log(LOG + "CALLBACK!!! bytes buf <- " + buf);
+         // console.warn(LOG + "CALLBACK!!! bytes buf <- " + buf);
           var bufIncomingDataNew = null;
            bufIncomingDataNew = new Uint8Array(bufIncomingData.length + buf.length);
            bufIncomingDataNew.set(bufIncomingData);
@@ -1761,17 +1763,11 @@ function InterfaceDevice(port){
    }
 
    this.command = function(command, params, fCallback){
-    //  if(commandToRun != null) return;
-    //  commandToRun = command;
+    
+  //Оптимизация. Пропускаем одну a команду, если она влезла в очередь между двумя c.
+  //Актуально для последовательных блоков движения робота. 
 
-  //  if (command.code == "c"){
-
-  //       // console.warn(`command func`);
-        
-
-  //     }
-
-   if ((command.code == "a") && (old_command == "c")){
+   if ((command.code == "a") && (old_command == "c")){ 
 
      // console.warn("skip redundant a command");
       old_command = "a";
@@ -1788,79 +1784,67 @@ function InterfaceDevice(port){
 
     command_try_send_time2 = Date.now();
 
-     // if ((command_try_send_time2 - command_try_send_time1) >= NULL_COMMAND_TIMEOUT){
-     //   console.log(command_try_send_time2 + " looool " + command_try_send_time1);
-     //     if (command == DEVICES[iDeviceID].commands.check){
-     //             console.log(`OSHIBKA!`);
-     //             commandToRun = null;
-     //             wait_for_sync = true;
-     //     }
-     // }
-     //
-      if(commandToRun != null){
 
-        if ((command != DEVICES[iDeviceID].commands.check) ){
+    if ((command != DEVICES[iDeviceID].commands.check) ){//Не буфферизуем команду a, так как она сыпется в канал в интервале 
 
-            if (commands_stack.length > 0){
+          //Оптимизация.Не добавляем новую команду в очередь, если она полностью совпадает с предыдущей. 
+          //По коду и аргументам
 
-              let cmd_obj = commands_stack[commands_stack.length - 1];
+        //!!!Алгоритм подвержен проблеме пропуска для последовательно размещённых блоков "ехать секунды" или "ехать шаги" с одинаковым значением аргумента.
+        //Поэтому  временно его выключу.//added_by_Yarolsav
 
-          if ( (cmd_obj.command.code == command.code) ) {
+        
+        // if (commands_stack.length > 0){ 
+
+        //       let cmd_obj = commands_stack[commands_stack.length - 1]; 
+
+        //   if ( (cmd_obj.command.code == command.code) ) {
 
 
-                for (let i = 0; i<cmd_obj.params.length;i++){
+        //         for (let i = 0; i<cmd_obj.params.length;i++){
 
-                  should_kill_command = (cmd_obj.params[i]==params[i])?true:false;
+        //           should_kill_command = (cmd_obj.params[i]==params[i])?true:false; //Проходимся по аргументам команды и сравниваем их на совпадение.
 
-                  if (!should_kill_command) break;
+        //           //Если хотя бы один аргумент не совпадает, команду не трогаем. 
+                 
 
-                }
+        //             if (!should_kill_command) break;
 
-
-
-          }
+        //         }
 
 
 
-            }
-
-          if (!should_kill_command){
-
-          //  console.log(`buffering commands1... buffer length: ${commands_stack.length}`);
-
-           commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
-
-          //    console.warn(`survive ${command.code} command`);
-
-             // commands_stack.forEach(function(command_object,command_object_index){
-             //
-             //     console.log(`After push: ${command_object.command.code} command_object_index1: ${command_object_index}`);
-             //
-             // } );
-
-          }else{
-
-              //    console.warn(`kill ${command.code} command`);
-          }
+        //   }
 
 
 
-        }
+        // }//Если  длина commands_stack == 0, добавляем без сравнения. Конец commands_stack.length > 0 
 
 
-          return;
+          
+         // if (!should_kill_command){//добавляем в очередь, если команды отличаются
+
+         
+
+               commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
+         // }
+
+
+
+        }//конец command != DEVICES[iDeviceID].commands.check
+
+     
+      if(commandToRun != null){// Завершаемся, если канал ещё занят
+
+         return;
 
       }
 
 
-      if (commands_stack.length > 500){
+        //commandToRun == null
+       //can send new command
 
-            commands_stack = [];
-
-      }
-
-      if (commands_stack.length > 0){
-
+      if (commands_stack.length > 0){//берём из очереди команд, если она не пуста
 
 
 
@@ -1869,71 +1853,17 @@ function InterfaceDevice(port){
           let command_object          =  commands_stack.shift();
 
           commandToRun                = command_object.command;
-          command_local               = command_object.command; //Suprise!!!
-          params_local                = command_object.params; //Surprise!!!
+          command_local               = command_object.command; 
+          params_local                = command_object.params; 
           fCallback                   = command_object.fCallback;
 
-          if ( (command != DEVICES[iDeviceID].commands.check) ){
+           if (commands_stack.length > 500){
 
-
-            if ( (command_object.command.code == command.code) ) {
-
-
-                  for (let i = 0; i<command_object.params.length;i++){
-
-                    should_kill_command = (command_object.params[i]==params[i])?true:false;
-                    
-                    if (!should_kill_command) break;
-
-                  }
-
-
-
-            }
-
-
-            if (!should_kill_command){
-
-            //  console.log(`buffering commands2... buffer length: ${commands_stack.length}`);
-              commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
-          //    console.warn(`survive ${command.code} command`);
-
-            }else{
-
-            //        console.warn(`kill ${command.code} command`);
-            }
-
-
-
-        // if((command_object.command.code != command.code)&&((command_object.params[0]!=params[0])||(command_object.params[1]!=params[1])))
-        //       {
-        //
-        //
-        //       console.log(`buffering commands2... buffer length: ${commands_stack.length}`);
-        //     commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
-        //       console.warn(`survive ${command.code} command`);
-        //
-        //       }
-        // else
-        // {
-        //
-        //
-        //   console.warn(`kill ${command.code} command`);
-        //
-        // }
-          //   commands_stack.forEach(function(command_object,command_object_index){
-          //
-          // //      console.log(`Before shift: ${command_object.command.code} command_object_index2: ${command_object_index}`);
-          //
-          //   } );
+                commands_stack = [];
 
           }
 
-          // commands_stack.forEach(function(command_object,command_object_index){
-          //
-          //     console.log(`After shift: ${command_object.command.code} command_object_index3: ${command_object_index}`);
-          //
-          // } );
+         
 
 
       }else{
@@ -1944,66 +1874,33 @@ function InterfaceDevice(port){
 
        }
 
-      // setTimeout(function(){
-      //
-      //     commandToRun=null;
-      //
-      // },500)
+     
 
 
       command_try_send_time1 = Date.now();
 
       bufIncomingData = new Uint8Array();
-      //  var buf=new ArrayBuffer(command_local.code.length + params_local.length + 1);
+     
       const buf = Buffer.allocUnsafe(command_local.code.length + params_local.length + 1);
-      //   var  dv  = new DataView(buf);
+      
      var bufCommand = new TextEncoder("utf-8").encode(command_local.code);
-      //   var bufCommand =command_local.code;
-     //    bufView.set(bufCommand);
+     
       buf.writeUInt8(bufCommand, 0);
-      //  dv.setUint8(0,bufCommand,true);
+      
       var iParamOffset = 0;
        params_local.forEach(function(param){
          buf.writeUInt8(param, bufCommand.length + iParamOffset);
-        // dv.setUint8(bufCommand.length + iParamOffset,param,true);
+        
          iParamOffset++;
       });
       buf.writeUInt8(0x24, bufCommand.length + iParamOffset);
-     //dv.setUint8(bufCommand.length + iParamOffset,0x24,true);
-
-     //  var command_string = (bufCommand).toString(16);
-
-     //  params_local.forEach(function(param){
-     //  command_string+=  param.toString();
-     //    iParamOffset++;
-     // });
-
-     //   command_string += '$'.toString(16);
-
-    //  console.log(LOG+" Sended: "+buf);
-
-    //  console.log(command_string);
+    
       qport.write(buf);
-      //      console.log("OTRAVLENO!");
-
-    //  chrome.serial.send(iConnectionId, buf, onSend);
-    //const _serialport = require('serialport');
+     
 
 
     old_command = command_local.code;
 
-     // time2 = Date.now();
-     
-     //if (command_local.code == "h"){
-
-        //console.warn(`sending command: ${command_local.code} ${params_local[0]}  ${params_local[1]}  ${params_local[2]}`);
-        //console.warn(`time delta: ${time2 - time1}`);
-
-   //  }
-     
-  //    time1 = Date.now();
-
-     // console.warn(`sending command: ${command_local.code} ${params_local[0]}`);
 
       //for #
       var iWaitingNew = 1;
@@ -2031,6 +1928,10 @@ function InterfaceDevice(port){
     //  console.log(LOG + "we wating for " + iWaitingNew + " bytes");
       iWaiting = iWaitingNew;
    }
+
+
+
+
 
    this.disco = function(onClosedCb,device_port){
 
