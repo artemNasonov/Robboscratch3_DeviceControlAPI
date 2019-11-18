@@ -1826,12 +1826,18 @@ function InterfaceDevice(port){
 
          
 
-               commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
-         // }
+          // commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
+
+         
+            // }
 
 
+        
 
         }//конец command != DEVICES[iDeviceID].commands.check
+
+      
+    
 
      
       if(commandToRun != null){// Завершаемся, если канал ещё занят
@@ -1844,37 +1850,39 @@ function InterfaceDevice(port){
         //commandToRun == null
        //can send new command
 
-      if (commands_stack.length > 0){//берём из очереди команд, если она не пуста
+      // if (commands_stack.length > 0){//берём из очереди команд, если она не пуста
 
 
 
 
 
-          let command_object          =  commands_stack.shift();
+      //     let command_object          =  commands_stack.shift();
 
-          commandToRun                = command_object.command;
-          command_local               = command_object.command; 
-          params_local                = command_object.params; 
-          fCallback                   = command_object.fCallback;
+      //     commandToRun                = command_object.command;
+      //     command_local               = command_object.command; 
+      //     params_local                = command_object.params; 
+      //     fCallback                   = command_object.fCallback;
 
-           if (commands_stack.length > 500){
+      //      if (commands_stack.length > 500){
 
-                commands_stack = [];
+      //           commands_stack = [];
 
-          }
+      //     }
 
          
 
 
-      }else{
+      // }else{
 
-          commandToRun  = command;
-          command_local = command;
-          params_local  = params;
+      //     commandToRun  = command;
+      //     command_local = command;
+      //     params_local  = params;
 
-       }
+      //  }
 
-     
+      commandToRun  = command;
+      command_local = command;
+      params_local  = params;
 
 
       command_try_send_time1 = Date.now();

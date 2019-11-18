@@ -1363,46 +1363,79 @@ turnLedOff(led_position:number,robot_number:number){
   //
   // }
 
-  getSensorData(sensor_index:number){
+  // getSensorData(sensor_index:number){
 
   
-
-    //  var data  = this.ConnectedRobots[0].read_sync();
-     
-
-    //  if (data != null){
-
-    //     console.warn(`read_sync data: ${data}`);
-    //     this.ConnectedRobots[0].commandToRunSetNull();
-
-    //  }
           
 
-      switch (this.sensors_array[sensor_index]) {
+  //     switch (this.sensors_array[sensor_index]) {
 
-        case 1: //line
-        case 2: //led
-        case 3: //light
-        case 4://touch
-        case 5://proximity
+  //       case 1: //line
+  //       case 2: //led
+  //       case 3: //light
+  //       case 4://touch
+  //       case 5://proximity
 
-              return Math.round(this.SensorsData[`a${sensor_index}`][3] / 2.55);
+  //             return Math.round(this.SensorsData[`a${sensor_index}`][3] / 2.55);
 
-        //  break;
+  //       //  break;
 
-        case 6: //proximity
+  //       case 6: //proximity
 
-              return (this.SensorsData[`a${sensor_index}`][2] * 256 + this.SensorsData[`a${sensor_index}`][3] );
+  //             return (this.SensorsData[`a${sensor_index}`][2] * 256 + this.SensorsData[`a${sensor_index}`][3] );
 
-        //break;
+  //       //break;
 
-        default:
+  //       default:
 
-            return  -1;
+  //           return  -1;
 
-      }
+  //     }
 
-  }
+  // }
+
+  getSensorData(sensor_index:number){
+
+     switch (this.sensors_array[sensor_index]) {
+       case 1: //line
+       case 2: //led
+                return Math.round(this.SensorsData[`a${sensor_index}`][3] / 2.55);
+       
+
+      case 3: //light
+          // console.warn(this.SensorsData[`a${sensor_index}`][0]+"  -0 "+this.SensorsData[`a${sensor_index}`][1]+"-1 "+this.SensorsData[`a${sensor_index}`][2]+"-2 "+this.SensorsData[`a${sensor_index}`][3]+"-3 ");
+          var light2 = this.SensorsData[`a${sensor_index}`][3];  
+          if (light2<30)  // я взял число с неба
+              return  light2;
+
+          else     //АПРОКСИМАЦИЯ КУБ ФУНКЦ.
+            return Math.round(0.0000014*light2*light2*light2 - 0.0015701*light2*light2 + 0.6539938*light2+11.4121107);
+          
+      case 4://touch 0-255
+            if (this.SensorsData[`a${sensor_index}`][3]<150)  
+               return  0;
+            else
+              return 100;
+
+      case 5://proximity
+            if(Math.round(this.SensorsData[`a${sensor_index}`][3]-35)>100)
+                    return 100;
+            else if(Math.round(this.SensorsData[`a${sensor_index}`][3]-35)<0)
+                    return 0;
+            else return Math.round(this.SensorsData[`a${sensor_index}`][3]-35);
+
+      case 6://ultrasonic     
+        return (this.SensorsData[`a${sensor_index}`][2] * 256 + this.SensorsData[`a${sensor_index}`][3] );
+           
+
+       //  break;
+
+       default:
+           return  -1;
+
+     }
+
+ }
 
   setRobotSensor(robot_number:number,sensor_id:number,sensor_name:string){
 
