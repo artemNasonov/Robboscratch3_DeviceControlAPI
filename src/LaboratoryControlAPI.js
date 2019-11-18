@@ -1060,6 +1060,43 @@ runLabStatusChangeLoop(){
 
 }
 
+
+block_A_CommandQueue(){
+
+    this.a_command_queue_blocked = true;
+
+    clearTimeout(this.a_command_queue_restore_timeout);
+
+    this.a_command_queue_restore_timeout = setTimeout(() => {
+
+         this.a_command_queue_blocked = false;
+
+    },1000);
+
+  }
+
+  unblock_A_CommandQueue(){
+
+    this.a_command_queue_blocked = false;
+
+  }
+
+  isLabReadyToAcceptCommand(){
+
+    if (typeof(this.ConnectedLaboratories[0]) !== 'undefined'){
+
+         return this.ConnectedLaboratories[0].isReadyToAcceptCommand();
+
+    }else{
+
+        return true;
+
+    }
+
+     
+
+  }
+
 runDataRecieveCommand(device:InterfaceDevice){
 
 
@@ -1067,7 +1104,7 @@ runDataRecieveCommand(device:InterfaceDevice){
 
   if (device.getState() == DEVICE_STATES["DEVICE_IS_READY"]){
 
-      if (this.ConnectedLaboratories[0].isReadyToAcceptCommand()){
+      if (this.ConnectedLaboratories[0].isReadyToAcceptCommand() && (!this.a_command_queue_blocked)  ){
 
 
       //  console.log("runDataRecieveCommand laboratory");
