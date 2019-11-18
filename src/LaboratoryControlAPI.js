@@ -114,6 +114,8 @@ export default class LaboratoryConrolAPI extends DeviceControlAPI {
       this.previousLabState = DEVICE_STATES["INITED"];
       this.currentLabState =  DEVICE_STATES["INITED"];
 
+      this.a_command_queue_restore_timeout = null;
+
 
     }
 
