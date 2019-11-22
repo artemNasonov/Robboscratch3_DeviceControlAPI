@@ -1688,7 +1688,7 @@ turnLedOff(led_position:number,robot_number:number){
 
   runDataRecieveCommand(device:InterfaceDevice){
 
-  if (this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+  if ( (typeof(this.ConnectedRobots) !== 'undefined') && (this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]) ){
 
 
     if ( (this.ConnectedRobots[0].isReadyToAcceptCommand()) && (!this.a_command_queue_blocked)  ) {
