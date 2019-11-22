@@ -1787,49 +1787,14 @@ function InterfaceDevice(port){
 
     if ((command != DEVICES[iDeviceID].commands.check) ){//Не буфферизуем команду a, так как она сыпется в канал в интервале 
 
-          //Оптимизация.Не добавляем новую команду в очередь, если она полностью совпадает с предыдущей. 
-          //По коду и аргументам
-
-        //!!!Алгоритм подвержен проблеме пропуска для последовательно размещённых блоков "ехать секунды" или "ехать шаги" с одинаковым значением аргумента.
-        //Поэтому  временно его выключу.//added_by_Yarolsav
-
-        
-        // if (commands_stack.length > 0){ 
-
-        //       let cmd_obj = commands_stack[commands_stack.length - 1]; 
-
-        //   if ( (cmd_obj.command.code == command.code) ) {
-
-
-        //         for (let i = 0; i<cmd_obj.params.length;i++){
-
-        //           should_kill_command = (cmd_obj.params[i]==params[i])?true:false; //Проходимся по аргументам команды и сравниваем их на совпадение.
-
-        //           //Если хотя бы один аргумент не совпадает, команду не трогаем. 
-                 
-
-        //             if (!should_kill_command) break;
-
-        //         }
-
-
-
-        //   }
-
-
-
-        // }//Если  длина commands_stack == 0, добавляем без сравнения. Конец commands_stack.length > 0 
-
-
           
-         // if (!should_kill_command){//добавляем в очередь, если команды отличаются
 
          
 
-          // commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
+           commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
 
          
-            // }
+           
 
 
         
@@ -1850,39 +1815,39 @@ function InterfaceDevice(port){
         //commandToRun == null
        //can send new command
 
-      // if (commands_stack.length > 0){//берём из очереди команд, если она не пуста
+      if (commands_stack.length > 0){//берём из очереди команд, если она не пуста
 
 
 
 
 
-      //     let command_object          =  commands_stack.shift();
+          let command_object          =  commands_stack.shift();
 
-      //     commandToRun                = command_object.command;
-      //     command_local               = command_object.command; 
-      //     params_local                = command_object.params; 
-      //     fCallback                   = command_object.fCallback;
+          commandToRun                = command_object.command;
+          command_local               = command_object.command; 
+          params_local                = command_object.params; 
+          fCallback                   = command_object.fCallback;
 
-      //      if (commands_stack.length > 500){
+           if (commands_stack.length > 500){
 
-      //           commands_stack = [];
+                commands_stack = [];
 
-      //     }
+          }
 
          
 
 
-      // }else{
+      }else{
 
-      //     commandToRun  = command;
-      //     command_local = command;
-      //     params_local  = params;
+          commandToRun  = command;
+          command_local = command;
+          params_local  = params;
 
-      //  }
+       }
 
-      commandToRun  = command;
-      command_local = command;
-      params_local  = params;
+      // commandToRun  = command;
+      // command_local = command;
+      // params_local  = params;
 
 
       command_try_send_time1 = Date.now();

@@ -948,6 +948,8 @@ const DEVICES = Object.freeze({
 
 var arrDevices = [];
 
+const performance = typeof window === 'object' && window.performance;
+
 function InterfaceDevice(device) {
     { //PEREMENNIE
 	console.log("new BluetoothInterfaceDevice");
@@ -1086,11 +1088,11 @@ function InterfaceDevice(device) {
 		commandToRun = null;
 		iWaiting = 0;
 		callback(response);
-		recieve_time1 = Date.now();
+		recieve_time1 = performance.now();
 		recieve_time_delta = recieve_time1 - recieve_time2;
 		//console.warn("time delta recieve: " + recieve_time_delta);
 
-		recieve_time2 = Date.now();
+		recieve_time2 = performance.now();
             }
 	}
 	else {
@@ -1489,6 +1491,11 @@ function InterfaceDevice(device) {
      
      
       }
+
+      this.getRecieveTimeDelta = function(){
+
+        return recieve_time_delta;
+      }
     
     this.getState = function(){
 	return state;
@@ -1591,112 +1598,87 @@ function InterfaceDevice(device) {
     
     this.command = function(command, params, fCallback) {
 
-	if ((command.code == "a") && (old_command == "c")){
+	 var fCallback = fCallback;
 
-	    // console.warn("skip redundant a command");
-	    old_command = "a";
-	    return;
-	}
+    var command_local = command;
+    var params_local  = params;
 
-	var fCallback = fCallback;
+    var should_kill_command = false;
 
-	var command_local = command;
-	var params_local  = params;
-
-	var should_kill_command = false;
-
-	command_try_send_time2 = Date.now();
-
-	if(commandToRun != null) {
-            if ((command != DEVICES[iDeviceID].commands.check) ) {
-		if (commands_stack.length > 0) {
-		    let cmd_obj = commands_stack[commands_stack.length - 1];
-		    if ( (cmd_obj.command.code == command.code) ) {
-			for (let i = 0; i<cmd_obj.params.length;i++){
-			    should_kill_command = (cmd_obj.params[i]==params[i])?true:false;
-			    if (!should_kill_command) break;
-			}
-		    }
-		}
-		if (!should_kill_command) {
-		    //  console.log(`buffering commands1... buffer length: ${commands_stack.length}`);
-		    commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
-		}
-		else {
-		}
-            }
-            return;
-	}
-	if (commands_stack.length > 500){
-            commands_stack = [];
-	}
-	if (commands_stack.length > 0) {
-            let command_object          =  commands_stack.shift();
-
-            commandToRun                = command_object.command;
-            command_local               = command_object.command; //Suprise!!!
-            params_local                = command_object.params; //Surprise!!!
-            fCallback                   = command_object.fCallback;
-
-            if ( (command != DEVICES[iDeviceID].commands.check) ){
-		if ( (command_object.command.code == command.code) ) {
-                    for (let i = 0; i<command_object.params.length;i++){
-			should_kill_command = (command_object.params[i]==params[i])?true:false;		
-			if (!should_kill_command) break;
-                    }
-		}
-		if (!should_kill_command){
-		    //  console.log(`buffering commands2... buffer length: ${commands_stack.length}`);
-		    commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
-		    //    console.warn(`survive ${command.code} command`);
-		} else {
-		    //        console.warn(`kill ${command.code} command`);
-		}
-	    }
-	} else {
-            commandToRun  = command;
-            command_local = command;
-            params_local  = params;
-	}
-
-	// setTimeout(function(){
-	//
-	//     commandToRun=null;
-	//
-	// },500)
-
-	// if ( (old_command == command_local.code) ) {
+    command_try_send_time2 = Date.now();
 
 
-    //         for (let i = 0; i<command_local.params.length;i++){
-	// 	console.log(`command_local.params: ${params_local[i]} old_params: ${old_params[i]}`);
-	// 	should_kill_command = (params_local[i]==old_params[i])?true:false;
-	// 	if (!should_kill_command) { break; }
-    //         } 
-	//     if (should_kill_command) { console.log("killing block"); commandToRun = null; return; }
-    // }
+    if ((command != DEVICES[iDeviceID].commands.check) ){//Не буфферизуем команду a, так как она сыпется в канал в интервале 
+
+          
+
+         
+
+           commands_stack.push({command:command,params:params,fCallback:fCallback,self:this});
+
+         
+           
+
+
+        
+
+        }//конец command != DEVICES[iDeviceID].commands.check
+
+      
     
+
+     
+      if(commandToRun != null){// Завершаемся, если канал ещё занят
+
+         return;
+
+      }
+
+
+        //commandToRun == null
+       //can send new command
+
+      if (commands_stack.length > 0){//берём из очереди команд, если она не пуста
+
+
+
+
+
+          let command_object          =  commands_stack.shift();
+
+          commandToRun                = command_object.command;
+          command_local               = command_object.command; 
+          params_local                = command_object.params; 
+          fCallback                   = command_object.fCallback;
+
+           if (commands_stack.length > 500){
+
+                commands_stack = [];
+
+          }
+
+         
+
+
+      }else{
+
+          commandToRun  = command;
+          command_local = command;
+          params_local  = params;
+
+       }
+
+      // commandToRun  = command;
+      // command_local = command;
+      // params_local  = params;
+
+	
+
+	 
 	command_try_send_time1 = Date.now();
 
 	bufIncomingData = new Uint8Array();
-	//  var buf=new ArrayBuffer(command_local.code.length + params_local.length + 1);
-	/*const buf = Buffer.allocUnsafe(command_local.code.length + params_local.length + 1);
-	//   var  dv  = new DataView(buf);
-	var bufCommand = new TextEncoder("utf-8").encode(command_local.code);
-	//   var bufCommand =command_local.code;
-	//    bufView.set(bufCommand);
-	buf.writeUInt8(bufCommand, 0);
-	//  dv.setUint8(0,bufCommand,true);
-	var iParamOffset = 0;
-	old_params = [];
-	params_local.forEach(function(param){
-            buf.writeUInt8(param, bufCommand.length + iParamOffset);
-            // dv.setUint8(bufCommand.length + iParamOffset,param,true);
-            iParamOffset++;
-	    
-	    old_params.push(param); //for block killing purposes
-	});
-	buf.writeUInt8(0x24, bufCommand.length + iParamOffset);*/
+	
 
 	var buf=new ArrayBuffer(command_local.code.length + params_local.length + 1);
 	var bufView=new Uint8Array(buf);
@@ -1710,20 +1692,7 @@ function InterfaceDevice(device) {
 
 	bufView[bufCommand.length + iParamOffset] = 36;
 	
-	//dv.setUint8(bufCommand.length + iParamOffset,0x24,true);
 
-	//  var command_string = (bufCommand).toString(16);
-
-	//  params_local.forEach(function(param){
-	//  command_string+=  param.toString();
-	//    iParamOffset++;
-	// });
-
-	//   command_string += '$'.toString(16);
-
-	//  console.log(LOG+" Sended: "+buf);
-
-	//  console.log(command_string);
 
 	//BT LOCATION
 	chrome.bluetoothSocket.send(socketId, buf, function(bytes_sent) {
