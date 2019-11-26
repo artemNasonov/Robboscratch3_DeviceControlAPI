@@ -5,7 +5,7 @@ const NULL_COMMAND_TIMEOUT = 1 * 5 * 1000;
 const CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT = 500;
 
 //var DEVICE_HANDLE_TIMEOUT = 1 * 10 * 1000;
-var DEVICE_HANDLE_TIMEOUT = 1 * 4 * 1000;
+var DEVICE_HANDLE_TIMEOUT = 1 * 10 * 1000; //1 * 4 * 1000;
 var NO_RESPONSE_TIME = 3000;
 var NO_START_TIMEOUT = 1000;
 var UNO_TIMEOUT = 3000;
@@ -17,7 +17,7 @@ console.log = function(string){
         log(string);
   }
 }
-console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.6");
+console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.7");
 
 var import_settings = function(){
 
@@ -36,7 +36,9 @@ var import_settings = function(){
                 NO_START_TIMEOUT = Math.floor(Number(json.device_no_start_timeout))||1000;
                 UNO_TIMEOUT      = Math.floor(Number(json.device_uno_start_search_timeout))||3000;
 
-                console.warn(`NO_RESPONSE_TIME: ${NO_RESPONSE_TIME}  NO_START_TIMEOUT: ${NO_START_TIMEOUT} UNO_TIMEOUT: ${UNO_TIMEOUT}`);
+               // DEVICE_HANDLE_TIMEOUT = Math.floor(Number(json.device_handle_timeout)) || 4000;
+
+                console.warn(`NO_RESPONSE_TIME: ${NO_RESPONSE_TIME}  NO_START_TIMEOUT: ${NO_START_TIMEOUT} UNO_TIMEOUT: ${UNO_TIMEOUT}  DEVICE_HANDLE_TIMEOUT: ${DEVICE_HANDLE_TIMEOUT}`);
           }
 
 
