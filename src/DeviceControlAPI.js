@@ -1,8 +1,35 @@
 
 
-import {InterfaceDevice,searchDevices,getConnectedDevices,DEVICES,DEVICE_STATES,trigger_logging,DEVICE_HANDLE_TIMEOUT,NO_RESPONSE_TIME} from './chrome';
+import {
+  InterfaceDevice,
+  searchDevices,
+  getConnectedDevices,
+  DEVICES,
+  DEVICE_STATES,
+  trigger_logging,
+  DEVICE_HANDLE_TIMEOUT,
+  NO_RESPONSE_TIME,
+  set_all_intervals,
+  NO_RESPONSE_TIME_MAX, 
+  NO_START_TIMEOUT_MAX,
+  DEVICE_HANDLE_TIMEOUT_MAX,
+  DEVICE_HANDLE_TIMEOUT_DEFAULT,
+  NO_RESPONSE_TIME_DEFAULT,
+  NO_START_TIMEOUT_DEFAULT,
+  UNO_TIMEOUT_DEFAULT,
+} from './chrome';
 
-import {searchBluetoothDevices} from './bluetooth-chrome';
+import {
+  searchBluetoothDevices,
+  DEVICE_HANDLE_TIMEOUT_DEFAULT_BLUETOOTH,
+  NO_RESPONSE_TIME_DEFAULT_BLUETOOTH,
+  NO_START_TIMEOUT_DEFAULT_BLUETOOTH,
+  UNO_TIMEOUT_DEFAULT_BLUETOOTH,
+  DEVICE_HANDLE_TIMEOUT_MAX_BLUETOOTH,
+  NO_RESPONSE_TIME_MAX_BLUETOOTH,
+  NO_START_TIMEOUT_MAX_BLUETOOTH,
+  set_all_intervals_bluetooth,
+} from './bluetooth-chrome';
 
 import {flash_firmware,search_ports} from './firmware_flasher_new';
 
@@ -29,6 +56,13 @@ export default  class DeviceControlAPI {
 
     }
 
+   set_all_intervals_in_dca(obj){
+    set_all_intervals(obj);
+  }
+
+  set_all_intervals_in_bluetooth(obj){
+    set_all_intervals_bluetooth(obj);
+  }
 
       searchAllDevices(){
 
@@ -331,6 +365,40 @@ export default  class DeviceControlAPI {
 
         }
 
+      }
+
+      getDefaultValuesOfIntervals(){
+        return{
+          DEVICE_HANDLE_TIMEOUT_DEFAULT: DEVICE_HANDLE_TIMEOUT_DEFAULT,
+          NO_RESPONSE_TIME_DEFAULT: NO_RESPONSE_TIME_DEFAULT,
+          NO_START_TIMEOUT_DEFAULT: NO_START_TIMEOUT_DEFAULT,
+          UNO_TIMEOUT_DEFAULT: UNO_TIMEOUT_DEFAULT,
+        }
+      }
+
+      getMaxValuesOfIntervals(){
+        return{
+          NO_RESPONSE_TIME_MAX: NO_RESPONSE_TIME_MAX, 
+          NO_START_TIMEOUT_MAX: NO_START_TIMEOUT_MAX,
+          DEVICE_HANDLE_TIMEOUT_MAX: DEVICE_HANDLE_TIMEOUT_MAX,
+        }
+      }
+
+      getMaxValuesOfIntervalsBluetooth(){
+        return{
+          DEVICE_HANDLE_TIMEOUT_MAX_BLUETOOTH,
+          NO_RESPONSE_TIME_MAX_BLUETOOTH,
+          NO_START_TIMEOUT_MAX_BLUETOOTH,
+        }
+      }
+
+      getDefaultValuesOfIntervalsBluetooth(){
+        return{
+          DEVICE_HANDLE_TIMEOUT_DEFAULT_BLUETOOTH,
+          NO_RESPONSE_TIME_DEFAULT_BLUETOOTH,
+          NO_START_TIMEOUT_DEFAULT_BLUETOOTH,
+          UNO_TIMEOUT_DEFAULT_BLUETOOTH,
+        }
       }
 
 

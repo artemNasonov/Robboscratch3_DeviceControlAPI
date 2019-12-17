@@ -4,11 +4,20 @@ const DEVICE_SERIAL_NUMBER_LENGTH = 52;
 const NULL_COMMAND_TIMEOUT = 1 * 5 * 1000;
 const CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT = 500;
 
-//var DEVICE_HANDLE_TIMEOUT = 1 * 10 * 1000;
-var DEVICE_HANDLE_TIMEOUT = 1 * 10 * 1000; //1 * 4 * 1000;
-var NO_RESPONSE_TIME = 3000;
-var NO_START_TIMEOUT = 1000;
-var UNO_TIMEOUT = 3000;
+const DEVICE_HANDLE_TIMEOUT_MAX = 100000;
+const NO_RESPONSE_TIME_MAX = 100000;
+const NO_START_TIMEOUT_MAX = 100000;
+
+const DEVICE_HANDLE_TIMEOUT_DEFAULT = 10000;
+const NO_RESPONSE_TIME_DEFAULT = 3000;
+const NO_START_TIMEOUT_DEFAULT = 3000;
+const UNO_TIMEOUT_DEFAULT = 3000;
+
+
+var DEVICE_HANDLE_TIMEOUT = DEVICE_HANDLE_TIMEOUT_DEFAULT;
+var NO_RESPONSE_TIME = NO_RESPONSE_TIME_DEFAULT;
+var NO_START_TIMEOUT = NO_START_TIMEOUT_DEFAULT;
+var UNO_TIMEOUT = UNO_TIMEOUT_DEFAULT;
 
 const log = console.log;
 var can_log = true;
@@ -17,7 +26,7 @@ console.log = function(string){
         log(string);
   }
 }
-console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.7");
+console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.8");
 
 var import_settings = function(){
 
@@ -1951,9 +1960,16 @@ function InterfaceDevice(port){
 
 const searchDevices = function(onDevicesFoundCb){
 
-  import_settings();
+ // import_settings();
 
  //  arrDevices = [];
+
+  console.warn("NO_RESPONSE_TIME = " + NO_RESPONSE_TIME);
+  console.warn("NO_START_TIMEOUT = " + NO_START_TIMEOUT);
+  console.warn("UNO_TIMEOUT = " + UNO_TIMEOUT);
+  console.warn("DEVICE_HANDLE_TIMEOUT = " + DEVICE_HANDLE_TIMEOUT);
+
+
  var disconected_devices=0;
     var onGetDevices = function(err,ports) {//NEW DEVICE SEARHING
       for (var i=0; i<ports.length; i++) {
@@ -2017,6 +2033,45 @@ const trigger_logging = function(){
 
 }
 
+
+
+const set_all_intervals = function(obj){
+  let no_response_timeout = Math.round(Number(obj.device_response_timeout));
+  let no_start_timeout = Math.round(Number(obj.device_no_start_timeout));
+  let uno_timeout = Math.round(Number(obj.device_uno_start_search_timeout));
+  let device_handle_timeout = Math.round(Number(obj.device_handle_timeout));
+  if(typeof(no_response_timeout)==='number' && no_response_timeout<NO_RESPONSE_TIME_MAX && no_response_timeout>0){
+    NO_RESPONSE_TIME=no_response_timeout;
+    //console.log("NO_RESPONSE_TIME = " + NO_RESPONSE_TIME);
+  } else {
+    NO_RESPONSE_TIME = NO_RESPONSE_TIME_DEFAULT;
+  }
+  if(typeof(no_start_timeout)==='number' && no_start_timeout<NO_START_TIMEOUT_MAX && no_start_timeout>0){
+    NO_START_TIMEOUT=no_start_timeout;
+  //  console.log("NO_START_TIMEOUT = " + NO_START_TIMEOUT);
+  } else {
+    NO_START_TIMEOUT = NO_START_TIMEOUT_DEFAULT;
+  }
+  if(typeof(device_handle_timeout)==='number' && device_handle_timeout<DEVICE_HANDLE_TIMEOUT_MAX && device_handle_timeout>0){
+    DEVICE_HANDLE_TIMEOUT=device_handle_timeout;
+   // console.log("DEVICE_HANDLE_TIMEOUT = " + DEVICE_HANDLE_TIMEOUT);
+  } else {
+    DEVICE_HANDLE_TIMEOUT = DEVICE_HANDLE_TIMEOUT_DEFAULT;
+  }
+  if(typeof(uno_timeout)==='number' && uno_timeout<DEVICE_HANDLE_TIMEOUT && uno_timeout>0){
+    UNO_TIMEOUT=uno_timeout;
+  } else {
+    UNO_TIMEOUT = Math.round(DEVICE_HANDLE_TIMEOUT/2);
+  }
+
+  console.warn("NO_RESPONSE_TIME = " + NO_RESPONSE_TIME);
+  console.warn("NO_START_TIMEOUT = " + NO_START_TIMEOUT);
+  console.warn("UNO_TIMEOUT = " + UNO_TIMEOUT);
+  console.warn("DEVICE_HANDLE_TIMEOUT = " + DEVICE_HANDLE_TIMEOUT);
+
+} 
+
+
 export  {
 
   InterfaceDevice,
@@ -2027,7 +2082,15 @@ export  {
   DEVICE_STATES,
   trigger_logging,
   DEVICE_HANDLE_TIMEOUT,
-  NO_RESPONSE_TIME
+  DEVICE_HANDLE_TIMEOUT_MAX,
+  NO_RESPONSE_TIME,
+  NO_RESPONSE_TIME_MAX, 
+  NO_START_TIMEOUT_MAX,
+  DEVICE_HANDLE_TIMEOUT_DEFAULT,
+  NO_RESPONSE_TIME_DEFAULT,
+  NO_START_TIMEOUT_DEFAULT,
+  UNO_TIMEOUT_DEFAULT,
+  set_all_intervals,
 
 
 };

@@ -11,11 +11,20 @@ const DEVICE_SERIAL_NUMBER_LENGTH = 52;
 const NULL_COMMAND_TIMEOUT = 1 * 5 * 1000;
 const CHECK_SERIAL_NUMBER_FLUSH_TIMEOUT = 500;
 
-var DEVICE_HANDLE_TIMEOUT = 1 * 10 * 1000;
-//var NO_RESPONSE_TIME = 3000;
-var NO_RESPONSE_TIME = 10000;
-var NO_START_TIMEOUT = 3000;
-var UNO_TIMEOUT = 3000;
+const DEVICE_HANDLE_TIMEOUT_DEFAULT_BLUETOOTH = 1 * 10 * 1000;
+const NO_RESPONSE_TIME_DEFAULT_BLUETOOTH      = 10000;
+const NO_START_TIMEOUT_DEFAULT_BLUETOOTH      = 3000;
+const UNO_TIMEOUT_DEFAULT_BLUETOOTH           = 3000;
+
+const DEVICE_HANDLE_TIMEOUT_MAX_BLUETOOTH = 100000;
+const NO_RESPONSE_TIME_MAX_BLUETOOTH      = 100000;
+const NO_START_TIMEOUT_MAX_BLUETOOTH      = 100000;
+
+
+var DEVICE_HANDLE_TIMEOUT = DEVICE_HANDLE_TIMEOUT_DEFAULT_BLUETOOTH;
+var NO_RESPONSE_TIME = NO_RESPONSE_TIME_DEFAULT_BLUETOOTH; 
+var NO_START_TIMEOUT = NO_START_TIMEOUT_DEFAULT_BLUETOOTH;
+var UNO_TIMEOUT = UNO_TIMEOUT_DEFAULT_BLUETOOTH;
 
 var uuid = '1101'; //'1101', '0x1101', '1105' 
 
@@ -30,7 +39,7 @@ console.log = function(string) {
 }
 
 console.log("Version A - BT-C.js");
-console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.4");
+console.log("Robboscratch3_DeviceControlAPI-module-version-1.0.5");
 
 var import_settings = function(){
 
@@ -1760,7 +1769,12 @@ function ab2str(buf) {
 
 const searchBluetoothDevices = function (onDevicesNotFoundCb,onDevicesFoundCb ) {
     //import_settings();
-    console.log("Searching bluetooth devices...");
+    console.warn("Searching bluetooth devices...");
+
+  console.warn("NO_RESPONSE_TIME BT = " + NO_RESPONSE_TIME);
+  console.warn("NO_START_TIMEOUT BT = " + NO_START_TIMEOUT);
+  console.warn("UNO_TIMEOUT BT = " + UNO_TIMEOUT);
+  console.warn("DEVICE_HANDLE_TIMEOUT BT = " + DEVICE_HANDLE_TIMEOUT);
 
     var device_names = [];
     var disconected_devices=0;
@@ -1973,11 +1987,57 @@ const trigger_logging = function(){
 
 }
 
+
+const set_all_intervals_bluetooth = function(obj){
+    let no_response_timeout_bluetooth = Math.round(Number(obj.device_response_timeout_bluetooth));
+    let no_start_timeout_bluetooth = Math.round(Number(obj.device_no_start_timeout_bluetooth));
+    let uno_timeout_bluetooth = Math.round(Number(obj.device_uno_start_search_timeout_bluetooth));
+    let device_handle_timeout_bluetooth = Math.round(Number(obj.device_handle_timeout_bluetooth));
+    if(typeof(no_response_timeout_bluetooth)==='number' && no_response_timeout_bluetooth<NO_RESPONSE_TIME_MAX_BLUETOOTH && no_response_timeout_bluetooth>0){
+      NO_RESPONSE_TIME=no_response_timeout_bluetooth;
+     // console.log("NO_RESPONSE_TIME_BLUETOOTH = " + NO_RESPONSE_TIME);
+    } else {
+      NO_RESPONSE_TIME = NO_RESPONSE_TIME_DEFAULT_BLUETOOTH;
+    }
+    if(typeof(no_start_timeout_bluetooth)==='number' && no_start_timeout_bluetooth<NO_START_TIMEOUT_MAX_BLUETOOTH && no_start_timeout_bluetooth>0){
+      NO_START_TIMEOUT=no_start_timeout_bluetooth;
+     // console.log("NO_START_TIMEOUT_BLUETOOTH = " + NO_START_TIMEOUT);
+    } else {
+      NO_START_TIMEOUT = NO_START_TIMEOUT_DEFAULT_BLUETOOTH;
+    }
+    if(typeof(device_handle_timeout_bluetooth)==='number' && device_handle_timeout_bluetooth<DEVICE_HANDLE_TIMEOUT_MAX_BLUETOOTH && device_handle_timeout_bluetooth>0){
+      DEVICE_HANDLE_TIMEOUT=device_handle_timeout_bluetooth;
+   //   console.log("DEVICE_HANDLE_TIMEOUT_BLUETOOTH = " + DEVICE_HANDLE_TIMEOUT);
+    } else {
+      DEVICE_HANDLE_TIMEOUT = DEVICE_HANDLE_TIMEOUT_DEFAULT_BLUETOOTH;
+    }
+    if(typeof(uno_timeout_bluetooth)==='number' && uno_timeout_bluetooth<DEVICE_HANDLE_TIMEOUT && uno_timeout_bluetooth>0){
+      UNO_TIMEOUT=uno_timeout_bluetooth;
+    } else {
+      UNO_TIMEOUT = Math.round(UNO_TIMEOUT_DEFAULT_BLUETOOTH/2);
+    }
+
+     console.warn("NO_RESPONSE_TIME BT = " + NO_RESPONSE_TIME);
+     console.warn("NO_START_TIMEOUT BT = " + NO_START_TIMEOUT);
+     console.warn("UNO_TIMEOUT BT = " + UNO_TIMEOUT);
+     console.warn("DEVICE_HANDLE_TIMEOUT BT = " + DEVICE_HANDLE_TIMEOUT);
+
+
+  } 
+
 export {
     InterfaceDevice,
     searchBluetoothDevices,
     getConnectedBluetoothDevices,
     pushConnectedDevices,
     DEVICES,
-    DEVICE_STATES
+    DEVICE_STATES,
+    DEVICE_HANDLE_TIMEOUT_DEFAULT_BLUETOOTH,
+    NO_RESPONSE_TIME_DEFAULT_BLUETOOTH,
+    NO_START_TIMEOUT_DEFAULT_BLUETOOTH,
+    UNO_TIMEOUT_DEFAULT_BLUETOOTH,
+    DEVICE_HANDLE_TIMEOUT_MAX_BLUETOOTH,
+    NO_RESPONSE_TIME_MAX_BLUETOOTH,
+    NO_START_TIMEOUT_MAX_BLUETOOTH,
+    set_all_intervals_bluetooth,
 }
