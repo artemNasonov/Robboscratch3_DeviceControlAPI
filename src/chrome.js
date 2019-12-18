@@ -1973,9 +1973,13 @@ const searchDevices = function(onDevicesFoundCb){
  var disconected_devices=0;
     var onGetDevices = function(err,ports) {//NEW DEVICE SEARHING
       for (var i=0; i<ports.length; i++) {
+
         //if(typeof(ports[i].vendorId) !== 'undefined'){
-        if( ( (typeof(ports[i].manufacturer) !== 'undefined') || (ports[i].comName.indexOf("rfcom") != -1) ) && (ports[i].comName.toLowerCase() !== 'com1') ){
-        console.info(" NEW device name is "+ ports[i].comName);
+
+        console.warn(`ports[i].comName: ${ports[i].comName}`);
+
+        if( ( (typeof(ports[i].manufacturer) !== 'undefined') || (ports[i].comName.indexOf("rfcom") != -1) || (ports[i].comName.indexOf("/dev/tty.") != -1) ) && (ports[i].comName.toLowerCase() !== 'com1') ){
+        console.warn(" NEW device name is "+ ports[i].comName);
         var device = new InterfaceDevice(ports[i]);
          arrDevices.push(device);
       }
