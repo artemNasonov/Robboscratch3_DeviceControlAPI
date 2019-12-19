@@ -1976,7 +1976,7 @@ const searchDevices = function(onDevicesFoundCb){
 
         //if(typeof(ports[i].vendorId) !== 'undefined'){
 
-        console.warn(`ports[i].comName: ${ports[i].comName}`);
+        //console.warn(`ports[i].comName: ${ports[i].comName}`);
 
         if( ( (typeof(ports[i].manufacturer) !== 'undefined') || (ports[i].comName.indexOf("rfcom") != -1) || (ports[i].comName.indexOf("/dev/tty.") != -1) ) && (ports[i].comName.toLowerCase() !== 'com1') ){
         console.warn(" NEW device name is "+ ports[i].comName);
