@@ -929,19 +929,14 @@ var percent_sum = Kr_in_percent + Kg_in_percent + Kb_in_percent;
       let rgb_arr = [0,0,0];
 
       if ( typeof(this.SensorsData) != 'undefined' ){
-
         rgb_arr[0] = Math.round(this.SensorsData[`a${sensor_id}`][1] *  this.colorKoefs[sensor_id].Kr * 3); //red
         rgb_arr[1] = Math.round(this.SensorsData[`a${sensor_id}`][2] *  this.colorKoefs[sensor_id].Kg * 3); //green
         rgb_arr[2] = Math.round(this.SensorsData[`a${sensor_id}`][3] *  this.colorKoefs[sensor_id].Kb * 3); //blue
 
-
-
         return rgb_arr;
-
-      } else return rgb_arr;
-
-
-
+      } else {
+        return rgb_arr;
+      }
     }
 
 
@@ -1582,23 +1577,15 @@ turnLedOff(led_position:number,robot_number:number){
 
 
   block_A_CommandQueue(){
-
     this.a_command_queue_blocked = true;
-
     clearTimeout(this.a_command_queue_restore_timeout);
-
     this.a_command_queue_restore_timeout = setTimeout(() => {
-
-         this.a_command_queue_blocked = false;
-
+      this.a_command_queue_blocked = false;
     },1000);
-
   }
 
   unblock_A_CommandQueue(){
-
     this.a_command_queue_blocked = false;
-
   }
 
   isRobotReadyToAcceptCommand(){
@@ -1687,49 +1674,32 @@ turnLedOff(led_position:number,robot_number:number){
 
 
   runDataRecieveCommand(device:InterfaceDevice){
+    if (this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]){
+      if ( (this.ConnectedRobots[0].isReadyToAcceptCommand()) && (!this.a_command_queue_blocked)  ) {
+      //   console.log("runDataRecieveCommand");
+        this.can_autoreconnect = false;
+        //  console.log("this.can_autoreconnect = false;                                                                                   11111111111111111111111");
 
-  if ( (typeof(this.ConnectedRobots) !== 'undefined') && (this.ConnectedRobots[0].getState() == DEVICE_STATES["DEVICE_IS_READY"]) ){
+        //      this.searching_in_progress = false;
 
+        this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.check, [], (response) => {
 
-    if ( (this.ConnectedRobots[0].isReadyToAcceptCommand()) && (!this.a_command_queue_blocked)  ) {
+      // this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.power, [0, 0], (response) => {
 
+            this.SensorsData = response;
 
-    //   console.log("runDataRecieveCommand");
+              this.dataRecieveTime = Date.now();
 
-      this.can_autoreconnect = false;
-      //  console.log("this.can_autoreconnect = false;                                                                                   11111111111111111111111");
-
-       //      this.searching_in_progress = false;
-
-       this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.check, [], (response) => {
-
-     // this.ConnectedRobots[0].command(DEVICES[this.ConnectedRobots[0].getDeviceID()].commands.power, [0, 0], (response) => {
-
-
-           this.SensorsData = response;
-
-             this.dataRecieveTime = Date.now();
-
-        //   this.searching_in_progress = false;
-          this.can_autoreconnect = false;
-          //  console.log("this.can_autoreconnect = false;                                                                                   222222222222222222222222");
-
-         //  console.log("response: " + this.SensorsData.a0);
-
-
-        });
-
-
+          //   this.searching_in_progress = false;
+            this.can_autoreconnect = false;
+            //  console.log("this.can_autoreconnect = false;                                                                                   222222222222222222222222");
+          //  console.log("response: " + this.SensorsData.a0);
+          });
+      }
     }
-
-
-
-  }
-  else{this.can_autoreconnect = true;  /*console.log("this.can_autoreconnect = true;                                                                                   11111111111111111111111");*/}
-
-
-
-
+    else{
+      this.can_autoreconnect = true;  /*console.log("this.can_autoreconnect = true;                                                                                   11111111111111111111111");*/
+    }
   }
 
   startDataRecievingLoop(robot:InterfaceDevice):void{
@@ -1739,9 +1709,6 @@ turnLedOff(led_position:number,robot_number:number){
 
         console.log("startDataRecievingLoop");
 
-
-
-
               if (this.RobotSensorsDataRecievingState == SensorsDataRecievingStates.STOPED ){
 
                   this.RobotSensorsDataRecievingState == SensorsDataRecievingStates.STARTED;
@@ -1749,19 +1716,8 @@ turnLedOff(led_position:number,robot_number:number){
                 this.DataRecievingLoopInterval = setInterval(this.runDataRecieveCommand.bind(this,robot),0);
 
                 }
-
       //    setInterval(this.runDataRecieveCommand.bind(this,device),100);
-
-
-
-
-
-
-
   //}
-
-
-
-}
+  }
 
 }
